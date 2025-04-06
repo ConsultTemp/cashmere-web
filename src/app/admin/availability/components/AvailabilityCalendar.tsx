@@ -278,12 +278,14 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
             Number.parseInt(endParts[0]) < Number.parseInt(startParts[0]) ||
             (Number.parseInt(endParts[0]) === 0 && Number.parseInt(startParts[0]) > 0)
           ) {
-            //endDate.setDate(endDate.getDate() + 1) // Aggiungi un giorno se l'orario di fine è prima dell'orario di inizio
+            console.log("passo da qui negro")
+            endDate.setDate(endDate.getDate() + 1) // Aggiungi un giorno se l'orario di fine è prima dell'orario di inizio
           }
 
           // Se l'orario di inizio è dopo mezzanotte ma prima delle 4 del mattino,
           // dobbiamo spostare l'evento al giorno precedente per la visualizzazione
           if (Number.parseInt(startParts[0]) >= 0 && Number.parseInt(startParts[0]) < 4) {
+            console.log("non è vero passo da qui negro")
             startDate.setDate(startDate.getDate() + 1)
             endDate.setDate(endDate.getDate() + 1)
           }
