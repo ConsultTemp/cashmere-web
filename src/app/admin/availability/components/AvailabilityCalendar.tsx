@@ -100,21 +100,32 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
       return { backgroundColor: type == "availability" ? "#4ade80" : "#FF5B00", borderColor: "#22c55e" }
     }
 
+    const normalizeDate = (date: Date): Date => {
+      // Create a new date object to avoid mutation
+      const normalized = new Date(date)
+      // Ensure consistent timezone handling
+      return normalized
+    }
+
     const getDayFromDate = (date: Date): string => {
-      const days = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
-    
-      // Se l'ora è tra le 00:00 e le 04:00 incluse, considera il giorno precedente
-      const hour = date.getHours();
+      const days = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"]
+
+      // Get the hour in local time
+      const hour = date.getHours()
+
+      // Log the exact date and time for debugging
+      console.log(`Date: ${date.toISOString()}, Local hour: ${hour}, Day: ${date.getDay()}`)
+
       if (hour >= 0 && hour <= 4) {
-        // Crea una nuova data sottraendo un giorno
-        const prevDate = new Date(date);
-        prevDate.setDate(date.getDate() - 1);
-        return days[prevDate.getDay()];
+        // Create a new date subtracting one day
+        const prevDate = new Date(date)
+        prevDate.setDate(date.getDate() - 1)
+        console.log(`Adjusted to previous day: ${prevDate.toISOString()}, Day: ${prevDate.getDay()}`)
+        return days[prevDate.getDay()]
       }
-    console.log(days[date.getDay()])
-      return days[date.getDay()];
-    };
-    
+
+      return days[date.getDay()]
+    }
 
     const handleDateSelect = useCallback(
       (selectInfo: any) => {
@@ -137,7 +148,7 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
         console.log(day)
         console.log("Giorno selezionato:", day)
         console.log("Dettagli selezione:", selectInfo)
-        
+
         // Check if there's an existing availability for this slot
         const existing = availabilities.find(
           (a) =>
@@ -218,7 +229,7 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
       const rangeStart = new Date(visibleRange.start)
       const rangeEnd = new Date(visibleRange.end)
 
-      console.log(`Range visibile: ${format(rangeStart, "yyyy-MM-dd")} - ${format(rangeEnd, "yyyy-MM-dd")}`)
+      console.log(`Range visible: ${rangeStart.toISOString()} - ${rangeEnd.toISOString()}`)
 
       // Calcola il numero di settimane nel range visibile
       const msPerWeek = 7 * 24 * 60 * 60 * 1000
@@ -255,16 +266,16 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
           const endParts = endTime.split(":")
 
           // Crea le date di inizio e fine dell'evento
-          const startDate = new Date(eventDate)
+          const startDate = normalizeDate(new Date(eventDate))
           startDate.setHours(Number.parseInt(startParts[0]), Number.parseInt(startParts[1]), 0)
 
-          const endDate = new Date(eventDate)
+          const endDate = normalizeDate(new Date(eventDate))
           endDate.setHours(Number.parseInt(endParts[0]), Number.parseInt(endParts[1]), 0)
 
           // Gestisci correttamente gli orari dopo mezzanotte
           // Se l'orario di fine è prima dell'orario di inizio, significa che attraversa la mezzanotte
           // In questo caso, aggiungiamo un giorno alla data di fine, ma manteniamo il giorno originale per la visualizzazione
-           if (
+          if (
             Number.parseInt(endParts[0]) < Number.parseInt(startParts[0]) ||
             (Number.parseInt(endParts[0]) === 0 && Number.parseInt(startParts[0]) > 0)
           ) {
@@ -277,6 +288,10 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
             startDate.setDate(startDate.getDate() + 1)
             endDate.setDate(endDate.getDate() + 1)
           }
+
+          console.log(`Event date for ${availability.day}: ${eventDate.toISOString()}`)
+          console.log(`Start time: ${startTime}, End time: ${endTime}`)
+          console.log(`Final event: ${startDate.toISOString()} - ${endDate.toISOString()}`)
 
           // Verifica se l'evento è all'interno del range visibile
           if (startDate <= rangeEnd && endDate >= rangeStart) {
@@ -460,25 +475,25 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
               eventResize={
                 isEditMode
                   ? (info) => {
-                    // Update the availability duration when resized
-                    // Estrai l'ID originale dalla stringa (rimuovi il suffisso -weekOffset)
-                    const originalId = info.event.extendedProps.originalId
-                    const eventDay = info.event.extendedProps.day
+                      // Update the availability duration when resized
+                      // Estrai l'ID originale dalla stringa (rimuovi il suffisso -weekOffset)
+                      const originalId = info.event.extendedProps.originalId
+                      const eventDay = info.event.extendedProps.day
 
-                    updateAvailability(originalId, {
-                      day: eventDay,
-                      start: format(info.event.start!, "HH:mm"),
-                      end: format(info.event.end!, "HH:mm"),
-                      engineerId: selectedEngineer,
-                    })
-                      .then(() => {
-                        fetchAvailabilities()
+                      updateAvailability(originalId, {
+                        day: eventDay,
+                        start: format(info.event.start!, "HH:mm"),
+                        end: format(info.event.end!, "HH:mm"),
+                        engineerId: selectedEngineer,
                       })
-                      .catch((error: any) => {
-                        console.error("Error updating availability:", error)
-                        info.revert()
-                      })
-                  }
+                        .then(() => {
+                          fetchAvailabilities()
+                        })
+                        .catch((error: any) => {
+                          console.error("Error updating availability:", error)
+                          info.revert()
+                        })
+                    }
                   : undefined
               }
             />
