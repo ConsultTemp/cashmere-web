@@ -7,7 +7,7 @@ import { Menu, Home, Calendar, CheckCircle, Phone, Sun, Music2, User, Clock } fr
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
-import logo from "../../../public/cashmere-logo.svg"
+import logo from "../../../public/cashmere-color.svg"
 import { Button } from "@/components/Button"
 import { useRouter } from "next/navigation"
 
@@ -139,14 +139,14 @@ export default function AdminLayout({
           isCollapsed ? "w-12 md:w-16" : "w-64",
         )}
       >
-        <div className="flex flex-col h-full p-4">
-          <div className="flex items-start justify-between mb-8">
+        <div className="flex flex-col h-full p-2">
+          <div className="flex flex-col items-center justify-between mb-8">
             <Button variant="ghost" size="icon" onClick={() => setIsCollapsed(!isCollapsed)} className="h-8 w-8">
               <Menu className="h-4 w-4" />
             </Button>
           </div>
 
-          <nav className="flex-1">
+          <nav className="flex-1 flex flex-col items-center">
             <Image src={logo || "/placeholder.svg"} width={30} height={30} alt="Cashmere logo" className="mb-8" />
             {sidebarItems
               .filter((s) => s.roles.includes(user.role))
