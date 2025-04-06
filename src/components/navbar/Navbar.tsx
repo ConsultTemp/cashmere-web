@@ -64,7 +64,7 @@ export const NavbarVariants = ({ variant }: NavbarVariantsProps) => {
           <nav className="w-full bg-white h-[80px] hidden md:flex flex-row items-center border border-dark-gray justify-between px-4 sm:px-8 md:px-12 lg:px-16 xl:px-32">
             <div className="flex flex-row items-center gap-4 sm:gap-8 md:gap-16">
               <Link href="/">
-                <Image src={logo || "/placeholder.svg"} alt="Logo Cashmere studio" />
+                <Image src={logo || "/placeholder.svg"} alt="Logo Cashmere studio" className="full h-12" />
               </Link>
               <div className="flex items-center space-x-6">
                 <div className="relative group">
