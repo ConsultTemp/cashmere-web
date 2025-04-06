@@ -401,7 +401,7 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
             </Button>
           </div>
 
-          <div className="h-full overflow-y-hidden">
+        {/*   <div className="h-full overflow-y-hidden">
             <FullCalendar
               ref={calendarRef}
               plugins={[timeGridPlugin, interactionPlugin]}
@@ -480,7 +480,7 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
                   : undefined
               }
             />
-          </div>
+          </div> */}
         </div>
 
         <div className="mt-24 pb-12">
