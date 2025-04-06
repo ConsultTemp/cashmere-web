@@ -14,6 +14,7 @@ import type { Booking } from "@/types/booking"
 import { format, parseISO } from "date-fns"
 import { it } from "date-fns/locale"
 import { studios as studioData } from "@/lib/studios"
+import { useUserStore } from "@/store/user-store"
 
 interface Studio {
   id: string
@@ -43,7 +44,9 @@ export default function CurrentPage() {
   const [selectedEngineer, setSelectedEngineer] = useState<string>("")
   const [isLoading, setIsLoading] = useState(false)
   const { getEngineers } = useUser()
+  const {user} = useUserStore()
   const { getCurrentBookings, getAvailableTimeSlots } = useBooking()
+
 
   // Load engineers on component mount
   useEffect(() => {
@@ -170,7 +173,7 @@ export default function CurrentPage() {
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-2xl font-bold">Bentornato</h1>
-          <p className="text-gray-500 text-sm">admin@gmail.com</p>
+          <p className="text-gray-500 text-sm">{user.username}</p>
         </div>
       </div>
 

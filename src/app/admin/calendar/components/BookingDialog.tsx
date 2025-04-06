@@ -238,7 +238,7 @@ export function BookingDialog({ isOpen, onClose, onSave, booking, onDelete, canE
       instagram: "",
       phone: "",
     })
-    
+
     onSave({
       ...data,
       //@ts-ignore
@@ -353,10 +353,10 @@ export function BookingDialog({ isOpen, onClose, onSave, booking, onDelete, canE
   // Renderizza la versione modificabile (originale)
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px] h-screen overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[500px] h-screen max-h-[90vh] flex flex-col">
+        <DialogHeader className="shrink-0">
           <DialogTitle>
-           {/*  @ts-ignore */}
+            {/* @ts-ignore */}
             {booking?.userId && !booking?.isNew ? "Modifica Prenotazione" : "Nuova Prenotazione"}
           </DialogTitle>
           <DialogDescription>Inserisci i dettagli della prenotazione</DialogDescription>
