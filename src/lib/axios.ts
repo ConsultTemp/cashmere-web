@@ -2,7 +2,7 @@ import axios from "axios"
 
 // Create axios instance with default config
 const api = axios.create({
-  baseURL: "https://cashmere-api.vercel.app",
+  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3005",
   headers: {
     "Content-Type": "application/json",
   },
