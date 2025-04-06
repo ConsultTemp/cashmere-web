@@ -108,24 +108,19 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
     }
 
     const getDayFromDate = (date: Date): string => {
-      const days = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"]
+      const days = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
 
-      // Get the hour in local time
-      const hour = date.getHours()
-
-      // Log the exact date and time for debugging
-      console.log(`Date: ${date.toISOString()}, Local hour: ${hour}, Day: ${date.getDay()}`)
-
+      // Se l'ora è tra le 00:00 e le 04:00 incluse, considera il giorno precedente
+      const hour = date.getHours();
       if (hour >= 0 && hour <= 4) {
-        // Create a new date subtracting one day
-        const prevDate = new Date(date)
-        prevDate.setDate(date.getDate() - 1)
-        console.log(`Adjusted to previous day: ${prevDate.toISOString()}, Day: ${prevDate.getDay()}`)
-        return days[prevDate.getDay()]
+        // Crea una nuova data sottraendo un giorno
+        const prevDate = new Date(date);
+        prevDate.setDate(date.getDate() - 1);
+        return days[prevDate.getDay()];
       }
 
-      return days[date.getDay()]
-    }
+      return days[date.getDay()];
+    };
 
     const handleDateSelect = useCallback(
       (selectInfo: any) => {
@@ -224,79 +219,60 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
       if (!visibleRange || !availabilities.length) return []
 
       const events = []
-
-      // Ottieni la data di inizio e fine del range visibile
       const rangeStart = new Date(visibleRange.start)
       const rangeEnd = new Date(visibleRange.end)
 
-      console.log(`Range visible: ${rangeStart.toISOString()} - ${rangeEnd.toISOString()}`)
+      // Mappa standard JavaScript dove domenica è 0
+      const days = { sun: 0, mon: 1, tue: 2, wed: 3, thu: 4, fri: 5, sat: 6 }
 
-      // Calcola il numero di settimane nel range visibile
+      // Calcola il numero di settimane nel range
       const msPerWeek = 7 * 24 * 60 * 60 * 1000
       const weeksInRange = Math.ceil((rangeEnd.getTime() - rangeStart.getTime()) / msPerWeek)
 
-      // Per ogni settimana nel range visibile
+      // Per ogni settimana
       for (let weekOffset = 0; weekOffset < weeksInRange; weekOffset++) {
-        // Calcola la data di inizio della settimana corrente
+        // Inizio della settimana corrente
         const weekStart = new Date(rangeStart)
         weekStart.setDate(rangeStart.getDate() + weekOffset * 7)
         weekStart.setHours(0, 0, 0, 0)
 
         // Per ogni disponibilità
         for (const availability of availabilities) {
-          // Converti il giorno della settimana in numero (0 = domenica, 1 = lunedì, ecc.)
-          const days = { sun: 6, mon: 0, tue: 1, wed: 2, thu: 3, fri: 4, sat: 5 }
-          const dayNumber = days[availability.day.toLowerCase() as keyof typeof days]
+          // Ottieni il numero del giorno (0-6)
+          //@ts-ignore
+          const dayNumber = days[availability.day.toLowerCase()]
 
           if (dayNumber === undefined) {
             console.error(`Giorno non valido: ${availability.day}`)
             continue
           }
 
-          // Calcola la data per questo giorno della settimana
+          // Calcola la data per questo giorno
           const eventDate = new Date(weekStart)
           eventDate.setDate(weekStart.getDate() + dayNumber)
 
-          // Parse the hours and minutes
+          // Parse orari
           const startTime = typeof availability.start === "string" ? availability.start : format(availability.start, "HH:mm")
           const endTime = typeof availability.end === "string" ? availability.end : format(availability.end, "HH:mm")
 
           const startParts = startTime.split(":")
           const endParts = endTime.split(":")
 
-          // Crea le date di inizio e fine dell'evento
-          const startDate = normalizeDate(new Date(eventDate))
-          startDate.setHours(Number.parseInt(startParts[0]), Number.parseInt(startParts[1]), 0)
+          // Crea date di inizio e fine
+          const startDate = new Date(eventDate)
+          startDate.setHours(parseInt(startParts[0]), parseInt(startParts[1]), 0)
 
-          const endDate = normalizeDate(new Date(eventDate))
-          endDate.setHours(Number.parseInt(endParts[0]), Number.parseInt(endParts[1]), 0)
+          const endDate = new Date(eventDate)
+          endDate.setHours(parseInt(endParts[0]), parseInt(endParts[1]), 0)
 
-          // Gestisci correttamente gli orari dopo mezzanotte
-          // Se l'orario di fine è prima dell'orario di inizio, significa che attraversa la mezzanotte
-          // In questo caso, aggiungiamo un giorno alla data di fine, ma manteniamo il giorno originale per la visualizzazione
-          if (
-            Number.parseInt(endParts[0]) < Number.parseInt(startParts[0]) ||
-            (Number.parseInt(endParts[0]) === 0 && Number.parseInt(startParts[0]) > 0)
-          ) {
-            console.log("passo da qui negro")
-            endDate.setDate(endDate.getDate() + 1) // Aggiungi un giorno se l'orario di fine è prima dell'orario di inizio
-          }
-
-          // Se l'orario di inizio è dopo mezzanotte ma prima delle 4 del mattino,
-          // dobbiamo spostare l'evento al giorno precedente per la visualizzazione
-          if (Number.parseInt(startParts[0]) >= 0 && Number.parseInt(startParts[0]) < 4) {
-            console.log("non è vero passo da qui negro")
-            startDate.setDate(startDate.getDate() + 1)
+          // Gestione orari dopo mezzanotte
+          if (parseInt(endParts[0]) < parseInt(startParts[0]) ||
+            (parseInt(endParts[0]) === 0 && parseInt(startParts[0]) > 0)) {
             endDate.setDate(endDate.getDate() + 1)
           }
 
-          console.log(`Event date for ${availability.day}: ${eventDate.toISOString()}`)
-          console.log(`Start time: ${startTime}, End time: ${endTime}`)
-          console.log(`Final event: ${startDate.toISOString()} - ${endDate.toISOString()}`)
-
-          // Verifica se l'evento è all'interno del range visibile
+          // Verifica se l'evento è nel range visibile
           if (startDate <= rangeEnd && endDate >= rangeStart) {
-            // Crea l'evento con la data corretta
             events.push({
               id: `${availability.id}-${weekOffset}`,
               title: "Disponibile",
@@ -476,25 +452,25 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
               eventResize={
                 isEditMode
                   ? (info) => {
-                      // Update the availability duration when resized
-                      // Estrai l'ID originale dalla stringa (rimuovi il suffisso -weekOffset)
-                      const originalId = info.event.extendedProps.originalId
-                      const eventDay = info.event.extendedProps.day
+                    // Update the availability duration when resized
+                    // Estrai l'ID originale dalla stringa (rimuovi il suffisso -weekOffset)
+                    const originalId = info.event.extendedProps.originalId
+                    const eventDay = info.event.extendedProps.day
 
-                      updateAvailability(originalId, {
-                        day: eventDay,
-                        start: format(info.event.start!, "HH:mm"),
-                        end: format(info.event.end!, "HH:mm"),
-                        engineerId: selectedEngineer,
+                    updateAvailability(originalId, {
+                      day: eventDay,
+                      start: format(info.event.start!, "HH:mm"),
+                      end: format(info.event.end!, "HH:mm"),
+                      engineerId: selectedEngineer,
+                    })
+                      .then(() => {
+                        fetchAvailabilities()
                       })
-                        .then(() => {
-                          fetchAvailabilities()
-                        })
-                        .catch((error: any) => {
-                          console.error("Error updating availability:", error)
-                          info.revert()
-                        })
-                    }
+                      .catch((error: any) => {
+                        console.error("Error updating availability:", error)
+                        info.revert()
+                      })
+                  }
                   : undefined
               }
             />
