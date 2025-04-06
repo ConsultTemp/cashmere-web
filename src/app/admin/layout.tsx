@@ -140,13 +140,13 @@ export default function AdminLayout({
         )}
       >
         <div className="flex flex-col h-full p-2">
-          <div className="flex flex-col items-center justify-between mb-8">
+          <div className={`flex flex-col items-${isCollapsed ? 'center' : 'start'} justify-between mb-8`}>
             <Button variant="ghost" size="icon" onClick={() => setIsCollapsed(!isCollapsed)} className="h-8 w-8">
               <Menu className="h-4 w-4" />
             </Button>
           </div>
 
-          <nav className="flex-1 flex flex-col items-center">
+          <nav className={`flex-1 flex flex-col items-${isCollapsed ? 'center' : 'start'}`}>
             <Image src={logo || "/placeholder.svg"} width={30} height={30} alt="Cashmere logo" className="mb-8" />
             {sidebarItems
               .filter((s) => s.roles.includes(user.role))
