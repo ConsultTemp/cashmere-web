@@ -258,8 +258,7 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
           eventDate.setDate(weekStart.getDate() + dayNumber)
 
           // Parse the hours and minutes
-          const startTime =
-            typeof availability.start === "string" ? availability.start : format(availability.start, "HH:mm")
+          const startTime = typeof availability.start === "string" ? availability.start : format(availability.start, "HH:mm")
           const endTime = typeof availability.end === "string" ? availability.end : format(availability.end, "HH:mm")
 
           const startParts = startTime.split(":")
