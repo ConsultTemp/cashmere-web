@@ -38,6 +38,7 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
     const [existingAvailability, setExistingAvailability] = useState<Availability | null>(null)
     const [isLoading, setIsLoading] = useState(false)
     const [bookings, setBookings] = useState([])
+    const [visibleRange, setVisibleRange] = useState<{ start: Date; end: Date } | null>(null)
 
     const { getEngineerAvailability, createAvailability, updateAvailability, deleteAvailability } = useAvailability()
     const { getEngineerBookings } = useBooking()
@@ -58,8 +59,9 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
       setIsLoading(true)
       try {
         const data = await getEngineerAvailability(selectedEngineer, date)
+        //@ts-ignore
         setAvailabilities(data)
-        console.log(data)
+        console.log("Disponibilità ricevute:", data)
       } catch (error) {
         console.error("Error fetching availabilities:", error)
       } finally {
@@ -72,9 +74,9 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
       try {
         const data = await getEngineerBookings(selectedEngineer)
         setBookings(data)
-        console.log(data)
+        console.log("Prenotazioni ricevute:", data)
       } catch (error) {
-        console.error("Error fetching availabilities:", error)
+        console.error("Error fetching bookings:", error)
       } finally {
         setIsLoading(false)
       }
@@ -85,6 +87,11 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
         const api = calendarRef.current.getApi()
         queueMicrotask(() => {
           api.changeView(view)
+          // Aggiorna il range visibile quando cambia la vista
+          setVisibleRange({
+            start: api.view.activeStart,
+            end: api.view.activeEnd,
+          })
         })
       }
     }, [view])
@@ -94,9 +101,20 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
     }
 
     const getDayFromDate = (date: Date): string => {
-      const days = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"]
-      return days[date.getDay()]
-    }
+      const days = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+    
+      // Se l'ora è tra le 00:00 e le 04:00 incluse, considera il giorno precedente
+      const hour = date.getHours();
+      if (hour >= 0 && hour <= 4) {
+        // Crea una nuova data sottraendo un giorno
+        const prevDate = new Date(date);
+        prevDate.setDate(date.getDate() - 1);
+        return days[prevDate.getDay()];
+      }
+    console.log(days[date.getDay()])
+      return days[date.getDay()];
+    };
+    
 
     const handleDateSelect = useCallback(
       (selectInfo: any) => {
@@ -111,9 +129,15 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
         const start = roundToNearestHalfHour(selectInfo.start)
         const end = roundToNearestHalfHour(selectInfo.end)
 
-        // Usa il giorno della data di inizio per la disponibilità
-        const day = getDayFromDate(start)
-
+        // IMPORTANTE: Usa il giorno della colonna del calendario, non il giorno effettivo della data
+        // Questo garantisce che anche le disponibilità dopo mezzanotte mantengano il giorno corretto
+        // Il giorno deve essere quello della colonna del calendario, non quello della data effettiva
+        // Questo è fondamentale per mantenere la coerenza con la visualizzazione del calendario
+        const day = getDayFromDate(selectInfo.start)
+        console.log(day)
+        console.log("Giorno selezionato:", day)
+        console.log("Dettagli selezione:", selectInfo)
+        
         // Check if there's an existing availability for this slot
         const existing = availabilities.find(
           (a) =>
@@ -142,6 +166,7 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
           return
         }
 
+        // IMPORTANTE: Usa il giorno selezionato senza modificarlo, anche se l'orario attraversa la mezzanotte
         // Create new availability
         await createAvailability({
           day: selectedSlot.day,
@@ -183,71 +208,132 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
       }
     }
 
-    // Convert availabilities to FullCalendar events
-    const eventsToDisplay = [
-      ...availabilities.map((availability) => {
-        // Create a date object for the current view's date but with the availability's time
-        const startDate = new Date(date)
-        const endDate = new Date(date)
+    // Funzione per generare eventi per tutte le settimane visibili
+    const generateRecurringEvents = useCallback(() => {
+      if (!visibleRange || !availabilities.length) return []
 
-        // Parse the hours and minutes
-        const startTime =
-          typeof availability.start === "string" ? availability.start : format(availability.start, "HH:mm")
+      const events = []
 
-        const endTime = typeof availability.end === "string" ? availability.end : format(availability.end, "HH:mm")
+      // Ottieni la data di inizio e fine del range visibile
+      const rangeStart = new Date(visibleRange.start)
+      const rangeEnd = new Date(visibleRange.end)
 
-        const startParts = startTime.split(":")
-        const endParts = endTime.split(":")
+      console.log(`Range visibile: ${format(rangeStart, "yyyy-MM-dd")} - ${format(rangeEnd, "yyyy-MM-dd")}`)
 
-        startDate.setHours(Number.parseInt(startParts[0]), Number.parseInt(startParts[1]), 0)
-        endDate.setHours(Number.parseInt(endParts[0]), Number.parseInt(endParts[1]), 0)
+      // Calcola il numero di settimane nel range visibile
+      const msPerWeek = 7 * 24 * 60 * 60 * 1000
+      const weeksInRange = Math.ceil((rangeEnd.getTime() - rangeStart.getTime()) / msPerWeek)
 
-        // Gestisci il caso in cui l'orario di fine è prima dell'orario di inizio (attraversa la mezzanotte)
-        if (
-          Number.parseInt(endParts[0]) < Number.parseInt(startParts[0]) ||
-          (Number.parseInt(endParts[0]) === Number.parseInt(startParts[0]) &&
-            Number.parseInt(endParts[1]) < Number.parseInt(startParts[1]))
-        ) {
-          endDate.setDate(endDate.getDate() + 1)
+      // Per ogni settimana nel range visibile
+      for (let weekOffset = 0; weekOffset < weeksInRange; weekOffset++) {
+        // Calcola la data di inizio della settimana corrente
+        const weekStart = new Date(rangeStart)
+        weekStart.setDate(rangeStart.getDate() + weekOffset * 7)
+        weekStart.setHours(0, 0, 0, 0)
+
+        // Per ogni disponibilità
+        for (const availability of availabilities) {
+          // Converti il giorno della settimana in numero (0 = domenica, 1 = lunedì, ecc.)
+          const days = { sun: 6, mon: 0, tue: 1, wed: 2, thu: 3, fri: 4, sat: 5 }
+          const dayNumber = days[availability.day.toLowerCase() as keyof typeof days]
+
+          if (dayNumber === undefined) {
+            console.error(`Giorno non valido: ${availability.day}`)
+            continue
+          }
+
+          // Calcola la data per questo giorno della settimana
+          const eventDate = new Date(weekStart)
+          eventDate.setDate(weekStart.getDate() + dayNumber)
+
+          // Parse the hours and minutes
+          const startTime =
+            typeof availability.start === "string" ? availability.start : format(availability.start, "HH:mm")
+          const endTime = typeof availability.end === "string" ? availability.end : format(availability.end, "HH:mm")
+
+          const startParts = startTime.split(":")
+          const endParts = endTime.split(":")
+
+          // Crea le date di inizio e fine dell'evento
+          const startDate = new Date(eventDate)
+          startDate.setHours(Number.parseInt(startParts[0]), Number.parseInt(startParts[1]), 0)
+
+          const endDate = new Date(eventDate)
+          endDate.setHours(Number.parseInt(endParts[0]), Number.parseInt(endParts[1]), 0)
+
+          // Gestisci correttamente gli orari dopo mezzanotte
+          // Se l'orario di fine è prima dell'orario di inizio, significa che attraversa la mezzanotte
+          // In questo caso, aggiungiamo un giorno alla data di fine, ma manteniamo il giorno originale per la visualizzazione
+           if (
+            Number.parseInt(endParts[0]) < Number.parseInt(startParts[0]) ||
+            (Number.parseInt(endParts[0]) === 0 && Number.parseInt(startParts[0]) > 0)
+          ) {
+            endDate.setDate(endDate.getDate() + 1) // Aggiungi un giorno se l'orario di fine è prima dell'orario di inizio
+          }
+
+          // Se l'orario di inizio è dopo mezzanotte ma prima delle 4 del mattino,
+          // dobbiamo spostare l'evento al giorno precedente per la visualizzazione
+          if (Number.parseInt(startParts[0]) >= 0 && Number.parseInt(startParts[0]) < 4) {
+            startDate.setDate(startDate.getDate() + 1)
+            endDate.setDate(endDate.getDate() + 1)
+          }
+
+          // Verifica se l'evento è all'interno del range visibile
+          if (startDate <= rangeEnd && endDate >= rangeStart) {
+            // Crea l'evento con la data corretta
+            events.push({
+              id: `${availability.id}-${weekOffset}`,
+              title: "Disponibile",
+              start: startDate,
+              end: endDate,
+              userId: availability.userId,
+              day: availability.day,
+              type: "availability",
+              extendedProps: {
+                originalId: availability.id,
+                day: availability.day,
+              },
+            })
+          }
         }
+      }
 
-        // Adjust the date based on the day of the week
-        const days = { sun: 0, mon: 1, tue: 2, wed: 3, thu: 4, fri: 5, sat: 6 }
-        const dayDiff = days[availability.day as keyof typeof days] - date.getDay()
+      return events
+    }, [availabilities, visibleRange])
 
-        startDate.setDate(startDate.getDate() + dayDiff)
-        endDate.setDate(endDate.getDate() + (dayDiff + (endDate > startDate ? 0 : 1)))
+    // Genera gli eventi da visualizzare
+    const eventsToDisplay = useCallback(() => {
+      const availabilityEvents = generateRecurringEvents()
 
-        return {
-          id: availability.id,
-          title: "Disponibile",
-          start: startDate,
-          end: endDate,
-          userId: availability.userId,
-          day: availability.day,
-          type: "availability",
-        }
-      }),
-      ...bookings.map((b) => {
-        return {
-          //@ts-ignore
-          id: b.id,
-          //@ts-ignore
-          title: b.user.username,
-          //@ts-ignore
-          start: b.start,
-          //@ts-ignore
-          end: b.end,
-          type: "booking",
-        }
-      }),
-    ].filter((ev) => (isEditMode ? ev.type == "availability" : true))
+      // Aggiungi le prenotazioni
+      const allEvents = [
+        ...availabilityEvents,
+        ...bookings.map((b) => {
+          return {
+            //@ts-ignore
+            id: b.id,
+            //@ts-ignore
+            title: b.user?.username || "Prenotazione",
+            //@ts-ignore
+            start: b.start,
+            //@ts-ignore
+            end: b.end,
+            type: "booking",
+          }
+        }),
+      ]
+
+      // Filtra gli eventi in base alla modalità di modifica
+      return allEvents.filter((ev) => (isEditMode ? ev.type === "availability" : true))
+    }, [generateRecurringEvents, bookings, isEditMode])
 
     const handleDeleteEvent = async (eventId: string) => {
+      // Estrai l'ID originale dalla stringa (rimuovi il suffisso -weekOffset)
+      const originalId = eventId.split("-")[0]
+
       setIsLoading(true)
       try {
-        await deleteAvailability(eventId)
-
+        await deleteAvailability(originalId)
         // Refresh availabilities
         await fetchAvailabilities()
       } catch (error) {
@@ -262,11 +348,7 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
       await fetchAvailabilities()
     }
 
-    // Aggiungiamo funzioni per calcolare le ore totali
-    // Aggiungi queste funzioni dopo la dichiarazione di handleSaveChanges
-
-    // 1. Aggiungi queste funzioni per calcolare le ore:
-
+    // Calcola le ore totali
     const calculateTotalHours = (events: any[]) => {
       return events.reduce((total, event) => {
         const start = new Date(event.start)
@@ -277,7 +359,7 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
     }
 
     const getTotalAvailabilityHours = () => {
-      const availabilityEvents = eventsToDisplay.filter((event) => event.type === "availability")
+      const availabilityEvents = eventsToDisplay().filter((event) => event.type === "availability")
       return calculateTotalHours(availabilityEvents)
     }
 
@@ -290,7 +372,7 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
       const viewEnd = api.view.activeEnd
 
       // Filtra solo le prenotazioni che rientrano nell'intervallo di date visualizzato
-      const bookingEvents = eventsToDisplay.filter((event) => {
+      const bookingEvents = eventsToDisplay().filter((event) => {
         const eventStart = new Date(event.start)
         return event.type === "booking" && eventStart >= viewStart && eventStart < viewEnd
       })
@@ -298,21 +380,13 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
       return calculateTotalHours(bookingEvents)
     }
 
-    useEffect(() => {
-      if (calendarRef.current) {
-        const api = calendarRef.current.getApi()
-        const handleDatesSet = () => {
-          // Forza un re-render per aggiornare i calcoli delle ore
-          setAvailabilities([...availabilities])
-        }
-
-        api.on("datesSet", handleDatesSet)
-
-        return () => {
-          api.off("datesSet", handleDatesSet)
-        }
-      }
-    }, [calendarRef.current, availabilities])
+    // Aggiorna il range visibile quando cambia la vista del calendario
+    const handleDatesSet = useCallback((info: any) => {
+      setVisibleRange({
+        start: info.view.activeStart,
+        end: info.view.activeEnd,
+      })
+    }, [])
 
     return (
       <>
@@ -329,102 +403,89 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
             </Button>
           </div>
 
-         
-            <div className="h-full min-w-[800px]">
-              <FullCalendar
-                ref={calendarRef}
-                plugins={[timeGridPlugin, interactionPlugin]}
-                initialView={view}
-                locale={itLocale}
-                headerToolbar={false}
-                allDaySlot={false}
-                slotMinTime="10:00:00"
-                slotMaxTime="30:00:00"
-                slotDuration="01:00:00"
-                slotLabelInterval="01:00:00"
-                selectable={isEditMode}
-                selectMirror={true}
-                events={eventsToDisplay.map((availability) => ({
-                  ...availability,
-                  ...getEventColor(availability.type),
-                }))}
-                eventContent={(eventInfo) => (
-                  <div className="h-full w-full p-1 relative">
-                    {isEditMode && (
-                      <button
-                        className="right-1 top-1 rounded-full bg-white/20 p-0.5 text-white hover:bg-white/40"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleDeleteEvent(eventInfo.event.id)
-                        }}
-                        disabled={isLoading}
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    )}
-                    <div className="text-xs font-medium text-white">{eventInfo.event.title}</div>
-                    <div className="mt-1 text-xs text-white/90">
-                      {format(eventInfo.event.start!, "HH:mm")} - {format(eventInfo.event.end!, "HH:mm")}
-                    </div>
+          <div className="h-full overflow-y-hidden">
+            <FullCalendar
+              ref={calendarRef}
+              plugins={[timeGridPlugin, interactionPlugin]}
+              initialView={view}
+              locale={itLocale}
+              headerToolbar={false}
+              allDaySlot={false}
+              slotMinTime="10:00:00"
+              slotMaxTime="28:00:00"
+              slotDuration="01:00:00"
+              slotLabelInterval="01:00:00"
+              selectable={isEditMode}
+              selectMirror={true}
+              events={eventsToDisplay().map((availability) => ({
+                ...availability,
+                ...getEventColor(availability.type),
+              }))}
+              eventContent={(eventInfo) => (
+                <div className="h-full w-full p-1 relative">
+                  {isEditMode && eventInfo.event.extendedProps.originalId && (
+                    <button
+                      className="absolute right-1 top-1 rounded-full bg-white/20 p-0.5 text-white hover:bg-white/40"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDeleteEvent(eventInfo.event.id)
+                      }}
+                      disabled={isLoading}
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  )}
+                  <div className="text-xs font-medium text-white">{eventInfo.event.title}</div>
+                  <div className="mt-1 text-xs text-white/90">
+                    {format(eventInfo.event.start!, "HH:mm")} - {format(eventInfo.event.end!, "HH:mm")}
                   </div>
-                )}
-                select={handleDateSelect}
-                selectConstraint={{
-                  startTime: "10:00:00",
-                  endTime: "28:00:00",
-                }}
-                slotLabelFormat={{
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  hour12: false,
-                }}
-                dayHeaderFormat={{ weekday: "short", day: "2-digit", month: "2-digit" }}
-                height="100%"
-                editable={isEditMode}
-                eventStartEditable={false}
-                eventDurationEditable={isEditMode}
-                eventResize={
-                  isEditMode
-                    ? (info) => {
-                        // Update the availability duration when resized
-                        const eventId = info.event.id
-                        const eventDay = info.event.extendedProps.day
-                        const startTime = format(info.event.start!, "HH:mm")
-                        const endTime = format(info.event.end!, "HH:mm")
+                </div>
+              )}
+              select={handleDateSelect}
+              selectConstraint={{
+                startTime: "10:00:00",
+                endTime: "28:00:00",
+              }}
+              slotLabelFormat={{
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false,
+              }}
+              dayHeaderFormat={{ weekday: "short", day: "2-digit", month: "2-digit" }}
+              height="100%"
+              editable={isEditMode}
+              eventStartEditable={false}
+              eventDurationEditable={isEditMode}
+              datesSet={handleDatesSet}
+              eventResize={
+                isEditMode
+                  ? (info) => {
+                    // Update the availability duration when resized
+                    // Estrai l'ID originale dalla stringa (rimuovi il suffisso -weekOffset)
+                    const originalId = info.event.extendedProps.originalId
+                    const eventDay = info.event.extendedProps.day
 
-                        // Aggiungi un controllo per verificare se l'evento attraversa la mezzanotte
-                        const startHour = Number.parseInt(startTime.split(":")[0])
-                        const endHour = Number.parseInt(endTime.split(":")[0])
-
-                        // Gestisci il caso in cui l'evento attraversa la mezzanotte
-                        updateAvailability(eventId, {
-                          day: eventDay,
-                          start: startTime,
-                          end: endTime,
-                          engineerId: selectedEngineer,
-                        })
-                          .then(() => {
-                            // Aggiungi un breve ritardo prima di ricaricare le disponibilità
-                            setTimeout(() => {
-                              fetchAvailabilities()
-                            }, 300)
-                          })
-                          .catch((error: any) => {
-                            console.error("Error updating availability:", error)
-                            info.revert()
-                          })
-                      }
-                    : undefined
-                }
-              />
-            </div>
-        
-    
-
-       
+                    updateAvailability(originalId, {
+                      day: eventDay,
+                      start: format(info.event.start!, "HH:mm"),
+                      end: format(info.event.end!, "HH:mm"),
+                      engineerId: selectedEngineer,
+                    })
+                      .then(() => {
+                        fetchAvailabilities()
+                      })
+                      .catch((error: any) => {
+                        console.error("Error updating availability:", error)
+                        info.revert()
+                      })
+                  }
+                  : undefined
+              }
+            />
+          </div>
         </div>
 
-        <div className="pt-24 pb-12">
+        <div className="mt-24 pb-12">
           <h2 className="mb-4 text-xl font-semibold">Panoramica</h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <Card>
