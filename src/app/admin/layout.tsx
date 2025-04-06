@@ -135,8 +135,8 @@ export default function AdminLayout({
       {/* Sidebar */}
       <div
         className={cn(
-          "h-screen fixed left-0 top-0 z-40 bg-white border-r transition-all duration-300",
-          isCollapsed ? "w-16" : "w-64",
+          "h-screen fixed left-0 top-0 z-40 bg-white border-r transition-all duration-300 pb-8 md:pb-0",
+          isCollapsed ? "w-12 md:w-16" : "w-64",
         )}
       >
         <div className="flex flex-col h-full p-4">
@@ -154,6 +154,7 @@ export default function AdminLayout({
                 <Link
                   key={index}
                   href={item.href}
+                  onClick={() => setIsCollapsed(true)}
                   className={cn(
                     "flex items-center gap-3 py-4 rounded-lg mb-1 hover:bg-gray-100 transition-colors",
                     "text-gray-700 hover:text-black",
@@ -199,7 +200,7 @@ export default function AdminLayout({
       </div>
 
       {/* Main content - non ha più il margine condizionale */}
-      <div className="w-full p-4 pl-20">{children}</div>
+      <div className="w-full p-4 pl-16 md:pl-20 pb-16">{children}</div>
     </div>
   )
 }

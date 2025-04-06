@@ -405,160 +405,166 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
     }, [])
 
     return (
-      <>
-        <div className="h-full">
-          {/* Edit mode overlay button */}
-          <div className="right-4 top-4 z-10 py-4">
-            <Button
-              variant={isEditMode ? "default" : "outline"}
-              onClick={isEditMode ? handleSaveChanges : () => setIsEditMode(true)}
-              className={isEditMode ? "bg-emerald-500 hover:bg-emerald-600" : ""}
-              disabled={isLoading}
-            >
-              {isEditMode ? "Salva modifiche" : "Modifica disponibilità"}
-            </Button>
-          </div>
-
-          <div className="h-full overflow-y-hidden">
-            <FullCalendar
-              ref={calendarRef}
-              plugins={[timeGridPlugin, interactionPlugin]}
-              initialView={view}
-              locale={itLocale}
-              headerToolbar={false}
-              allDaySlot={false}
-              slotMinTime="10:00:00"
-              slotMaxTime="28:00:00"
-              slotDuration="01:00:00"
-              slotLabelInterval="01:00:00"
-              selectable={isEditMode}
-              selectMirror={true}
-              events={eventsToDisplay().map((availability) => ({
-                ...availability,
-                ...getEventColor(availability.type),
-              }))}
-              eventContent={(eventInfo) => (
-                <div className="h-full w-full p-1 relative">
-                  {isEditMode && eventInfo.event.extendedProps.originalId && (
-                    <button
-                      className="absolute right-1 top-1 rounded-full bg-white/20 p-0.5 text-white hover:bg-white/40"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleDeleteEvent(eventInfo.event.id)
-                      }}
-                      disabled={isLoading}
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  )}
-                  <div className="text-xs font-medium text-white">{eventInfo.event.title}</div>
-                  <div className="mt-1 text-xs text-white/90">
-                    {format(eventInfo.event.start!, "HH:mm")} - {format(eventInfo.event.end!, "HH:mm")}
-                  </div>
-                </div>
-              )}
-              select={handleDateSelect}
-              selectConstraint={{
-                startTime: "10:00:00",
-                endTime: "28:00:00",
-              }}
-              slotLabelFormat={{
-                hour: "2-digit",
-                minute: "2-digit",
-                hour12: false,
-              }}
-              dayHeaderFormat={{ weekday: "short", day: "2-digit", month: "2-digit" }}
-              height="100%"
-              editable={isEditMode}
-              eventStartEditable={false}
-              eventDurationEditable={isEditMode}
-              datesSet={handleDatesSet}
-              eventResize={
-                isEditMode
-                  ? (info) => {
-                      // Update the availability duration when resized
-                      // Estrai l'ID originale dalla stringa (rimuovi il suffisso -weekOffset)
-                      const originalId = info.event.extendedProps.originalId
-                      const eventDay = info.event.extendedProps.day
-
-                      updateAvailability(originalId, {
-                        day: eventDay,
-                        start: format(info.event.start!, "HH:mm"),
-                        end: format(info.event.end!, "HH:mm"),
-                        engineerId: selectedEngineer,
-                      })
-                        .then(() => {
-                          fetchAvailabilities()
-                        })
-                        .catch((error: any) => {
-                          console.error("Error updating availability:", error)
-                          info.revert()
-                        })
-                    }
-                  : undefined
-              }
-            />
-          </div>
-        </div>
-
-        <div className="mt-24 pb-12">
-          <h2 className="mb-4 text-xl font-semibold">Panoramica</h2>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <Card>
-              <CardContent className="pt-6">
-                <div className="space-y-1">
-                  <p className="text-sm text-emerald-500">Disponibilità</p>
-                  <p className="text-2xl font-semibold">{getTotalAvailabilityHours().toFixed(1)} ore</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="space-y-1">
-                  <p className="text-sm text-primary">Totale sessioni</p>
-                  <p className="text-2xl font-semibold">{getTotalBookingHours().toFixed(1)} ore</p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Gestisci disponibilità</DialogTitle>
-              <DialogDescription>
-                {selectedSlot && (
-                  <span>
-                    Fascia oraria: {format(selectedSlot.start, "HH:mm")} - {format(selectedSlot.end, "HH:mm")}
-                  </span>
-                )}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4">
-              {existingAvailability ? (
-                <Button variant="destructive" onClick={handleRemoveAvailability} disabled={isLoading}>
-                  Rimuovi disponibilità
-                </Button>
-              ) : (
-                <Button
-                  variant="default"
-                  className="bg-emerald-500 hover:bg-emerald-600"
-                  onClick={handleAddAvailability}
-                  disabled={isLoading}
-                >
-                  Imposta come disponibile
-                </Button>
-              )}
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsDialogOpen(false)} disabled={isLoading}>
-                Annulla
+      <div className="overflow-y-scroll">
+        <div className="">
+          <div className="h-fit">
+            {/* Edit mode overlay button */}
+            <div className="right-4 top-4 z-10 py-4">
+              <Button
+                variant={isEditMode ? "default" : "outline"}
+                onClick={isEditMode ? handleSaveChanges : () => setIsEditMode(true)}
+                className={isEditMode ? "bg-emerald-500 hover:bg-emerald-600" : ""}
+                disabled={isLoading}
+              >
+                {isEditMode ? "Salva modifiche" : "Modifica disponibilità"}
               </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </>
+            </div>
+            <div className="overflow-x-auto">
+              <div className="w-max min-w-[800px]">
+                <div className="min-h-[600px] overflow-y-hidden">
+                  <FullCalendar
+                    ref={calendarRef}
+                    plugins={[timeGridPlugin, interactionPlugin]}
+                    initialView={view}
+                    locale={itLocale}
+                    headerToolbar={false}
+                    allDaySlot={false}
+                    slotMinTime="10:00:00"
+                    slotMaxTime="28:00:00"
+                    slotDuration="01:00:00"
+                    slotLabelInterval="01:00:00"
+                    selectable={isEditMode}
+                    selectMirror={true}
+                    events={eventsToDisplay().map((availability) => ({
+                      ...availability,
+                      ...getEventColor(availability.type),
+                    }))}
+                    eventContent={(eventInfo) => (
+                      <div className="h-full w-full p-1">
+                        {isEditMode && eventInfo.event.extendedProps.originalId && (
+                          <button
+                            className="right-1 top-1 rounded-full bg-white/20 p-0.5 text-white hover:bg-white/40"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleDeleteEvent(eventInfo.event.id)
+                            }}
+                            disabled={isLoading}
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        )}
+                        <div className="text-xs font-medium text-white">{eventInfo.event.title}</div>
+                        <div className="mt-1 text-xs text-white/90">
+                          {format(eventInfo.event.start!, "HH:mm")} - {format(eventInfo.event.end!, "HH:mm")}
+                        </div>
+                      </div>
+                    )}
+                    select={handleDateSelect}
+                    selectConstraint={{
+                      startTime: "10:00:00",
+                      endTime: "28:00:00",
+                    }}
+                    slotLabelFormat={{
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: false,
+                    }}
+                    dayHeaderFormat={{ weekday: "short", day: "2-digit", month: "2-digit" }}
+                    height="100%"
+                    editable={isEditMode}
+                    eventStartEditable={false}
+                    eventDurationEditable={isEditMode}
+                    datesSet={handleDatesSet}
+                    eventResize={
+                      isEditMode
+                        ? (info) => {
+                          // Update the availability duration when resized
+                          // Estrai l'ID originale dalla stringa (rimuovi il suffisso -weekOffset)
+                          const originalId = info.event.extendedProps.originalId
+                          const eventDay = info.event.extendedProps.day
+
+                          updateAvailability(originalId, {
+                            day: eventDay,
+                            start: format(info.event.start!, "HH:mm"),
+                            end: format(info.event.end!, "HH:mm"),
+                            engineerId: selectedEngineer,
+                          })
+                            .then(() => {
+                              fetchAvailabilities()
+                            })
+                            .catch((error: any) => {
+                              console.error("Error updating availability:", error)
+                              info.revert()
+                            })
+                        }
+                        : undefined
+                    }
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-24 pb-12 right-4 top-4 z-10 pb-24">
+              <h2 className="mb-4 text-xl font-semibold">Panoramica</h2>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="space-y-1">
+                      <p className="text-sm text-emerald-500">Disponibilità</p>
+                      <p className="text-2xl font-semibold">{getTotalAvailabilityHours().toFixed(1)} ore</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="space-y-1">
+                      <p className="text-sm text-primary">Totale sessioni</p>
+                      <p className="text-2xl font-semibold">{getTotalBookingHours().toFixed(1)} ore</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </div>
+
+
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Gestisci disponibilità</DialogTitle>
+                <DialogDescription>
+                  {selectedSlot && (
+                    <span>
+                      Fascia oraria: {format(selectedSlot.start, "HH:mm")} - {format(selectedSlot.end, "HH:mm")}
+                    </span>
+                  )}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4">
+                {existingAvailability ? (
+                  <Button variant="destructive" onClick={handleRemoveAvailability} disabled={isLoading}>
+                    Rimuovi disponibilità
+                  </Button>
+                ) : (
+                  <Button
+                    variant="default"
+                    className="bg-emerald-500 hover:bg-emerald-600"
+                    onClick={handleAddAvailability}
+                    disabled={isLoading}
+                  >
+                    Imposta come disponibile
+                  </Button>
+                )}
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsDialogOpen(false)} disabled={isLoading}>
+                  Annulla
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
     )
   },
 )

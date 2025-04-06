@@ -291,7 +291,7 @@ export function BookingDialog({ isOpen, onClose, onSave, booking, onDelete, canE
             <DialogDescription>Informazioni sulla prenotazione</DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-4">
+          <div className="space-y-2 py-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <h3 className="text-sm font-medium">Cliente</h3>
@@ -363,7 +363,7 @@ export function BookingDialog({ isOpen, onClose, onSave, booking, onDelete, canE
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-2">
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}

@@ -11,9 +11,11 @@ import { BookingState } from "@/types/types"
 import type { Booking } from "@/types/booking"
 import { useUserStore } from "@/store/user-store"
 import { MessageSquare } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 export default function DashboardPage() {
-  const { user } = useUserStore()
+  const router = useRouter()
+  const { user, clearUser } = useUserStore()
   const [filter, setFilter] = useState<BookingState | "future" | "past" | "pending">("future")
   const [sortOrder, setSortOrder] = useState<"recent" | "oldest">("recent")
   const [bookings, setBookings] = useState<Booking[]>([])
@@ -50,20 +52,30 @@ export default function DashboardPage() {
     window.open(`https://wa.me/3514206294`, "_blank")
   }
 
+  const handleLogout = () => {
+    // Esegui il logout dallo store
+    clearUser()
+
+    // Reindirizza alla home page
+    router.push("/")
+  }
+
   return (
     <div className="h-screen w-screen flex flex-col">
       <NavbarVariants variant="Home" />
       <div className="flex-1 flex flex-col w-full items-center overflow-y-auto">
         <div className="container py-8 px-4 md:px-8 lg:px-16 xl:px-32 2xl:px-72">
           {/* Header */}
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center justify-between">
             <h1 className="text-xl font-semibold">{user.username}</h1>
           </div>
-
+          <Button onClick={handleLogout} className="my-4">
+            Logout
+          </Button>
           {/* Bookings Section */}
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold">Le tue prenotazioni</h2>
+            <div className="flex items-center justify-start">
+              <h2 className="text-lg font-bold">Le tue prenotazioni</h2>
               <Select defaultValue={sortOrder} onValueChange={(value) => setSortOrder(value as "recent" | "oldest")}>
                 <SelectTrigger className="w-40">
                   <SelectValue placeholder="Ordina per" />
@@ -178,7 +190,7 @@ function BookingViewDialog({ booking, isOpen, onClose }: BookingViewDialogProps)
 
           <div>
             <h3 className="text-sm font-medium">Fonico</h3>
-            <p className="mt-1 text-sm">{booking.fonicoId ? booking.fonico.username : "Non specificato"}</p>
+            <p className="mt-1 text-sm">{booking.fonicoId ? booking?.fonico?.username : "Non specificato"}</p>
           </div>
 
           <div>

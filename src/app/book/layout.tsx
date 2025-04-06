@@ -12,7 +12,7 @@ export default function DashboardLayout({
 
     return <>
         <NavbarVariants variant="Book" />
-        <div className="flex flex-col w-full items-center h-screen overflow-y-auto">
+        <div className="flex flex-col w-full items-center pb-12">
             {children}
         </div>
     </>

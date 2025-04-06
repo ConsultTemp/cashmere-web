@@ -95,30 +95,22 @@ export default function Confirm() {
     const sorted = [...bookingsState]
 
     if (sortField && sortDirection) {
-      //@ts-ignore
       sorted.sort((a, b) => {
-        let valueA, valueB
+        let valueA: number = 0
+        let valueB: number = 0
 
         if (sortField === "start") {
           valueA = new Date(a.start).getTime()
           valueB = new Date(b.start).getTime()
         } else if (sortField === "created_at") {
           valueA = new Date(a.created_at).getTime()
-          //@ts-ignore
-          valueB = new Date(b.create )
-          valueA = new Date(a.created_at).getTime()
-          valueB = new Date(b.created_at).getTime() 
-          return 0
-        }else
-        if (sortDirection === "asc") {
-          //@ts-ignore
-          return valueA - valueB
-        } else {
-          //@ts-ignore
-          return valueB - valueA
+          valueB = new Date(b.created_at).getTime()
         }
+
+        return sortDirection === "asc" ? valueA - valueB : valueB - valueA
       })
     }
+
 
     // Calcola gli indici per la paginazione
     const startIndex = (currentPage - 1) * itemsPerPage
@@ -261,7 +253,8 @@ export default function Confirm() {
                   onClick={() => handleSort("created_at")}
                 >
                   Giorno richiesta
-                  <ArrowUpDown className={`h-4 w-4 ${sortField === "start" ? "text-primary" : "text-gray-400"}`} />
+                  <ArrowUpDown className={`h-6 w-6 ${sortField === "created_at" ? "text-primary" : "text-gray-400"}`} />
+
                 </button>
               </TableHead>
               <TableHead className="font-medium">Utente</TableHead>
@@ -270,7 +263,8 @@ export default function Confirm() {
               <TableHead className="font-medium">
                 <button className="flex items-center gap-1 hover:text-gray-700" onClick={() => handleSort("start")}>
                   Data e fascia oraria
-                  <ArrowUpDown className={`h-4 w-4 ${sortField === "start" ? "text-primary" : "text-gray-400"}`} />
+                  <ArrowUpDown className={`h-6 w-6 ${sortField === "start" ? "text-primary" : "text-gray-400"}`} />
+
                 </button>
               </TableHead>
               <TableHead className="font-medium">Sala</TableHead>
@@ -286,13 +280,13 @@ export default function Confirm() {
                   <div className="text-gray-500">{formatTime(booking.created_at)}</div>
                 </TableCell>
                 <TableCell className="whitespace-nowrap flex flex-row items-center gap-2">
-                {/* @ts-ignore */}
+                  {/* @ts-ignore */}
                   {booking.user.username}
                   {/* @ts-ignore */}
                   {reports.some((r) => r.userId == booking.userId) && <OctagonAlert className="w-4 h-4 text-red-500" />}
                 </TableCell>
                 <TableCell className="align-center">
-                  
+
                   {booking.services.map((service, index) => (
                     //@ts-ignore
                     <div key={index}>{service.name}</div>

@@ -17,7 +17,7 @@ export function BookingFilters({ onFilterChange }: BookingFiltersProps) {
   }
 
   return (
-    <div className="flex gap-2">
+    <div className="flex gap-2 flex-row flex-wrap">
       <Button variant={activeFilter === "future" ? "default" : "outline"} onClick={() => handleFilterClick("future")}>
         Future
       </Button>

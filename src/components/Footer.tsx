@@ -22,7 +22,7 @@ const portfolioLinks = [{ label: "Visualizza portfolio", href: "/portfolio" }]
 
 export default function Footer() {
   return (
-    <footer className="border-t border-white/10 border-t border-t-2 border-t-gray-200 w-full px-4 sm:px-8 md:px-12 lg:px-16 xl:px-32">
+    <footer className="border-t border-white/10 border-t border-t-2 border-t-gray-200 w-full px-4 sm:px-8 md:px-12 lg:px-16 xl:px-32 pb-12 md:pb-4">
       <div className="py-8 sm:py-12 md:py-16">
         {/* Logo Section */}
         <div className="mb-8 sm:mb-12 md:mb-16 flex flex-col items-center justify-center text-center">
@@ -132,6 +132,7 @@ export default function Footer() {
           </div>
         </div>
       </div>
+      <p className="mt-8 text-sm w-full text-center">© 2025 Cashmere Studio Srl.</p>
     </footer>
   )
 }
