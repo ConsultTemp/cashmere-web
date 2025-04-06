@@ -40,6 +40,7 @@ export const metadata: Metadata = {
 }
 
 export default function Home() {
+  console.log("Versione 1 brodi")
   return (
     <div className="h-screen w-screen flex flex-col">
       <NavbarVariants variant="Home" />
