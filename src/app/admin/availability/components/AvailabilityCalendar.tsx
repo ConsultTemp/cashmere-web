@@ -108,18 +108,15 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
     }
 
     const getDayFromDate = (date: Date): string => {
-      const days = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
-
-      // Se l'ora è tra le 00:00 e le 04:00 incluse, considera il giorno precedente
-      const hour = date.getHours();
-      if (hour >= 0 && hour <= 4) {
-        // Crea una nuova data sottraendo un giorno
-        const prevDate = new Date(date);
-        prevDate.setDate(date.getDate() - 1);
-        return days[prevDate.getDay()];
-      }
-
-      return days[date.getDay()];
+      // Usa la stessa mappatura di giorni usata in generateRecurringEvents
+      const days = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+      
+      // JavaScript Date.getDay() restituisce 0 per domenica, 1 per lunedì, ecc.
+      // Convertiamo questo formato per ottenere l'indice corretto per il nostro array
+      const jsDay = date.getDay(); // 0 = domenica, 1 = lunedì, ...
+      const dayIndex = jsDay === 0 ? 6 : jsDay - 1; // 0 = lunedì, 6 = domenica
+      
+      return days[dayIndex];
     };
 
     const handleDateSelect = useCallback(
@@ -217,62 +214,71 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
     // Funzione per generare eventi per tutte le settimane visibili
     const generateRecurringEvents = useCallback(() => {
       if (!visibleRange || !availabilities.length) return []
-
+    
       const events = []
       const rangeStart = new Date(visibleRange.start)
       const rangeEnd = new Date(visibleRange.end)
-
-      // Mappa standard JavaScript dove domenica è 0
-      const days = { sun: 0, mon: 1, tue: 2, wed: 3, thu: 4, fri: 5, sat: 6 }
-
-      // Calcola il numero di settimane nel range
+      
+      console.log(`Range visibile: ${format(rangeStart, "yyyy-MM-dd")} - ${format(rangeEnd, "yyyy-MM-dd")}`)
+      
+      // Mappa corretta dei giorni (0 = lunedì, 6 = domenica)
+      const days = { mon: 0, tue: 1, wed: 2, thu: 3, fri: 4, sat: 5, sun: 6 }
+      
+      // Calcola quante settimane includere nel range
       const msPerWeek = 7 * 24 * 60 * 60 * 1000
       const weeksInRange = Math.ceil((rangeEnd.getTime() - rangeStart.getTime()) / msPerWeek)
-
-      // Per ogni settimana
+      
+      // Per ogni settimana, a partire dalla PRIMA settimana visibile
       for (let weekOffset = 0; weekOffset < weeksInRange; weekOffset++) {
-        // Inizio della settimana corrente
+        // Calcola l'inizio di questa settimana
         const weekStart = new Date(rangeStart)
         weekStart.setDate(rangeStart.getDate() + weekOffset * 7)
         weekStart.setHours(0, 0, 0, 0)
-
+        
+        // Debug per verificare l'inizio di ogni settimana
+        console.log(`Generazione eventi per settimana ${weekOffset}: ${format(weekStart, "yyyy-MM-dd")}`)
+        
         // Per ogni disponibilità
         for (const availability of availabilities) {
-          // Ottieni il numero del giorno (0-6)
+          // Determina il giorno della settimana
           //@ts-ignore
           const dayNumber = days[availability.day.toLowerCase()]
-
+          
           if (dayNumber === undefined) {
             console.error(`Giorno non valido: ${availability.day}`)
             continue
           }
-
-          // Calcola la data per questo giorno
+          
+          // Calcola la data di questo evento
           const eventDate = new Date(weekStart)
           eventDate.setDate(weekStart.getDate() + dayNumber)
-
-          // Parse orari
+          
+          // Parse degli orari
           const startTime = typeof availability.start === "string" ? availability.start : format(availability.start, "HH:mm")
           const endTime = typeof availability.end === "string" ? availability.end : format(availability.end, "HH:mm")
-
+          
           const startParts = startTime.split(":")
           const endParts = endTime.split(":")
-
-          // Crea date di inizio e fine
+          
+          // Crea date di inizio e fine, assicurandoci che siano lo stesso giorno
           const startDate = new Date(eventDate)
           startDate.setHours(parseInt(startParts[0]), parseInt(startParts[1]), 0)
-
+          
           const endDate = new Date(eventDate)
           endDate.setHours(parseInt(endParts[0]), parseInt(endParts[1]), 0)
-
-          // Gestione orari dopo mezzanotte
-          if (parseInt(endParts[0]) < parseInt(startParts[0]) ||
-            (parseInt(endParts[0]) === 0 && parseInt(startParts[0]) > 0)) {
-            endDate.setDate(endDate.getDate() + 1)
+          
+          // Mai permettere che la data di fine sia il giorno successivo
+          // Se l'orario di fine sembra minore dell'orario di inizio (es. 02:00 vs 23:00),
+          // assumiamo che sia un errore e correggiamo impostando l'orario di fine a 23:59
+          if (parseInt(endParts[0]) < parseInt(startParts[0])) {
+            console.warn(`Orario di fine (${endTime}) prima dell'orario di inizio (${startTime}). Corretto a 23:59.`)
+            endDate.setHours(23, 59, 0)
           }
-
-          // Verifica se l'evento è nel range visibile
+          
+          // Controlla se l'evento è nel range visibile prima di aggiungerlo 
           if (startDate <= rangeEnd && endDate >= rangeStart) {
+            console.log(`Aggiunto evento per ${availability.day} da ${format(startDate, "yyyy-MM-dd HH:mm")} a ${format(endDate, "yyyy-MM-dd HH:mm")}`)
+            
             events.push({
               id: `${availability.id}-${weekOffset}`,
               title: "Disponibile",
@@ -289,7 +295,7 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
           }
         }
       }
-
+    
       return events
     }, [availabilities, visibleRange])
 
