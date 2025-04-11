@@ -13,7 +13,6 @@ import { Check, ChevronsUpDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { BookingState, type Booking } from "../types/booking"
 import { useForm } from "react-hook-form"
-import { getMockFonici } from "../lib/data"
 import { services, studios } from "@/lib/types"
 import { useUser } from "@/hooks/useUser"
 import { useBooking } from "@/hooks/useBooking"
@@ -96,7 +95,7 @@ export function BookingDialog({ isOpen, onClose, onSave, booking, onDelete, canE
     fetchUsers()
   }, [])
 
-  const fonici = getMockFonici()
+  //const fonici = getMockFonici()
 
   const form = useForm<Booking>({
     defaultValues: {

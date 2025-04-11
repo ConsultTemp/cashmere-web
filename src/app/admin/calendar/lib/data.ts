@@ -39,9 +39,9 @@ export function getMockServices(): Service[] {
 
 export function generateMockBookings(): CalendarEvent[] {
   const today = new Date()
-  const users = getMockUsers()
-  const fonici = getMockFonici()
-  const studios = getMockStudios()
+  //const users = getMockUsers()
+  //const fonici = getMockFonici()
+  ////const studios = getMockStudios()
 
   const studioColors: Record<string, { bg: string; border: string }> = {
     studio1: { bg: "#38bdf8", border: "#0ea5e9" },
