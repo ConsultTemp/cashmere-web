@@ -46,7 +46,9 @@ export default function ConfirmPage() {
         userId: user.id || null, // Può essere null per prenotazioni anonime
         fonicoId: selectedEngineer || "", // Ingegnere predefinito se non selezionato
         studioId: selectedStudio,
+        //@ts-ignore
         start: new Date(selectedDate),
+        //@ts-ignore
         end: new Date(selectedDate),
         services: selectedPackage ? [...selectedServices, selectedPackage] : selectedServices,
         notes: notes,
@@ -66,6 +68,7 @@ export default function ConfirmPage() {
       }
 
       console.log("Invio prenotazione:", booking)
+      //@ts-ignore
       const result = await createBooking(booking)
 
       if (result) {
@@ -88,9 +91,20 @@ export default function ConfirmPage() {
   }
 
   return (
-    <div className="container max-w-3xl py-8 pb-32">
+    <div className="container max-w-3xl py-8 pb-32 relative">
+      {/* Full page loading overlay */}
+      {isSubmitting && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white p-8 rounded-lg shadow-lg flex flex-col items-center">
+            <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+            <p className="text-lg font-medium">Invio prenotazione in corso...</p>
+            <p className="text-sm text-muted-foreground mt-2">Attendere prego, non chiudere questa pagina.</p>
+          </div>
+        </div>
+      )}
+
       <div className="flex justify-between items-center">
-        <BackButton href="/book/contact" />
+        <BackButton href="/book/contact" disabled={isSubmitting} />
       </div>
 
       <div className="mt-6 space-y-8">
@@ -140,4 +154,3 @@ export default function ConfirmPage() {
     </div>
   )
 }
-

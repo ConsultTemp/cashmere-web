@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react"
 import { Check, Eye, ArrowUpDown, OctagonAlert } from "lucide-react"
-import type { Booking } from "@/types/booking"
+import type { Booking, Report } from "@/types/booking"
 import { BookingState, type StateType } from "@/types/types"
 import { Button } from "@/components/Button"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/Dialog"
@@ -33,6 +33,7 @@ export default function Confirm() {
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false)
   const [bookings, setBookings] = useState<Booking[]>([])
   const [reports, setReports] = useState([])
+  const [report , setReport] = useState()
   const { getToConfirm, updateBookingState } = useBooking()
   const { getAll } = useReport()
   useEffect(() => {
@@ -125,6 +126,7 @@ export default function Confirm() {
 
   const handleView = (booking: Booking) => {
     setSelectedBooking(booking)
+    setReport(reports.find((r: Report) => r.userId == booking.userId))
     setViewDialogOpen(true)
   }
 
@@ -390,6 +392,7 @@ export default function Confirm() {
         isOpen={viewDialogOpen}
         onClose={() => setViewDialogOpen(false)}
         booking={selectedBooking}
+        report={report}
         onAccept={() => selectedBooking && handleAcceptRefuse(selectedBooking.id, BookingState.CONFERMATO)}
         onReject={() => selectedBooking && handleAcceptRefuse(selectedBooking.id, BookingState.ANNULLATO)}
       />

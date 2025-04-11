@@ -74,7 +74,7 @@ export default function DashboardPage() {
           </Button>
           {/* Bookings Section */}
           <div className="space-y-6">
-            <div className="flex items-center justify-start">
+            <div className="flex items-center justify-between">
               <h2 className="text-lg font-bold">Le tue prenotazioni</h2>
               <Select defaultValue={sortOrder} onValueChange={(value) => setSortOrder(value as "recent" | "oldest")}>
                 <SelectTrigger className="w-40">

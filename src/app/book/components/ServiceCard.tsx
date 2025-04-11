@@ -16,7 +16,7 @@ export default function ServiceCard({ title, description, imageUrl, selected, on
       className={`flex flex-col sm:flex-row gap-4 p-4 sm:p-6 border border-${selected ? "border-[1px] border-black" : "hover:border-black border-[1px]"} rounded-lg transition`}
       onClick={onSelect}
     >
-      <div className="w-16 h-16 sm:w-1/6 aspect-square p-4 sm:p-8 mx-auto sm:mx-0">
+      <div className="w-16 h-16 sm:w-1/6 aspect-square p-4 sm:p-8 items-center mx-auto sm:mx-0">
         <Image
           src={imageUrl || "/Studio 1/1.jpg"}
           alt={title}

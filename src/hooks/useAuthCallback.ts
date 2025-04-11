@@ -9,6 +9,8 @@ export function useAuthCallback() {
 
     const handleSupabaseSession = async () => {
         const { data: { session }, error } = await supabase.auth.getSession()
+        console.log(session)
+        console.log(error)
         if (error || !session) {
             throw new Error('No session found')
         }

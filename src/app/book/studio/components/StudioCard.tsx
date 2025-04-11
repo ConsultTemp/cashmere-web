@@ -1,24 +1,23 @@
 "use client"
 
 import Image from "next/image"
-import Link from "next/link"
-import type { Studio } from "@/store/booking-store"
 
 interface StudioCardProps {
-  id: Studio
+  id: string
   name: string
   description: string
   image: string
   isSelected?: boolean
   isUnavailable?: boolean
   unavailabilityInfo?: {
-    occupiedTime: string
     alternativeDates: Array<{
       date: string
       timeRange: string
     }>
+    message?: string
   }
-  onSelect?: (id: Studio) => void
+  onSelect?: () => void
+  onSelectAlternativeSlot?: (alt: { date: string; timeRange: string }) => void
 }
 
 export function StudioCard({
@@ -30,6 +29,7 @@ export function StudioCard({
   isUnavailable,
   unavailabilityInfo,
   onSelect,
+  onSelectAlternativeSlot,
 }: StudioCardProps) {
   return (
     <div
@@ -38,7 +38,7 @@ export function StudioCard({
         ${isUnavailable ? "opacity-80 cursor-default pb-6 sm:pb-8" : "cursor-pointer hover:bg-muted/50"}
         ${isSelected && !isUnavailable ? "border-primary" : "border-border"}
       `}
-      onClick={() => !isUnavailable && onSelect?.(id)}
+      onClick={() => !isUnavailable && onSelect?.()}
     >
       <div className="p-4 sm:p-6">
         <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
@@ -74,30 +74,27 @@ export function StudioCard({
 
         {/* Unavailability info */}
         {isUnavailable && unavailabilityInfo && (
-          <div className="mt-4 sm:mt-6 space-y-3 sm:space-y-4">
-            <p className="text-gray-700 text-sm sm:text-base">
-              Lo {name} è occupato nella fascia oraria e nel giorno da te scelto
-              <br />
-              {unavailabilityInfo.occupiedTime}{" "}
-              <Link href="/book/datetime" className="text-primary underline ml-2 sm:ml-4">
-                Seleziona nuova data
-              </Link>
-            </p>
-
-            <div className="space-y-2">
-              <p className="font-medium text-sm sm:text-base">Date libere suggerite</p>
-              <div className="flex flex-wrap gap-2 sm:gap-4">
-                {unavailabilityInfo.alternativeDates.map((date, i) => (
-                  <div key={i} className="px-3 py-1 sm:px-4 sm:py-2 bg-muted rounded-md text-xs sm:text-sm">
-                    {date.date} / {date.timeRange}
-                  </div>
-                ))}
+          <div className="mt-2 text-red-500">
+            {unavailabilityInfo.message || `${name} non è disponibile nella fascia oraria selezionata.`}
+            {unavailabilityInfo.alternativeDates && unavailabilityInfo.alternativeDates.length > 0 && (
+              <div className="mt-2">
+                <p className="text-sm font-medium">Orari alternativi disponibili:</p>
+                <div className="mt-1 space-y-1">
+                  {unavailabilityInfo.alternativeDates.map((alt, i) => (
+                    <div
+                      key={i}
+                      className="text-sm p-2 hover:bg-gray-100 cursor-pointer rounded flex items-center"
+                      onClick={() => onSelectAlternativeSlot && onSelectAlternativeSlot(alt)}
+                    >
+                      <span className="mr-2">📅</span> {alt.date} {alt.timeRange}
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         )}
       </div>
     </div>
   )
 }
-

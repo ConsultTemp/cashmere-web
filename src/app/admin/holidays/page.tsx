@@ -13,6 +13,9 @@ import { Badge } from "@/components/Badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/Tabs"
 import { useHoliday } from "@/hooks/useHoliday"
 import { HolidayState } from "@/types/types"
+import { useUser } from "@/hooks/useUser"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/Select"
+import { User, useUserStore } from "@/store/user-store"
 
 // Tipo per le ferie/permessi
 interface Holiday {
@@ -26,21 +29,24 @@ interface Holiday {
 }
 
 export default function HolidaysApprovalPage() {
+  const { user } = useUserStore()
   const [requests, setRequests] = useState<Holiday[]>([])
   const [selectedRequest, setSelectedRequest] = useState<Holiday | null>(null)
   const [viewDialogOpen, setViewDialogOpen] = useState(false)
+  const [engineers, setEngineers] = useState<User[]>([])
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false)
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false)
   const [activeTab, setActiveTab] = useState("CONFERMARE")
-
+  const [selectedFonico, setSelectedFonico] = useState(user.role == "ENGINEER" ? user.id : "all")
   const { getAll, updateHolidayState } = useHoliday()
+  const { getEngineers } = useUser()
 
   // Filtra le richieste in base alla tab attiva
   const filteredRequests = requests.filter((request) => {
-    if (activeTab === "CONFERMARE") return request.state === "CONFERMARE"
-    if (activeTab === "CONFERMATO") return request.state === "CONFERMATO"
-    if (activeTab === "ANNULLATO") return request.state === "ANNULLATO"
-    return true
+    if (activeTab === "CONFERMARE") return request.state === "CONFERMARE" && (request.userId == selectedFonico || selectedFonico == "all")
+    if (activeTab === "CONFERMATO") return request.state === "CONFERMATO" && (request.userId == selectedFonico || selectedFonico == "all")
+    if (activeTab === "ANNULLATO") return request.state === "ANNULLATO" && (request.userId == selectedFonico || selectedFonico == "all")
+    return (request.userId == selectedFonico || selectedFonico == "all")
   })
 
   useEffect(() => {
@@ -49,13 +55,19 @@ export default function HolidaysApprovalPage() {
       console.log(reqs)
       setRequests(reqs)
     }
+    const fetchEngineers = async () => {
+      const reqs = await getEngineers()
+      console.log(reqs)
+      setEngineers(reqs)
+    }
+    fetchEngineers()
     fetchRequests()
   }, [])
 
   const refresh = async () => {
     const reqs = await getAll()
-      console.log(reqs)
-      setRequests(reqs)
+    console.log(reqs)
+    setRequests(reqs)
   }
 
   const handleViewRequest = (request: Holiday) => {
@@ -167,9 +179,9 @@ export default function HolidaysApprovalPage() {
     setViewDialogOpen(false)
     setRejectDialogOpen(false)
     selectedRequest && selectedRequest.id && updateHolidayState(selectedRequest.id, state)
-    setTimeout(()=>{
+    setTimeout(() => {
       refresh()
-    },1000)
+    }, 1000)
   }
 
   return (
@@ -178,15 +190,31 @@ export default function HolidaysApprovalPage() {
         <h1 className="text-xl sm:text-2xl font-bold">Approvazione Ferie e Permessi</h1>
         <p className="text-sm text-muted-foreground">Gestisci le richieste di ferie e permessi del personale</p>
       </div>
-
+      <div></div>
       <Tabs defaultValue="CONFERMARE" value={activeTab} onValueChange={setActiveTab}>
-        <TabsList>
-          <TabsTrigger value="CONFERMARE">In attesa</TabsTrigger>
-          <TabsTrigger value="CONFERMATO">Approvate</TabsTrigger>
-          <TabsTrigger value="ANNULLATO">Rifiutate</TabsTrigger>
-          <TabsTrigger value="all">Tutte</TabsTrigger>
-        </TabsList>
-
+        <div className="flex flex-col md:flex-row items-center justify-between">
+          <TabsList>
+            <TabsTrigger value="CONFERMARE">In attesa</TabsTrigger>
+            <TabsTrigger value="CONFERMATO">Approvate</TabsTrigger>
+            <TabsTrigger value="ANNULLATO">Rifiutate</TabsTrigger>
+            <TabsTrigger value="all">Tutte</TabsTrigger>
+          </TabsList>
+          {user.role !== "ENGINEER" && <Select value={selectedFonico} onValueChange={setSelectedFonico}>
+            <SelectTrigger className="w-full sm:w-[140px] text-xs sm:text-sm">
+              <SelectValue placeholder="Fonico" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tutti i fonici</SelectItem>
+              {engineers.map((en) => {
+                return (
+                  <SelectItem key={en.id} value={en.id}>
+                    {en.username}
+                  </SelectItem>
+                )
+              })}
+            </SelectContent>
+          </Select>}
+        </div>
         <TabsContent value={activeTab} className="mt-6">
           <div className="border rounded-md overflow-x-auto">
             <Table>
@@ -194,12 +222,7 @@ export default function HolidaysApprovalPage() {
                 <TableRow className="bg-white">
                   <TableHead className="font-medium">Dipendente</TableHead>
                   <TableHead className="font-medium">Tipo</TableHead>
-                  <TableHead className="font-medium">
-                    <div className="flex items-center gap-1">
-                      Periodo
-                      <ArrowUpDown className="h-4 w-4 text-gray-400" />
-                    </div>
-                  </TableHead>
+                  <TableHead className="font-medium">Periodo</TableHead>
                   <TableHead className="font-medium">Durata</TableHead>
                   <TableHead className="font-medium">Motivazione</TableHead>
                   <TableHead className="font-medium">Stato</TableHead>
@@ -216,10 +239,10 @@ export default function HolidaysApprovalPage() {
                 ) : (
                   filteredRequests.map((request) => (
                     <TableRow key={request.id} className="border-t">
-                       {/*  @ts-ignore */}
+                      {/*  @ts-ignore */}
                       <TableCell>{request.user.username}</TableCell>
                       <TableCell>
-                         {/*  @ts-ignore */}
+                        {/*  @ts-ignore */}
                         <Badge variant={isVacation(request) ? "destructive" : "warning"}>
                           {isVacation(request) ? "Ferie" : "Permesso"}
                         </Badge>
@@ -231,7 +254,7 @@ export default function HolidaysApprovalPage() {
                       </TableCell>
                       <TableCell>
                         <Badge
-                         //@ts-ignore
+                          //@ts-ignore
                           variant={
                             request.state === "CONFERMATO"
                               ? "success"
@@ -281,7 +304,7 @@ export default function HolidaysApprovalPage() {
                 <div>
                   <h3 className="text-lg font-semibold mb-2">Dipendente</h3>
                   <div className="bg-gray-100 rounded-md py-3 px-4">
-                     {/*  @ts-ignore */}
+                    {/*  @ts-ignore */}
                     <span>{selectedRequest.user.username}</span>
                   </div>
                 </div>
@@ -289,7 +312,7 @@ export default function HolidaysApprovalPage() {
                 <div>
                   <h3 className="text-lg font-semibold mb-2">Tipo di richiesta</h3>
                   <div className="bg-gray-100 rounded-md py-3 px-4">
-                     {/*  @ts-ignore */}
+                    {/*  @ts-ignore */}
                     <Badge variant={isVacation(selectedRequest) ? "destructive" : "warning"}>
                       {isVacation(selectedRequest) ? "Ferie" : "Permesso"}
                     </Badge>
@@ -321,7 +344,7 @@ export default function HolidaysApprovalPage() {
                   <h3 className="text-lg font-semibold mb-2">Stato</h3>
                   <div className="bg-gray-100 rounded-md py-3 px-4">
                     <Badge
-                     //@ts-ignore 
+                      //@ts-ignore 
                       variant={
                         selectedRequest.state === "CONFERMATO"
                           ? "success"
@@ -339,7 +362,7 @@ export default function HolidaysApprovalPage() {
                   </div>
                 </div>
 
-                {selectedRequest.state === "CONFERMARE" && (
+                {selectedRequest.state === "CONFERMARE" && user.role !== "ENGINEER" && (
                   <div className="flex gap-4 pt-4">
                     <Button
                       variant="outline"
@@ -377,7 +400,7 @@ export default function HolidaysApprovalPage() {
             <p className="text-lg mb-2">Sei sicuro di voler approvare questa richiesta?</p>
             {selectedRequest && (
               <p className="text-sm text-gray-500">
-                 {/*  @ts-ignore */}
+                {/*  @ts-ignore */}
                 {selectedRequest.user.username} - {formatPeriod(selectedRequest)}
               </p>
             )}
@@ -403,7 +426,7 @@ export default function HolidaysApprovalPage() {
             <p className="text-lg mb-2">Sei sicuro di voler rifiutare questa richiesta?</p>
             {selectedRequest && (
               <p className="text-sm text-gray-500">
-                 {/*  @ts-ignore */}
+                {/*  @ts-ignore */}
                 {selectedRequest.user.username} - {formatPeriod(selectedRequest)}
               </p>
             )}

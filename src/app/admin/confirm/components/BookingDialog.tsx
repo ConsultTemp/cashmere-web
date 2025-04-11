@@ -15,7 +15,7 @@ import { services, studios } from "@/lib/types"
 import { useUser } from "@/hooks/useUser"
 import { useBooking } from "@/hooks/useBooking"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { BookingState } from "@/types/types"
+import type { Report } from "@/types/types"
 
 interface ViewBookingDialogProps {
   isOpen: boolean
@@ -23,6 +23,7 @@ interface ViewBookingDialogProps {
   booking: Booking | null
   onAccept: () => void
   onReject: () => void
+  report: Report | null | undefined
 }
 
 interface AvailabilityStatus {
@@ -30,7 +31,10 @@ interface AvailabilityStatus {
   reason?: string
 }
 
-export function ViewBookingDialog({ isOpen, onClose, booking, onAccept, onReject }: ViewBookingDialogProps) {
+// ID del fonico che deve essere sempre disponibile
+const ALWAYS_AVAILABLE_FONICO_ID = "cm8z06fn00002mytvfftqrkgx"
+
+export function ViewBookingDialog({ isOpen, onClose, booking, onAccept, onReject, report }: ViewBookingDialogProps) {
   const [openUserCombobox, setOpenUserCombobox] = useState(false)
   const [openFonicoCombobox, setOpenFonicoCombobox] = useState(false)
   const [openStudioCombobox, setOpenStudioCombobox] = useState(false)
@@ -70,7 +74,7 @@ export function ViewBookingDialog({ isOpen, onClose, booking, onAccept, onReject
       // Imposta il fonico e lo studio selezionati
       setSelectedFonico(booking.fonicoId)
       setSelectedStudio(booking.studioId)
-      
+
       // Reset dello stato di modifica
       setIsModified(false)
 
@@ -89,10 +93,20 @@ export function ViewBookingDialog({ isOpen, onClose, booking, onAccept, onReject
       const fonicoStatus: Record<string, AvailabilityStatus> = {}
       console.log(fonicos)
       fonicos.forEach((fonico) => {
-        const isAvailable = availableEngineers.some((engineer: any) => engineer.id === fonico.id && engineer.isAvailable)
-        fonicoStatus[fonico.id] = {
-          isAvailable,
-          reason: isAvailable ? undefined : "Non disponibile in questo orario",
+        // Se il fonico ha l'ID speciale, lo consideriamo sempre disponibile
+        if (fonico.id === ALWAYS_AVAILABLE_FONICO_ID) {
+          fonicoStatus[fonico.id] = {
+            isAvailable: true,
+            reason: undefined,
+          }
+        } else {
+          const isAvailable = availableEngineers.some(
+            (engineer: any) => engineer.id === fonico.id && engineer.isAvailable,
+          )
+          fonicoStatus[fonico.id] = {
+            isAvailable,
+            reason: isAvailable ? undefined : "Non disponibile in questo orario",
+          }
         }
       })
       console.log(fonicoStatus)
@@ -115,21 +129,33 @@ export function ViewBookingDialog({ isOpen, onClose, booking, onAccept, onReject
       setStudioAvailability(studioStatus)
 
       // Verifica se ci sono problemi di disponibilità con le selezioni attuali
-      updateAvailabilityIssues(selectedFonico || booking.fonicoId, selectedStudio || booking.studioId, fonicoStatus, studioStatus)
+      // Se il fonico selezionato è quello speciale, consideriamo solo la disponibilità dello studio
+      if (selectedFonico === ALWAYS_AVAILABLE_FONICO_ID) {
+        const currentStudioAvailable = studioStatus[selectedStudio || booking.studioId]?.isAvailable
+        setHasAvailabilityIssues(!currentStudioAvailable)
+      } else {
+        updateAvailabilityIssues(
+          selectedFonico || booking.fonicoId,
+          selectedStudio || booking.studioId,
+          fonicoStatus,
+          studioStatus,
+        )
+      }
     } catch (error) {
       console.error("Errore nel controllo della disponibilità:", error)
     }
   }
-  
+
   const updateAvailabilityIssues = (
-    fonicoId: string, 
-    studioId: string, 
-    fonicoStatusMap = fonicoAvailability, 
-    studioStatusMap = studioAvailability
+    fonicoId: string,
+    studioId: string,
+    fonicoStatusMap = fonicoAvailability,
+    studioStatusMap = studioAvailability,
   ) => {
-    const currentFonicoAvailable = fonicoStatusMap[fonicoId]?.isAvailable
+    // Se il fonico è quello speciale, lo consideriamo sempre disponibile
+    const currentFonicoAvailable = fonicoId === ALWAYS_AVAILABLE_FONICO_ID ? true : fonicoStatusMap[fonicoId]?.isAvailable
     const currentStudioAvailable = studioStatusMap[studioId]?.isAvailable
-    
+
     setHasAvailabilityIssues(!currentFonicoAvailable || !currentStudioAvailable)
   }
 
@@ -148,57 +174,71 @@ export function ViewBookingDialog({ isOpen, onClose, booking, onAccept, onReject
     setSelectedFonico(fonicoId)
     setOpenFonicoCombobox(false)
     setIsModified(true)
-    
+
     // Aggiorna lo stato di disponibilità
-    updateAvailabilityIssues(fonicoId, selectedStudio || (booking?.studioId || ''))
+    // Se il fonico è quello speciale, consideriamo solo la disponibilità dello studio
+    if (fonicoId === ALWAYS_AVAILABLE_FONICO_ID) {
+      const currentStudioAvailable = studioAvailability[selectedStudio || booking?.studioId || ""]?.isAvailable
+      setHasAvailabilityIssues(!currentStudioAvailable)
+    } else {
+      updateAvailabilityIssues(fonicoId, selectedStudio || booking?.studioId || "")
+    }
   }
 
   const handleStudioChange = (studioId: string) => {
     setSelectedStudio(studioId)
     setOpenStudioCombobox(false)
     setIsModified(true)
-    
+
     // Aggiorna lo stato di disponibilità
-    updateAvailabilityIssues(selectedFonico || (booking?.fonicoId || ''), studioId)
+    // Se il fonico è quello speciale, consideriamo solo la disponibilità dello studio
+    if (selectedFonico === ALWAYS_AVAILABLE_FONICO_ID) {
+      const currentStudioAvailable = studioAvailability[studioId]?.isAvailable
+      setHasAvailabilityIssues(!currentStudioAvailable)
+    } else {
+      updateAvailabilityIssues(selectedFonico || booking?.fonicoId || "", studioId)
+    }
   }
 
   const getStudioName = (studioId: string): string => {
     const studio = studios.find((s) => s.id === studioId)
     return studio ? studio.name : studioId
   }
-  
+
   const handleSaveChanges = async () => {
     if (!booking || !isModified) return
-    
+
     try {
       // Crea l'oggetto con le modifiche
       const updatedBooking = {
         fonicoId: selectedFonico,
-        studioId: selectedStudio
+        studioId: selectedStudio,
       }
-      console.log({...booking, ...updatedBooking})
+      console.log({ ...booking, ...updatedBooking })
       // Invia l'aggiornamento
-      await bookingUpdate(booking.id, {...booking, ...updatedBooking, services: booking.services.map((s) => s.id)})
-      
+      //@ts-ignore
+      await bookingUpdate(booking.id, { ...booking, ...updatedBooking, services: booking.services.map((s) => s.id) })
+
       // Chiudi il dialog
       onClose()
     } catch (error) {
       console.error("Errore durante il salvataggio delle modifiche:", error)
     }
   }
-  
+
   const handleContact = async () => {
     if (!booking) return
-    
+
     try {
       // Aggiorna lo stato a CONTATTATO
       await updateBookingState(booking.id, "CONTATTATO")
-      
+
       // Formatta il numero di telefono (rimuovi spazi, +, ecc.)
-      const phoneNumber = booking.phone.replace(/\s+/g, '').replace(/^\+/, '')
-      
+      //@ts-ignore
+      const phoneNumber = booking.phone.replace(/\s+/g, "").replace(/^\+/, "")
+
       // Apri WhatsApp in una nuova finestra
-      window.open(`https://wa.me/${phoneNumber}`, '_blank')
+      window.open(`https://wa.me/${phoneNumber}`, "_blank")
     } catch (error) {
       console.error("Errore durante il contatto del cliente:", error)
     }
@@ -213,6 +253,7 @@ export function ViewBookingDialog({ isOpen, onClose, booking, onAccept, onReject
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader className="flex flex-row items-center justify-between">
+       {/*  @ts-ignore */}
           <DialogTitle className="text-center flex-1">{booking?.user.username}</DialogTitle>
         </DialogHeader>
 
@@ -245,8 +286,8 @@ export function ViewBookingDialog({ isOpen, onClose, booking, onAccept, onReject
                       aria-expanded={openUserCombobox}
                       className="w-full justify-between"
                     >
-                      {booking.userId
-                        ? users.find((user) => user.id === booking.userId)?.username || booking.user.username
+                        {/*  @ts-ignore */}
+                      {booking.userId ? users.find((user) => user.id === booking.userId)?.username || booking.user.username
                         : "Seleziona cliente"}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
@@ -302,8 +343,10 @@ export function ViewBookingDialog({ isOpen, onClose, booking, onAccept, onReject
                         <CommandEmpty>Nessun fonico trovato.</CommandEmpty>
                         <CommandGroup>
                           {fonicos.map((fonico) => {
+                            // Se il fonico ha l'ID speciale, lo mostriamo sempre come disponibile
+                            const isSpecialFonico = fonico.id === ALWAYS_AVAILABLE_FONICO_ID
                             const availability = fonicoAvailability[fonico.id]
-                            const isAvailable = availability?.isAvailable
+                            const isAvailable = isSpecialFonico ? true : availability?.isAvailable
 
                             return (
                               <CommandItem
@@ -323,8 +366,12 @@ export function ViewBookingDialog({ isOpen, onClose, booking, onAccept, onReject
                                     )}
                                   />
                                   {fonico.username}
+                                  {isSpecialFonico && " (Sempre disponibile)"}
                                 </div>
-                                {!isAvailable && <AlertCircle className="h-4 w-4 ml-2" title={availability?.reason} />}
+                                {!isAvailable && !isSpecialFonico && (
+                                    // @ts-ignore 
+                                  <AlertCircle className="h-4 w-4 ml-2" title={availability?.reason} />
+                                )}
                               </CommandItem>
                             )
                           })}
@@ -379,6 +426,7 @@ export function ViewBookingDialog({ isOpen, onClose, booking, onAccept, onReject
                                   />
                                   {studio.name}
                                 </div>
+                                  {/*  @ts-ignore */}
                                 {!isAvailable && <AlertCircle className="h-4 w-4 ml-2" title={availability?.reason} />}
                               </CommandItem>
                             )
@@ -424,6 +472,13 @@ export function ViewBookingDialog({ isOpen, onClose, booking, onAccept, onReject
                 </Alert>
               )}
 
+              {report && report.userId && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>Questo utente ha una segnalazione per: {report.reason}</AlertDescription>
+                </Alert>
+              )}
+
               <Separator />
 
               <DialogFooter className="flex flex-col sm:flex-row sm:justify-between flex-wrap gap-2 px-0">
@@ -436,14 +491,11 @@ export function ViewBookingDialog({ isOpen, onClose, booking, onAccept, onReject
                   >
                     Rifiuta
                   </Button>
-                  <Button
-                    className="flex-1 bg-black text-white hover:bg-gray-800"
-                    onClick={accept}
-                  >
+                  <Button className="flex-1 bg-black text-white hover:bg-gray-800" onClick={accept}>
                     Accetta
                   </Button>
                 </div>
-                
+
                 {/* Seconda riga di bottoni */}
                 <div className="flex gap-2 w-full mt-2 sm:mt-0">
                   <Button
@@ -455,10 +507,7 @@ export function ViewBookingDialog({ isOpen, onClose, booking, onAccept, onReject
                     Contatta
                   </Button>
                   {isModified && (
-                    <Button
-                      className="flex-1 bg-green-600 text-white hover:bg-green-700"
-                      onClick={handleSaveChanges}
-                    >
+                    <Button className="flex-1 bg-green-600 text-white hover:bg-green-700" onClick={handleSaveChanges}>
                       Salva modifiche
                     </Button>
                   )}

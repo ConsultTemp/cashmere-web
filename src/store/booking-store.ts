@@ -58,7 +58,7 @@ export const useBookingStore = create<BookingState>((set, get) => ({
   setSelectedServices: (services) => set({ selectedServices: services }),
   setSelectedPackage: (pkg) => set({ selectedPackage: pkg }),
   setSelectedDate: (date) => set({ selectedDate: date }),
-  setTimeRange: (from, to) => set((state) => ({ timeFrom: from ? from : state.timeFrom, timeTo: to ? to : state.timeTo })),
+  setTimeRange: (from, to) => set({ timeFrom: from, timeTo: to }),
   setSelectedStudio: (studio) => set({ selectedStudio: studio }),
   setNeedsEngineer: (needs) => set({ needsEngineer: needs }),
   setSelectedEngineer: (engineer) => set({ selectedEngineer: engineer }),
@@ -77,44 +77,44 @@ export const useBookingStore = create<BookingState>((set, get) => ({
       phoneNumber: "",
       notes: "",
     }),
-    saveBookingToLocalStorage: () => {
-      const state = useBookingStore.getState()
-      const bookingData = {
-        selectedStudio: state.selectedStudio,
-        selectedEngineer: state.selectedEngineer,
-        selectedServices: state.selectedServices,
-        selectedDate: state.selectedDate.toISOString(),
-        timeFrom: state.timeFrom,
-        timeTo: state.timeTo,
-        selectedPackage: state.selectedPackage,
-        instagramUsername: state.instagramUsername,
-        phoneNumber: state.phoneNumber,
-        notes: state.notes,
-      }
-      localStorage.setItem("bookingData", JSON.stringify(bookingData))
-    },
+  saveBookingToLocalStorage: () => {
+    const state = useBookingStore.getState()
+    const bookingData = {
+      selectedStudio: state.selectedStudio,
+      selectedEngineer: state.selectedEngineer,
+      selectedServices: state.selectedServices,
+      selectedDate: state.selectedDate?.toISOString(),
+      timeFrom: state.timeFrom,
+      timeTo: state.timeTo,
+      selectedPackage: state.selectedPackage,
+      instagramUsername: state.instagramUsername,
+      phoneNumber: state.phoneNumber,
+      notes: state.notes,
+    }
+    localStorage.setItem("bookingData", JSON.stringify(bookingData))
+  },
 
-    // Carica i dati della prenotazione da localStorage
-    loadBookingFromLocalStorage: () => {
-      const bookingDataStr = localStorage.getItem("bookingData")
-      if (bookingDataStr) {
-        try {
-          const bookingData = JSON.parse(bookingDataStr)
-          set({
-            selectedStudio: bookingData.selectedStudio || "",
-            selectedEngineer: bookingData.selectedEngineer || null,
-            selectedServices: bookingData.selectedServices || [],
-            selectedDate: bookingData.selectedDate ? new Date(bookingData.selectedDate) : new Date(),
-            timeFrom: bookingData.timeFrom || "",
-            timeTo: bookingData.timeTo || "",
-            selectedPackage: bookingData.selectedPackage || null,
-            instagramUsername: bookingData.instagramUsername || "",
-            phoneNumber: bookingData.phoneNumber || "",
-            notes: bookingData.notes || "",
-          })
-        } catch (error) {
-          console.error("Errore nel caricamento dei dati della prenotazione:", error)
-        }
+  // Carica i dati della prenotazione da localStorage
+  loadBookingFromLocalStorage: () => {
+    const bookingDataStr = localStorage.getItem("bookingData")
+    if (bookingDataStr) {
+      try {
+        const bookingData = JSON.parse(bookingDataStr)
+        set({
+          selectedStudio: bookingData.selectedStudio || "",
+          selectedEngineer: bookingData.selectedEngineer || null,
+          selectedServices: bookingData.selectedServices || [],
+          selectedDate: bookingData.selectedDate ? new Date(bookingData.selectedDate) : new Date(),
+          timeFrom: bookingData.timeFrom || "",
+          timeTo: bookingData.timeTo || "",
+          selectedPackage: bookingData.selectedPackage || null,
+          instagramUsername: bookingData.instagramUsername || "",
+          phoneNumber: bookingData.phoneNumber || "",
+          notes: bookingData.notes || "",
+        })
+      } catch (error) {
+        console.error("Errore nel caricamento dei dati della prenotazione:", error)
       }
-    },
+    }
+  },
 }))

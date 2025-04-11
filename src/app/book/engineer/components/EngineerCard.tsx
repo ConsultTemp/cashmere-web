@@ -5,16 +5,24 @@ interface EngineerCardProps {
   isSelected?: boolean
   isUnavailable?: boolean
   unavailabilityInfo?: {
-    message: string
     alternativeDates: Array<{
       date: string
       timeRange: string
     }>
+    message?: string
   }
   onSelect?: () => void
+  onSelectAlternativeSlot?: (alt: { date: string; timeRange: string }) => void
 }
 
-export function EngineerCard({ name, isSelected, isUnavailable, unavailabilityInfo, onSelect }: EngineerCardProps) {
+export function EngineerCard({
+  name,
+  isSelected,
+  isUnavailable,
+  unavailabilityInfo,
+  onSelect,
+  onSelectAlternativeSlot,
+}: EngineerCardProps) {
   return (
     <div className="w-full">
       {!isUnavailable ? (
@@ -47,20 +55,25 @@ export function EngineerCard({ name, isSelected, isUnavailable, unavailabilityIn
             <div className="w-6 h-6 rounded-full bg-muted" />
           </div>
 
-          {unavailabilityInfo && (
-            <div className="space-y-4">
-              <p className="text-gray-700">{unavailabilityInfo.message}</p>
-
-              <div>
-                <p className="font-medium mt-4">Date libere suggerite</p>
-                <div className="flex gap-4 mt-2">
-                  {unavailabilityInfo.alternativeDates.map((date, i) => (
-                    <div key={i} className="px-4 py-2 bg-muted rounded-md text-sm">
-                      {date.date} / {date.timeRange}
-                    </div>
-                  ))}
+          {isUnavailable && unavailabilityInfo && (
+            <div className="mt-2 text-red-500">
+              {unavailabilityInfo.message || `${name} non è disponibile nella fascia oraria selezionata.`}
+              {unavailabilityInfo.alternativeDates && unavailabilityInfo.alternativeDates.length > 0 && (
+                <div className="mt-2">
+                  <p className="text-sm font-medium">Orari alternativi disponibili:</p>
+                  <div className="mt-1 space-y-1">
+                    {unavailabilityInfo.alternativeDates.map((alt, i) => (
+                      <div
+                        key={i}
+                        className="text-sm p-2 hover:bg-gray-100 cursor-pointer rounded flex items-center"
+                        onClick={() => onSelectAlternativeSlot && onSelectAlternativeSlot(alt)}
+                      >
+                        <span className="mr-2">📅</span> {alt.date} {alt.timeRange}
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           )}
         </div>
@@ -68,4 +81,3 @@ export function EngineerCard({ name, isSelected, isUnavailable, unavailabilityIn
     </div>
   )
 }
-

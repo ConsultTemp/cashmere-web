@@ -69,6 +69,7 @@ export interface CreateAvailabilityDto {
 export interface Report {
   id: string
   reason: string
+  userId: string
 }
 
 export interface CreateReportDto {

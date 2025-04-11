@@ -392,6 +392,7 @@ export default function DashboardPage() {
                             selected={singleDate}
                             onSelect={(date) => {
                               if (date) {
+                                //@ts-ignore
                                 setSingleDate(date)
                               }
                             }}

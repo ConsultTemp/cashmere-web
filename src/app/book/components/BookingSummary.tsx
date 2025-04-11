@@ -2,11 +2,24 @@
 
 import { Button } from "@/components/Button"
 import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/Dialog"
+import { useUser } from "@/hooks/useUser"
 import { services, studios } from "@/lib/types"
 import { useBookingStore } from "@/store/booking-store"
+import { useEffect, useState } from "react"
 
 export function SummaryContent() {
+    const [engineer, setEngineer] = useState("")
     const { selectedServices, selectedPackage, selectedEngineer, selectedStudio, selectedDate, timeFrom, timeTo } = useBookingStore()
+    const {getEngineers} = useUser()
+    useEffect(()=>{
+        const loadEngs = async () => {
+            const engns = await getEngineers()
+            console.log(engns)
+            const eng = engns.find(((e: { id: string | null }) => e.id == selectedEngineer))?.username
+            setEngineer(eng ? eng : "")
+        }
+        loadEngs()
+    })
     return (
 
         <div className="flex flex-row flex-wrap gap-4">
@@ -36,7 +49,7 @@ export function SummaryContent() {
 
             <div className="flex flex-row justify-between flex-nowrap bg-gray-100 py-2 px-4 rounded-sm">
                 <span className="mr-1">Fonico:</span>
-                <span className='font-semibold'>{selectedEngineer}</span>
+                <span className='font-semibold'>{engineer}</span>
             </div>
         </div>
 

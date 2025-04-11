@@ -215,3 +215,58 @@
   color: black;
   text-transform: uppercase !important;
 }
+
+/* Correggi il layout del calendario */
+.rdp-months {
+  display: flex;
+  flex-direction: column;
+}
+
+.rdp-month {
+  width: 100%;
+}
+
+/* Forza un layout a griglia per i giorni della settimana e per i numeri */
+.rdp-head_row,
+.rdp-row {
+  display: grid !important;
+  grid-template-columns: repeat(7, 1fr) !important;
+  width: 100% !important;
+}
+
+.rdp-head_cell,
+.rdp-cell {
+  width: 100% !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+
+/* Ulteriori override per il layout React Day Picker */
+.rdp-table {
+  width: 100%;
+}
+
+/* Sovrascrivi specificamente il layout flex per le righe e celle */
+.rdp-tbody > div {
+  display: grid !important;
+  grid-template-columns: repeat(7, 1fr) !important;
+}
+
+/* Assicurati che i componenti shadcn usino il layout corretto */
+.react-day-picker table {
+  width: 100%;
+}
+
+.react-day-picker thead tr,
+.react-day-picker tbody tr {
+  display: grid !important;
+  grid-template-columns: repeat(7, 1fr) !important;
+}
+
+.react-day-picker th,
+.react-day-picker td {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}

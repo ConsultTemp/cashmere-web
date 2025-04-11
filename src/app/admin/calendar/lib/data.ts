@@ -1,4 +1,4 @@
-import { type User, type Fonico, type Studio, type Service, BookingState, type CalendarEvent } from "../types/booking"
+/* import { type User, type Fonico, type Studio, type Service, BookingState, type CalendarEvent } from "../types/booking"
 import { addDays, setHours, setMinutes } from "date-fns"
 
 export function getMockUsers(): User[] {
@@ -86,7 +86,7 @@ export function generateMockBookings(): CalendarEvent[] {
       studioId: "studio2",
       services: ["service1", "service4"],
       notes: "Produzione EP",
-      state: BookingState.CONFIRMED,
+      state: BookingState.CONFERMATO,
       extendedProps: {
         id: "booking2",
         userId: "user2",
@@ -94,7 +94,7 @@ export function generateMockBookings(): CalendarEvent[] {
         studioId: "studio2",
         services: ["service1", "service4"],
         notes: "Produzione EP",
-        state: BookingState.CONFIRMED,
+        state: BookingState.CONFERMATO,
       },
     },
     {
@@ -155,3 +155,4 @@ export function generateMockBookings(): CalendarEvent[] {
   }))
 }
 
+ */

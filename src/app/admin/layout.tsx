@@ -53,7 +53,7 @@ const sidebarItems: SidebarItem[] = [
     icon: <Sun className="min-w-4 h-4" />,
     label: "Ferie e permessi",
     href: "/admin/holidays",
-    roles: ["ADMIN", "SECRETARY"],
+    roles: ["ADMIN", "SECRETARY", "ENGINEER"],
   },
   {
     icon: <Music2 className="min-w-4 h-4" />,
@@ -156,9 +156,9 @@ export default function AdminLayout({
                   href={item.href}
                   onClick={() => setIsCollapsed(true)}
                   className={cn(
-                    "flex items-center gap-3 py-4 rounded-lg mb-1 hover:bg-gray-100 transition-colors",
+                    "flex items-center gap-3 py-4 rounded-lg mb-1 hover:bg-gray-100 transition-colors w-full",
                     "text-gray-700 hover:text-black",
-                    isCollapsed ? "flex-col" : "",
+                    isCollapsed ? "flex-col" : "px-4",
                   )}
                 >
                   {item.icon}

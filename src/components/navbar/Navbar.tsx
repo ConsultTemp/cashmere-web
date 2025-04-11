@@ -294,11 +294,11 @@ export const NavbarVariants = ({ variant }: NavbarVariantsProps) => {
           <nav className="w-full bg-white h-[80px] hidden md:flex flex-row items-center border border-dark-gray justify-between px-4 sm:px-8 md:px-12 lg:px-16 xl:px-32">
             <div className="flex flex-row items-center gap-4 sm:gap-8 md:gap-16">
               <Link href="/">
-                <Image src={logo || "/placeholder.svg"} alt="Logo Cashmere studio" />
+                <Image src={logo || "/placeholder.svg"} height={40} alt="Logo Cashmere studio" />
               </Link>
             </div>
             <div className="flex flex-row gap-2">
-              <Link href="/book">
+              <Link href="/dashboard">
                 <Button variant="outline" color="black">
                   <UserIcon /> Area personale
                 </Button>
@@ -370,9 +370,8 @@ export const NavbarVariants = ({ variant }: NavbarVariantsProps) => {
 
                       <li>
                         <Link
-                          href="/book"
+                          href="/dashboard"
                           className="flex items-center space-x-3 text-gray-700 hover:text-black"
-                          onClick={() => setSidebarOpen(false)}
                         >
                           <User className="h-5 w-5" />
                           <span>Area personale</span>

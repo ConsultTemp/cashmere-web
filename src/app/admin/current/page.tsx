@@ -198,7 +198,6 @@ export default function CurrentPage() {
               </div>
               <div>
                 <span className="font-medium">Conferma prenotazioni</span>
-                <p className="text-sm text-gray-500">2 nuove</p>
               </div>
             </CardContent>
           </Card>

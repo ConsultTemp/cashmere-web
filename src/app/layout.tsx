@@ -4,7 +4,7 @@ import localFont from "next/font/local"
 import "./globals.css"
 import { defaultSEO } from "@/lib/seo-config"
 import JsonLd from "@/components/SEO/JsonLd"
-import { organizationSchema } from "@/lib/seo-config"
+import { organizationSchema, websiteSchema } from "@/lib/seo-config"
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -20,7 +20,7 @@ const geistMono = localFont({
 })
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://cashmerestudio.it"),
+  metadataBase: new URL("https://cashmerestudiomilano.it"),
   title: {
     default: defaultSEO.title,
     template: "%s | Cashmere Studio Milano",
@@ -39,12 +39,13 @@ export const metadata: Metadata = {
     canonical: "/",
     languages: {
       "it-IT": "/",
+      "en-US": "/en",
     },
   },
   openGraph: {
     type: "website",
     locale: "it_IT",
-    url: "https://cashmerestudio.it",
+    url: "https://cashmerestudiomilano.it",
     siteName: "Cashmere Studio Milano",
     title: defaultSEO.title,
     description: defaultSEO.description,
@@ -62,6 +63,7 @@ export const metadata: Metadata = {
     title: defaultSEO.title,
     description: defaultSEO.description,
     creator: "@cashmerestudio",
+    site: "@cashmerestudio",
     images: ["/twitter-image.jpg"],
   },
   robots: {
@@ -85,6 +87,26 @@ export const metadata: Metadata = {
     yandex: "yandex-verification-code",
   },
   category: "music",
+  applicationName: "Cashmere Studio Milano",
+  referrer: "origin-when-cross-origin",
+  appLinks: {
+    ios: {
+      url: "https://cashmerestudiomilano.it/ios-app",
+      app_store_id: "app-store-id",
+    },
+    android: {
+      package: "it.cashmerestudio.app",
+      app_name: "Cashmere Studio Milano",
+    },
+    web: {
+      url: "https://cashmerestudiomilano.it",
+      should_fallback: true,
+    },
+  },
+  archives: ["https://cashmerestudiomilano.it/archive"],
+  assets: ["https://cashmerestudiomilano.it/assets"],
+  bookmarks: ["https://cashmerestudiomilano.it/portfolio"],
+  manifest: "/site.webmanifest",
 }
 
 export default function RootLayout({
@@ -99,12 +121,23 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
         <link rel="manifest" href="/site.webmanifest" />
         <meta name="theme-color" content="#000000" />
+
+        {/* Preconnect e preload per ottimizzazione */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+
+        {/* DNS Prefetch per domini esterni */}
+        <link rel="dns-prefetch" href="https://www.google-analytics.com" />
+        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+
+        {/* Preload delle risorse critiche */}
+        <link rel="preload" as="image" href="/cashmere-logo.svg" />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         {children}
         <JsonLd data={organizationSchema} />
+        <JsonLd data={websiteSchema} />
       </body>
     </html>
   )
 }
-

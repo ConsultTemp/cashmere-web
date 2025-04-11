@@ -7,10 +7,11 @@ import interactionPlugin from "@fullcalendar/interaction"
 import itLocale from "@fullcalendar/core/locales/it"
 import { format } from "date-fns"
 import { Button } from "@/components/Button"
-import { X } from "lucide-react"
+import { X } from 'lucide-react'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/Dialog"
 import { useAvailability } from "@/hooks/useAvailability"
 import { useBooking } from "@/hooks/useBooking"
+import { useHoliday } from "@/hooks/useHoliday"
 import { Card, CardContent } from "@/components/Card"
 
 interface AvailabilityCalendarProps {
@@ -28,11 +29,19 @@ interface Availability {
   userId: string
 }
 
+interface Holiday {
+  id: string
+  start: Date | string
+  end: Date | string
+  userId: string
+}
+
 export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
   ({ view, onViewChange, selectedEngineer, date }, ref) => {
     const calendarRef = useRef<any>(null)
     const [isEditMode, setIsEditMode] = useState(false)
     const [availabilities, setAvailabilities] = useState<Availability[]>([])
+    const [holidays, setHolidays] = useState<Holiday[]>([])
     const [selectedSlot, setSelectedSlot] = useState<{ start: Date; end: Date; day: string } | null>(null)
     const [isDialogOpen, setIsDialogOpen] = useState(false)
     const [existingAvailability, setExistingAvailability] = useState<Availability | null>(null)
@@ -42,6 +51,7 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
 
     const { getEngineerAvailability, createAvailability, updateAvailability, deleteAvailability } = useAvailability()
     const { getEngineerBookings } = useBooking()
+    const { getUserHolidays } = useHoliday()
 
     useImperativeHandle(ref, () => ({
       getApi: () => calendarRef.current?.getApi(),
@@ -52,6 +62,7 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
       if (selectedEngineer) {
         fetchAvailabilities()
         fetchEngineersBooking()
+        fetchEngineerHolidays()
       }
     }, [selectedEngineer, date])
 
@@ -82,6 +93,21 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
       }
     }
 
+    const fetchEngineerHolidays = async () => {
+      setIsLoading(true)
+      try {
+        const data = await getUserHolidays(selectedEngineer)
+        if (data) {
+          setHolidays(data)
+          console.log("Ferie ricevute:", data)
+        }
+      } catch (error) {
+        console.error("Error fetching holidays:", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
     useEffect(() => {
       if (calendarRef.current) {
         const api = calendarRef.current.getApi()
@@ -97,7 +123,16 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
     }, [view])
 
     const getEventColor = (type: string) => {
-      return { backgroundColor: type == "availability" ? "#4ade80" : "#FF5B00", borderColor: "#22c55e" }
+      switch (type) {
+        case "availability":
+          return { backgroundColor: "#4ade80", borderColor: "#22c55e" }
+        case "booking":
+          return { backgroundColor: "#FF5B00", borderColor: "#FF5B00" }
+        case "holiday":
+          return { backgroundColor: "#6366f1", borderColor: "#4f46e5" } // Indigo color for holidays
+        default:
+          return { backgroundColor: "#4ade80", borderColor: "#22c55e" }
+      }
     }
 
     const normalizeDate = (date: Date): Date => {
@@ -258,7 +293,8 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
           eventDate.setDate(weekStart.getDate() + dayNumber)
 
           // Parse the hours and minutes
-          const startTime = typeof availability.start === "string" ? availability.start : format(availability.start, "HH:mm")
+          const startTime =
+            typeof availability.start === "string" ? availability.start : format(availability.start, "HH:mm")
           const endTime = typeof availability.end === "string" ? availability.end : format(availability.end, "HH:mm")
 
           const startParts = startTime.split(":")
@@ -278,21 +314,15 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
             Number.parseInt(endParts[0]) < Number.parseInt(startParts[0]) ||
             (Number.parseInt(endParts[0]) === 0 && Number.parseInt(startParts[0]) > 0)
           ) {
-            console.log("passo da qui negro")
             endDate.setDate(endDate.getDate() + 1) // Aggiungi un giorno se l'orario di fine è prima dell'orario di inizio
           }
 
           // Se l'orario di inizio è dopo mezzanotte ma prima delle 4 del mattino,
           // dobbiamo spostare l'evento al giorno precedente per la visualizzazione
           if (Number.parseInt(startParts[0]) >= 0 && Number.parseInt(startParts[0]) < 4) {
-            console.log("non è vero passo da qui negro")
             startDate.setDate(startDate.getDate() + 1)
             endDate.setDate(endDate.getDate() + 1)
           }
-
-          console.log(`Event date for ${availability.day}: ${eventDate.toISOString()}`)
-          console.log(`Start time: ${startTime}, End time: ${endTime}`)
-          console.log(`Final event: ${startDate.toISOString()} - ${endDate.toISOString()}`)
 
           // Verifica se l'evento è all'interno del range visibile
           if (startDate <= rangeEnd && endDate >= rangeStart) {
@@ -317,13 +347,35 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
       return events
     }, [availabilities, visibleRange])
 
+    // Genera gli eventi delle ferie
+    const generateHolidayEvents = useCallback(() => {
+      if (!holidays.length) return []
+
+      return holidays.map((holiday) => {
+        const startDate = new Date(holiday.start)
+        const endDate = new Date(holiday.end)
+        
+        return {
+          id: `holiday-${holiday.id}`,
+          title: "Ferie",
+          start: startDate,
+          end: endDate,
+          userId: holiday.userId,
+          type: "holiday",
+          allDay: false,
+        }
+      })
+    }, [holidays])
+
     // Genera gli eventi da visualizzare
     const eventsToDisplay = useCallback(() => {
       const availabilityEvents = generateRecurringEvents()
+      const holidayEvents = generateHolidayEvents()
 
-      // Aggiungi le prenotazioni
+      // Aggiungi le prenotazioni e le ferie
       const allEvents = [
         ...availabilityEvents,
+        ...holidayEvents,
         ...bookings.map((b) => {
           return {
             //@ts-ignore
@@ -340,8 +392,15 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
       ]
 
       // Filtra gli eventi in base alla modalità di modifica
-      return allEvents.filter((ev) => (isEditMode ? ev.type === "availability" : true))
-    }, [generateRecurringEvents, bookings, isEditMode])
+      return allEvents.filter((ev) => {
+        if (isEditMode) {
+          // In modalità modifica, mostra solo disponibilità e ferie
+          return ev.type === "availability"
+        }
+        // In modalità visualizzazione, mostra tutto
+        return true
+      })
+    }, [generateRecurringEvents, generateHolidayEvents, bookings, isEditMode])
 
     const handleDeleteEvent = async (eventId: string) => {
       // Estrai l'ID originale dalla stringa (rimuovi il suffisso -weekOffset)
@@ -396,6 +455,23 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
       return calculateTotalHours(bookingEvents)
     }
 
+    const getTotalHolidayHours = () => {
+      // Ottieni l'intervallo di date attualmente visualizzato nel calendario
+      if (!calendarRef.current) return 0
+
+      const api = calendarRef.current.getApi()
+      const viewStart = api.view.activeStart
+      const viewEnd = api.view.activeEnd
+
+      // Filtra solo le ferie che rientrano nell'intervallo di date visualizzato
+      const holidayEvents = eventsToDisplay().filter((event) => {
+        const eventStart = new Date(event.start)
+        return event.type === "holiday" && eventStart >= viewStart && eventStart < viewEnd
+      })
+
+      return calculateTotalHours(holidayEvents)
+    }
+
     // Aggiorna il range visibile quando cambia la vista del calendario
     const handleDatesSet = useCallback((info: any) => {
       setVisibleRange({
@@ -420,7 +496,7 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
               </Button>
             </div>
             <div className="overflow-x-auto">
-              <div className="w-max min-w-[800px]">
+              <div className="w-full min-w-[800px]">
                 <div className="min-h-[600px] overflow-y-hidden">
                   <FullCalendar
                     ref={calendarRef}
@@ -435,9 +511,9 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
                     slotLabelInterval="01:00:00"
                     selectable={isEditMode}
                     selectMirror={true}
-                    events={eventsToDisplay().map((availability) => ({
-                      ...availability,
-                      ...getEventColor(availability.type),
+                    events={eventsToDisplay().map((event) => ({
+                      ...event,
+                      ...getEventColor(event.type),
                     }))}
                     eventContent={(eventInfo) => (
                       <div className="h-full w-full p-1">
@@ -478,25 +554,25 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
                     eventResize={
                       isEditMode
                         ? (info) => {
-                          // Update the availability duration when resized
-                          // Estrai l'ID originale dalla stringa (rimuovi il suffisso -weekOffset)
-                          const originalId = info.event.extendedProps.originalId
-                          const eventDay = info.event.extendedProps.day
+                            // Update the availability duration when resized
+                            // Estrai l'ID originale dalla stringa (rimuovi il suffisso -weekOffset)
+                            const originalId = info.event.extendedProps.originalId
+                            const eventDay = info.event.extendedProps.day
 
-                          updateAvailability(originalId, {
-                            day: eventDay,
-                            start: format(info.event.start!, "HH:mm"),
-                            end: format(info.event.end!, "HH:mm"),
-                            engineerId: selectedEngineer,
-                          })
-                            .then(() => {
-                              fetchAvailabilities()
+                            updateAvailability(originalId, {
+                              day: eventDay,
+                              start: format(info.event.start!, "HH:mm"),
+                              end: format(info.event.end!, "HH:mm"),
+                              engineerId: selectedEngineer,
                             })
-                            .catch((error: any) => {
-                              console.error("Error updating availability:", error)
-                              info.revert()
-                            })
-                        }
+                              .then(() => {
+                                fetchAvailabilities()
+                              })
+                              .catch((error: any) => {
+                                console.error("Error updating availability:", error)
+                                info.revert()
+                              })
+                          }
                         : undefined
                     }
                   />
@@ -523,10 +599,17 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
                     </div>
                   </CardContent>
                 </Card>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="space-y-1">
+                      <p className="text-sm text-indigo-500">Ferie</p>
+                      <p className="text-2xl font-semibold">{getTotalHolidayHours().toFixed(1)} ore</p>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             </div>
           </div>
-
 
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogContent>
@@ -570,4 +653,3 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
 )
 
 AvailabilityCalendar.displayName = "AvailabilityCalendar"
-

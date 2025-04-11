@@ -1,6 +1,4 @@
 "use client"
-
-import Link from "next/link"
 import { Button } from "@/components/Button"
 import { BackButton } from "../components/BackButton"
 import { BookingSummary } from "../components/BookingSummary"
@@ -11,6 +9,9 @@ import { useBooking } from "@/hooks/useBooking"
 import { studios as studioDetails } from "@/lib/studios" // Dettagli completi degli studi
 import { format } from "date-fns"
 import { it } from "date-fns/locale"
+import { useRouter } from "next/navigation"
+
+
 
 interface DateAlternative {
   timeRange: string
@@ -23,12 +24,89 @@ interface UnavailabilityInfo {
 }
 
 export default function StudioPage() {
-  const { selectedStudio, setSelectedStudio, timeFrom, timeTo, selectedDate } = useBookingStore()
+  const {
+    selectedStudio,
+    setSelectedStudio,
+    timeFrom,
+    timeTo,
+    selectedDate,
+    selectedServices,
+    setSelectedDate,
+    setTimeRange,
+  } = useBookingStore()
   const { getAvailableStudios } = useBooking()
+  const router = useRouter()
 
   const [availableStudios, setAvailableStudios] = useState<any[]>([]) // Gli studi disponibili
   const [unavailableStudios, setUnavailableStudios] = useState<any[]>([]) // Gli studi non disponibili
   const [isLoading, setIsLoading] = useState(false)
+  const [triggerReload, setTriggerReload] = useState(0) // State to trigger reload
+
+  // Update the studio page to handle alternative slots:
+  const handleSelectAlternativeSlot = (alt: { date: string; timeRange: string }, studioId: string) => {
+    try {
+      // Parse the date string (e.g., "Lunedì 15 Aprile")
+      const dateStr = alt.date
+      console.log("Parsing date:", dateStr)
+
+      // Extract day and month
+      const parts = dateStr.split(" ")
+      if (parts.length < 3) {
+        console.error("Invalid date format:", dateStr)
+        return
+      }
+
+      const day = Number.parseInt(parts[1], 10)
+      const monthName = parts[2].toLowerCase() // Convert to lowercase for case-insensitive comparison
+
+      // Map Italian month names to month numbers (0-based)
+      const monthMap: Record<string, number> = {
+        gennaio: 0,
+        febbraio: 1,
+        marzo: 2,
+        aprile: 3,
+        maggio: 4,
+        giugno: 5,
+        luglio: 6,
+        agosto: 7,
+        settembre: 8,
+        ottobre: 9,
+        novembre: 10,
+        dicembre: 11,
+      }
+
+      const monthIndex = monthMap[monthName]
+      if (monthIndex === undefined) {
+        console.error("Invalid month name:", monthName)
+        return
+      }
+
+      // Create a new date with the current year
+      const newDate = new Date()
+      newDate.setDate(day)
+      newDate.setMonth(monthIndex)
+
+      // Parse time range (e.g., "17:00 - 20:00")
+      const [startTime, endTime] = alt.timeRange.split(" - ")
+
+      console.log("Selected new date:", newDate)
+      console.log("Selected new time range:", startTime, "to", endTime)
+
+      // Update the booking store
+      setSelectedDate(newDate)
+      setTimeRange(startTime, endTime)
+
+      // Pre-select the studio
+      setSelectedStudio(studioId)
+
+      // Force reload of studios with new time
+      setTimeout(() => {
+        setTriggerReload((prev) => prev + 1)
+      }, 100)
+    } catch (error) {
+      console.error("Error parsing alternative slot:", error)
+    }
+  }
 
   useEffect(() => {
     const loadStudios = async () => {
@@ -36,6 +114,7 @@ export default function StudioPage() {
         if (!selectedDate || !timeFrom || !timeTo) return
 
         setIsLoading(true)
+        console.log("Loading studios with time:", timeFrom, timeTo, selectedDate.toISOString())
 
         const [fromHours, fromMinutes] = timeFrom.split(":").map(Number)
         const [toHours, toMinutes] = timeTo.split(":").map(Number)
@@ -51,6 +130,8 @@ export default function StudioPage() {
         end.setMinutes(toMinutes)
         end.setSeconds(0)
         end.setMilliseconds(0)
+
+        console.log("API call with start:", start.toISOString(), "end:", end.toISOString())
 
         // Recuperiamo gli studi disponibili per il periodo
         const studioAvailability = await getAvailableStudios(start, end)
@@ -75,7 +156,7 @@ export default function StudioPage() {
             id: studioAvail.id,
             name: studioDetail.name,
             description: studioDetail.description.join(" "),
-            image: studioDetail.imagesUrl[0] || "",
+            image: studioDetail.image,
           }
 
           if (studioAvail.isAvailable) {
@@ -123,7 +204,33 @@ export default function StudioPage() {
     }
 
     loadStudios()
-  }, [selectedDate, timeFrom, timeTo])
+  }, [selectedDate, timeFrom, timeTo, triggerReload]) // Added triggerReload to dependencies
+
+  // Check if we should skip the engineer page
+  const shouldSkipEngineerPage = () => {
+    //@ts-ignore
+    return selectedServices.length === 1 && selectedServices.includes("wtscbdf9xv7qkz0m2y4nlgr3p")
+  }
+
+  const handleNext = () => {
+    // If "Affitto Sala" was selected in the first page, skip to contact page
+    if (shouldSkipEngineerPage()) {
+      router.push("/book/contact")
+    } else {
+      // Force a reload of the booking store data to ensure it's fresh when we navigate
+      const currentDate = selectedDate
+      const currentTimeFrom = timeFrom
+      const currentTimeTo = timeTo
+
+      // Small trick to ensure the data is fresh - temporarily change and restore
+      setSelectedDate(new Date(currentDate!.getTime() + 1000))
+      setTimeout(() => {
+        setSelectedDate(currentDate)
+        setTimeRange(currentTimeFrom, currentTimeTo)
+        router.push("/book/engineer")
+      }, 50)
+    }
+  }
 
   return (
     <div className="container max-w-3xl py-6 sm:py-8 px-4 sm:px-6 pb-20 sm:pb-32">
@@ -158,7 +265,8 @@ export default function StudioPage() {
                       description={studio.description}
                       image={studio.image}
                       isSelected={selectedStudio === studio.id}
-                      onSelect={setSelectedStudio}
+                      onSelect={() => setSelectedStudio(studio.id)}
+                      onSelectAlternativeSlot={(alt) => handleSelectAlternativeSlot(alt, studio.id)}
                     />
                   ))}
                 </div>
@@ -179,6 +287,7 @@ export default function StudioPage() {
                       image={studio.image}
                       isUnavailable={true}
                       unavailabilityInfo={studio.unavailabilityInfo}
+                      onSelectAlternativeSlot={(alt) => handleSelectAlternativeSlot(alt, studio.id)}
                     />
                   ))}
                 </div>
@@ -189,17 +298,16 @@ export default function StudioPage() {
 
         <div className="flex justify-end">
           <Button
-            size="lg"
-            asChild
             variant="gradient"
+            size="lg"
+            onClick={handleNext}
             className="px-8 sm:px-12 py-4 sm:py-6"
             disabled={!selectedStudio || isLoading}
           >
-            <Link href="/book/engineer">Avanti</Link>
+            Avanti
           </Button>
         </div>
       </div>
     </div>
   )
 }
-

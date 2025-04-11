@@ -84,3 +84,9 @@ export interface Booking {
   created_at: Date
 }
 
+export interface Report{
+  string: string
+  reason: string
+  userId: string
+}
+

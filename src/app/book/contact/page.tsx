@@ -2,21 +2,53 @@
 import { Instagram, Phone } from "lucide-react"
 import { Textarea } from "@/components/TextArea"
 import { Input } from "@/components/Input"
-import { BackButton } from "../components/BackButton"
 import { SummaryContent } from "../components/BookingSummary"
 import { useBookingStore } from "../../../store/booking-store"
 import { BookButton } from "../components/BookButton"
+import { useRouter } from "next/navigation"
 
 export default function ContactPage() {
-  const { instagramUsername, phoneNumber, notes, setContactInfo } = useBookingStore()
+  const { instagramUsername, phoneNumber, notes, setContactInfo, selectedServices } = useBookingStore()
+  const router = useRouter()
 
   // Check if required fields are filled
   const isFormValid = instagramUsername.trim() !== "" && phoneNumber.trim() !== ""
 
+  // Check if we should skip the engineer page when going back
+  const shouldSkipEngineerPage = () => {
+    //@ts-ignore
+    return selectedServices.length === 1 && selectedServices.includes("wtscbdf9xv7qkz0m2y4nlgr3p")
+  }
+
+  // Handle back button click
+  const handleBackClick = () => {
+    if (shouldSkipEngineerPage()) {
+      router.push("/book/studio")
+    } else {
+      router.push("/book/engineer")
+    }
+  }
+
   return (
     <div className="container max-w-3xl py-8 pb-32">
       <div className="flex justify-between items-center">
-        <BackButton href="/book/engineer" />
+        <button onClick={handleBackClick} className="flex items-center text-sm font-medium text-muted-foreground">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="mr-1 h-4 w-4"
+          >
+            <path d="m15 18-6-6 6-6" />
+          </svg>
+          Indietro
+        </button>
       </div>
 
       <div className="mt-6 space-y-8">
@@ -81,4 +113,3 @@ export default function ContactPage() {
     </div>
   )
 }
-

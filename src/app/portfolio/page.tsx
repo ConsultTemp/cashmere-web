@@ -1,14 +1,41 @@
-"use client"
-
+import type { Metadata } from "next"
 import Image from "next/image"
 import Link from "next/link"
 import { ExternalLink, Instagram } from "lucide-react"
 import { NavbarVariants } from "@/components/navbar/Navbar"
 import Footer from "@/components/Footer"
-import Head from "next/head"
 import { pageSEO, portfolioSchema } from "@/lib/seo-config"
 import JsonLd from "@/components/SEO/JsonLd"
 import Breadcrumbs from "@/components/SEO/Breadcrumbs"
+
+// Metadati statici per la pagina portfolio
+export const metadata: Metadata = {
+  title: pageSEO.portfolio.title,
+  description: pageSEO.portfolio.description,
+  alternates: {
+    canonical: pageSEO.portfolio.canonical,
+  },
+  openGraph: {
+    title: pageSEO.portfolio.openGraph.title,
+    description: pageSEO.portfolio.openGraph.description,
+    url: pageSEO.portfolio.canonical,
+    type: "website",
+    images: [
+      {
+        url: "/og-portfolio.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Portfolio Cashmere Studio Milano",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: pageSEO.portfolio.openGraph.title,
+    description: pageSEO.portfolio.openGraph.description,
+    images: ["/twitter-portfolio.jpg"],
+  },
+}
 
 export default function PortfolioPage() {
   const portfolioItems = [
@@ -21,6 +48,8 @@ export default function PortfolioPage() {
       description: "Album di platino con oltre 500.000 copie vendute",
       link: "https://open.spotify.com/album/5jP7LpQQzF1oKKaRMUbYsj",
       instagram: "https://instagram.com/thelazzinho",
+      genre: "Rap/Hip-Hop",
+      duration: "PT1H10M",
     },
     {
       id: 2,
@@ -31,6 +60,8 @@ export default function PortfolioPage() {
       description: "Album di debutto con il singolo 'Mi fai impazzire'",
       link: "https://open.spotify.com/album/1wdTbGg4lrQPUDbRwJDvPo",
       instagram: "https://instagram.com/blanchitobebe",
+      genre: "Pop/Urban",
+      duration: "PT45M30S",
     },
     {
       id: 3,
@@ -41,6 +72,8 @@ export default function PortfolioPage() {
       description: "Album con collaborazioni internazionali",
       link: "https://open.spotify.com/album/09OZ9zJh7MCqO5PE9JxoaZ",
       instagram: "https://instagram.com/sferaebbasta",
+      genre: "Trap",
+      duration: "PT52M15S",
     },
     {
       id: 4,
@@ -51,6 +84,8 @@ export default function PortfolioPage() {
       description: "Album che ha portato la band alla vittoria dell'Eurovision",
       link: "https://open.spotify.com/album/7KF1Ain9mYYlg5M46g0i4A",
       instagram: "https://instagram.com/maneskinofficial",
+      genre: "Rock",
+      duration: "PT48M20S",
     },
     {
       id: 5,
@@ -61,6 +96,8 @@ export default function PortfolioPage() {
       description: "Album con influenze nordafricane e sonorità innovative",
       link: "https://open.spotify.com/album/0OXyVMXQzJQMAgwXzdYHxE",
       instagram: "https://instagram.com/ghali",
+      genre: "Urban/World",
+      duration: "PT55M40S",
     },
     {
       id: 6,
@@ -71,6 +108,8 @@ export default function PortfolioPage() {
       description: "Album elettronico con influenze dance e italodisco",
       link: "https://open.spotify.com/album/5KrPbjOxMRrRQ8YME5H9Qz",
       instagram: "https://instagram.com/cosmoofficial",
+      genre: "Elettronica/Dance",
+      duration: "PT1H5M",
     },
     {
       id: 7,
@@ -81,6 +120,8 @@ export default function PortfolioPage() {
       description: "Album di debutto con il singolo 'Voce'",
       link: "https://open.spotify.com/album/0ULjvpj64YCVoW8t2QHi7D",
       instagram: "https://instagram.com/sonolamadame",
+      genre: "Urban/Pop",
+      duration: "PT42M10S",
     },
     {
       id: 8,
@@ -91,6 +132,8 @@ export default function PortfolioPage() {
       description: "Album con record di streaming in Italia",
       link: "https://open.spotify.com/album/0iaBNn7lrJxZQpGn9DkaAJ",
       instagram: "https://instagram.com/lebonwski",
+      genre: "Rap/Hip-Hop",
+      duration: "PT58M25S",
     },
   ]
 
@@ -99,17 +142,6 @@ export default function PortfolioPage() {
 
   return (
     <>
-      <Head>
-        <title>{pageSEO.portfolio.title}</title>
-        <meta name="description" content={pageSEO.portfolio.description} />
-        <meta name="robots" content="index, follow" />
-        <link rel="canonical" href={pageSEO.portfolio.canonical} />
-        <meta property="og:title" content={pageSEO.portfolio.openGraph.title} />
-        <meta property="og:description" content={pageSEO.portfolio.openGraph.description} />
-        <meta property="og:url" content={pageSEO.portfolio.canonical} />
-        <meta property="og:type" content="website" />
-      </Head>
-
       <NavbarVariants variant="Home" />
       <div className="bg-white">
         {/* Breadcrumbs con lo stesso padding delle altre sezioni */}
@@ -133,7 +165,10 @@ export default function PortfolioPage() {
                     src={item.image || "/placeholder.svg"}
                     alt={`${item.title} - Album di ${item.artist} registrato presso Cashmere Studio`}
                     fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                     className="object-cover transition-transform hover:scale-105"
+                    loading="lazy"
+                    priority={item.id <= 4} // Carica prioritariamente solo i primi 4 elementi
                   />
                 </div>
                 <div className="p-4">
@@ -152,6 +187,7 @@ export default function PortfolioPage() {
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-gray-500 hover:text-black"
+                      aria-label={`Visita il profilo Instagram di ${item.artist}`}
                     >
                       <Instagram className="h-5 w-5" />
                     </Link>
@@ -161,11 +197,16 @@ export default function PortfolioPage() {
                       rel="noopener noreferrer"
                       className="text-sm font-medium flex items-center gap-1 text-gray-700 hover:text-black"
                       itemProp="url"
+                      aria-label={`Ascolta ${item.title} di ${item.artist} su Spotify`}
                     >
                       Ascolta <ExternalLink className="h-3.5 w-3.5" />
                     </Link>
                   </div>
                   <meta itemProp="datePublished" content={`${item.year}`} />
+                  <meta itemProp="genre" content={item.genre} />
+                  <meta itemProp="duration" content={item.duration} />
+                  <meta itemProp="inLanguage" content="it" />
+                  <meta itemProp="recordedAt" content="Cashmere Studio Milano" />
                 </div>
               </div>
             ))}
@@ -179,4 +220,3 @@ export default function PortfolioPage() {
     </>
   )
 }
-

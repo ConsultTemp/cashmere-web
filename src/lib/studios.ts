@@ -1,3 +1,9 @@
+import { StaticImageData } from 'next/image'
+import stu1 from '../../public/Studio 1/1.jpg'
+import stu2 from '../../public/Studio 2/1.jpg'
+import stu3 from '../../public/Studio 3/1.jpg'
+import stu4 from '../../public/Studio 3/1.jpg'
+
 export interface Studio {
     id: string
     name: string
@@ -6,6 +12,7 @@ export interface Studio {
     imagesUrl: string[]
     equipment: string[]
     description: string[]
+    image: StaticImageData
   }
   
   export const studios: Studio[] = [
@@ -39,7 +46,10 @@ export interface Studio {
           "Lo studio di punta del complesso Cashmere.",
           "Grazie alla cabina di registrazione vetrata, alla strumentazione analogica di alta qualità e al microfono valvolare esclusivo, offre una qualità sonora pari a quella dei grandi studi americani.",
           "Perfetto per produzioni di alto livello che richiedono precisione e raffinatezza."
-        ]
+        ],
+        image:
+          stu1
+        
       },
       {
         id: "2",
@@ -67,7 +77,10 @@ export interface Studio {
           "Lo studio di punta del complesso Cashmere.",
           "Grazie alla cabina di registrazione vetrata, alla strumentazione analogica di alta qualità e al microfono valvolare esclusivo, offre una qualità sonora pari a quella dei grandi studi americani.",
           "Perfetto per produzioni di alto livello che richiedono precisione e raffinatezza."
-        ]
+        ],
+        image:
+          stu2
+        
       },
       {
         id: "3",
@@ -97,7 +110,10 @@ export interface Studio {
           "Lo studio di punta del complesso Cashmere.",
           "Grazie alla cabina di registrazione vetrata, alla strumentazione analogica di alta qualità e al microfono valvolare esclusivo, offre una qualità sonora pari a quella dei grandi studi americani.",
           "Perfetto per produzioni di alto livello che richiedono precisione e raffinatezza."
-        ]
+        ],
+        image:
+          stu3
+        
       },
       {
         id: "4",
@@ -127,7 +143,10 @@ export interface Studio {
           "Lo studio di punta del complesso Cashmere.",
           "Grazie alla cabina di registrazione vetrata, alla strumentazione analogica di alta qualità e al microfono valvolare esclusivo, offre una qualità sonora pari a quella dei grandi studi americani.",
           "Perfetto per produzioni di alto livello che richiedono precisione e raffinatezza."
-        ]
+        ],
+        image:
+          stu4
+        
       },
   ]
   

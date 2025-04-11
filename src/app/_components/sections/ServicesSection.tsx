@@ -16,21 +16,21 @@ const services = [
     title: "Registrazione",
     description:
       "La fase di registrazione è quella in cui l'artista viene al microfono e registra le sue parti vocali.",
-    imageUrl: "/Studio 1/1.jpg",
+    imageUrl: "/rec.png",
   },
   {
     id: "2",
     title: "Mix & Master",
     description:
       "Processo finale di lavorazione sulla traccia, in breve è l'attività che serve per far suonare bene una canzone.",
-    imageUrl: "/Studio 1/1.jpg",
+    imageUrl: "/mixmaster.png",
   },
   {
     id: "3",
     title: "Produzione",
     description:
       "Il nostro servizio di produzione musicale offre beat personalizzati di alta qualità su misura per l'artista.",
-    imageUrl: "/Studio 1/1.jpg",
+    imageUrl: "/Studio 2/1.jpg",
   },
 ]
 

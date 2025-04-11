@@ -24,7 +24,14 @@ export type PackageType =
 
 export default function BookingPage() {
   const [services, setServices] = useState<ServiceType[]>([])
-  const { selectedServices, selectedPackage, setSelectedServices, setSelectedPackage } = useBookingStore()
+  const {
+    selectedServices,
+    selectedPackage,
+    setSelectedServices,
+    setSelectedPackage,
+    setNeedsEngineer,
+    setSelectedEngineer,
+  } = useBookingStore()
   const router = useRouter()
 
   // Breadcrumbs per la pagina di prenotazione
@@ -67,15 +74,23 @@ export default function BookingPage() {
 
   const handlePackageSelect = (pkg: PackageType) => {
     if (services.includes("wtscbdf9xv7qkz0m2y4nlgr3p")) return
-    {/* @ts-ignore */}
+    //@ts-ignore
     setSelectedPackage(pkg)
   }
 
   const canProceed = services.length > 0 || selectedPackage !== null
 
   const handleBookingRequest = () => {
-    {/* @ts-ignore */}
+    //@ts-ignore
     setSelectedServices(services)
+
+    // If only "Affitto Sala" is selected (wtscbdf9xv7qkz0m2y4nlgr3p), skip the engineer page
+    if (services.length === 1 && services.includes("wtscbdf9xv7qkz0m2y4nlgr3p")) {
+      // Set needsEngineer to false and selectedEngineer to null
+      setNeedsEngineer(false)
+      setSelectedEngineer(null)
+    }
+
     router.push("/book/datetime")
   }
 
@@ -197,4 +212,3 @@ export default function BookingPage() {
     </>
   )
 }
-

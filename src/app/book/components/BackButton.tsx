@@ -1,18 +1,19 @@
-import Link from 'next/link'
-import { ChevronLeft } from 'lucide-react'
+import Link from "next/link"
+import { ChevronLeft } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
 interface BackButtonProps {
   href: string
-  label?: string
+  disabled?: boolean
 }
 
-export function BackButton({ href, label = "Indietro" }: BackButtonProps) {
+export function BackButton({ href, disabled = false }: BackButtonProps) {
   return (
-    <Link 
-      href={href}
-      className="inline-flex items-center text-sm text-black hover:text-foreground transition-colors underline"
-    >
-      {label}
-    </Link>
+    <Button variant="ghost" asChild disabled={disabled}>
+      <Link href={href} className="flex items-center gap-2">
+        <ChevronLeft className="h-4 w-4" />
+        Indietro
+      </Link>
+    </Button>
   )
 }
