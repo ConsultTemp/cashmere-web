@@ -74,9 +74,7 @@ export interface Studio {
           "Fender Squier Bullet Stratocaster"
         ],
         description: [
-          "Lo studio di punta del complesso Cashmere.",
-          "Grazie alla cabina di registrazione vetrata, alla strumentazione analogica di alta qualità e al microfono valvolare esclusivo, offre una qualità sonora pari a quella dei grandi studi americani.",
-          "Perfetto per produzioni di alto livello che richiedono precisione e raffinatezza."
+          "Studio che unisce la rapidità dei workflow moderni con la qualità della strumentazione analogica.Garantisce registrazioni di massima qualità. Ideale per artisti e produttori che cercano efficienza senza compromessi sulla qualità sonora."
         ],
         image:
           stu2
@@ -107,9 +105,7 @@ export interface Studio {
           "Fender Squier Bullet Stratocaster"
         ],
         description: [
-          "Lo studio di punta del complesso Cashmere.",
-          "Grazie alla cabina di registrazione vetrata, alla strumentazione analogica di alta qualità e al microfono valvolare esclusivo, offre una qualità sonora pari a quella dei grandi studi americani.",
-          "Perfetto per produzioni di alto livello che richiedono precisione e raffinatezza."
+          "Studio ideale per sessioni di beatmaking, scrittura e momenti creativi. L’ambiente intimo favorisce il massimo del focus, permettendo di catturare l’ispirazione e la creatività in un contesto concentrato. Perfetto per progetti che richiedono un’atmosfera raccolta e produttiva."
         ],
         image:
           stu3
@@ -140,10 +136,7 @@ export interface Studio {
           "Fender Squier Bullet Stratocaster"
         ],
         description: [
-          "Lo studio di punta del complesso Cashmere.",
-          "Grazie alla cabina di registrazione vetrata, alla strumentazione analogica di alta qualità e al microfono valvolare esclusivo, offre una qualità sonora pari a quella dei grandi studi americani.",
-          "Perfetto per produzioni di alto livello che richiedono precisione e raffinatezza."
-        ],
+          "Studio ideale per sessioni di beatmaking, scrittura e momenti creativi. L’ambiente intimo favorisce il massimo del focus, permettendo di catturare l’ispirazione e la creatività in un contesto concentrato. Perfetto per progetti che richiedono un’atmosfera raccolta e produttiva."],
         image:
           stu4
         

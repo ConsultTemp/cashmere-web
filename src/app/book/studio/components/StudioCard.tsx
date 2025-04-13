@@ -74,8 +74,8 @@ export function StudioCard({
 
         {/* Unavailability info */}
         {isUnavailable && unavailabilityInfo && (
-          <div className="mt-2 text-red-500">
-            {unavailabilityInfo.message || `${name} non è disponibile nella fascia oraria selezionata.`}
+          <div className="mt-2">
+            <p className="text-red-500">{unavailabilityInfo.message || `${name} non è disponibile nella fascia oraria selezionata.`}</p>
             {unavailabilityInfo.alternativeDates && unavailabilityInfo.alternativeDates.length > 0 && (
               <div className="mt-2">
                 <p className="text-sm font-medium">Orari alternativi disponibili:</p>
