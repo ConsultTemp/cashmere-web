@@ -270,3 +270,51 @@
   justify-content: center !important;
   align-items: center !important;
 }
+
+/* Regular */
+@font-face {
+  font-family: 'PoppinsRegular';
+  src: url('../fonts/Poppins-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.poppins-regular {
+  font-family: 'PoppinsRegular', sans-serif;
+}
+
+/* Medium */
+@font-face {
+  font-family: 'PoppinsMedium';
+  src: url('../fonts/Poppins-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+}
+
+.poppins-medium {
+  font-family: 'PoppinsMedium', sans-serif;
+}
+
+/* SemiBold */
+@font-face {
+  font-family: 'PoppinsSemiBold';
+  src: url('../fonts/Poppins-SemiBold.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+}
+
+.poppins-semibold {
+  font-family: 'PoppinsSemiBold', sans-serif;
+}
+
+/* Bold */
+@font-face {
+  font-family: 'PoppinsBold';
+  src: url('../fonts/Poppins-Bold.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+}
+
+.poppins-bold {
+  font-family: 'PoppinsBold';
+}

@@ -241,7 +241,7 @@ export default function StudioPage() {
 
       <div className="mt-4 sm:mt-6 space-y-6 sm:space-y-8">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold">Quale sala vuoi affittare?</h1>
+          <h1 className="text-2xl sm:text-3xl poppins-semibold">Quale sala vuoi affittare?</h1>
           <p className="text-muted-foreground mt-2">Seleziona la sala che desideri.</p>
         </div>
 

@@ -94,7 +94,8 @@ export class BookingApi {
 
   async getFonicoBookings(id: string): Promise<any> {
     try {
-      const response = await api.get<any>(`${this.BASE_PATH}/fonico/${id}`, {
+      console.log("fonico da ricevere: ",id)
+      const response = await api.get<any>(`${this.BASE_PATH}/fonicoava/${id}`, {
         headers: {
           "Cache-Control": "no-cache",
         },

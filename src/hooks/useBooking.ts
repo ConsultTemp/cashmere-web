@@ -61,7 +61,9 @@ export const useBooking = () => {
         try {
             setIsLoading(true)
             setError(null)
+            console.log("id del fonico",id)
             const response = await bookingApi.getFonicoBookings(id)
+            console.log(response)
             return response
         } catch (err) {
             setError(err as ApiError)
@@ -143,6 +145,7 @@ export const useBooking = () => {
             setIsLoading(false)
         }
     }
+    
 
     const getToConfirm = async () => {
         try {

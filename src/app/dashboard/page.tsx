@@ -61,8 +61,8 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="h-screen w-screen flex flex-col">
-      <NavbarVariants variant="Home" />
+    <div className="">
+     
       <div className="flex-1 flex flex-col w-full items-center overflow-y-auto">
         <div className="container py-8 px-4 md:px-8 lg:px-16 xl:px-32 2xl:px-72">
           {/* Header */}

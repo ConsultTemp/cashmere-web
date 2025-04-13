@@ -1,4 +1,4 @@
-import type {  CreateEntity } from "@/types/types"
+import type {  CreateEntity, Entity } from "@/types/types"
 import api from "@/lib/axios"
 import axios from "axios"
 
@@ -80,7 +80,48 @@ export class EntityApi {
     }
   }
 
+  async update(id: string, updatedEntity: Entity): Promise<any> {
+    console.log(id)
+    try {
+      const response = await api.put<any>(`${this.BASE_PATH}/${id}`, updatedEntity, {
+        headers: {
+          "Cache-Control": "no-cache",
+        },
+      })
+      console.log(response.data)
+      return response.data
+    } catch (error) {
+      console.log(error)
+      if (axios.isAxiosError(error)) {
+        throw {
+          message: error.response?.data?.message || "Booking update failed",
+          statusCode: error.response?.status || 500,
+        }
+      }
+      throw error
+    }
+  }
 
+  async delete(id: string): Promise<any> {
+    try {
+      const response = await api.delete<any>(`${this.BASE_PATH}/${id}`, {
+        headers: {
+          "Cache-Control": "no-cache",
+        },
+      })
+      console.log(response.data)
+      return response.data
+    } catch (error) {
+      console.log(error)
+      if (axios.isAxiosError(error)) {
+        throw {
+          message: error.response?.data?.message || "Booking deletion failed",
+          statusCode: error.response?.status || 500,
+        }
+      }
+      throw error
+    }
+  }
 
 
 }

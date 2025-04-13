@@ -77,3 +77,8 @@ export interface CreateReportDto {
   reason: string
 }
 
+
+export interface Entity{
+  id: string
+  name: string
+}

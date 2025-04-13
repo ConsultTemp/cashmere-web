@@ -4,7 +4,7 @@ const studios: StudioCardProps[] = [
   {
     title: "STUDIO 1",
     subtitle: "Il nostro studio di punta.",
-    badge: "#1 il più utilizzato",
+    badge: "#1 Il più richiesto",
     imageUrl: "/Studio 1/4.jpg",
     id: "1",
   },
@@ -31,7 +31,7 @@ const studios: StudioCardProps[] = [
 export const StudiosSection = () => {
   return (
     <div className="w-full">
-      <h2 className="text-2xl sm:text-3xl font-bold mb-4">I nostri studi</h2>
+      <h2 className="text-2xl sm:text-3xl font-bold mb-8 poppins-semibold">I nostri studi</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {studios.map((card, index) => (
           <div key={index} className="">

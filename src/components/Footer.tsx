@@ -1,8 +1,11 @@
+'use client'
+
 import Image from "next/image"
 import Link from "next/link"
 import { Instagram } from "lucide-react"
 import { Button } from "./Button"
-import logo from "./../../public/cashmere-color.svg"
+import logo from "./../../public/cashmere-gray.svg"
+import { usePathname } from "next/navigation"
 
 const studioLinks = [
   { label: "Studio 1", href: "/studio/1" },
@@ -21,13 +24,16 @@ const serviceLinks = [
 const portfolioLinks = [{ label: "Visualizza portfolio", href: "/portfolio" }]
 
 export default function Footer() {
+  const pathname = usePathname();
+  const hideNavbar = pathname.startsWith('/admin')
+  if(hideNavbar) return null
   return (
-    <footer className="border-t border-white/10 border-t border-t-2 border-t-gray-200 w-full px-4 sm:px-8 md:px-12 lg:px-16 xl:px-32 pb-12 md:pb-4">
+    <footer className="w-full px-4 sm:px-8 md:px-12 lg:px-16 xl:px-32 pb-12 md:pb-4">
       <div className="py-8 sm:py-12 md:py-16">
         {/* Logo Section */}
         <div className="mb-8 sm:mb-12 md:mb-16 flex flex-col items-center justify-center text-center">
-          <Image src={logo || "/placeholder.svg"} alt="Cashmere Studio Logo" width={80} height={80} className="mb-4" />
-          <h2 className="text-xl sm:text-2xl font-semibold">Cashmere Studio Milano</h2>
+          <Image src={logo || "/placeholder.svg"} alt="Cashmere Studio Logo" width={50} height={50} className="mb-4" />
+          <h2 className="text-xl sm:text-2xl font-semibold text-[#465a6a]">Cashmere Studio Milano</h2>
         </div>
 
         {/* Main Grid */}

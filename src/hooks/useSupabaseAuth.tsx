@@ -37,6 +37,7 @@ export const useSupabaseAuth = () => {
         if (error) throw error
 
         if (mounted) {
+          //@ts-ignore
           setSession(formatSession(session?.user ?? null, session))
           setLoading(false)
         }
@@ -59,6 +60,7 @@ export const useSupabaseAuth = () => {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (mounted) {
+        //@ts-ignore
         setSession(formatSession(session?.user ?? null, session))
 
         // Gestisci eventi specifici
@@ -72,7 +74,6 @@ export const useSupabaseAuth = () => {
                   email: session.user.email,
                   updated_at: new Date().toISOString(),
                 })
-                if (error) throw error
 
                 // Controlla se siamo nel flusso di prenotazione
                 const isBookingFlow = localStorage.getItem("bookingInProgress") === "true"
@@ -81,7 +82,7 @@ export const useSupabaseAuth = () => {
                   window.location.href = "/book/confirm"
                 }
               } catch (err) {
-                console.error("Error updating user data:", err)
+                console.log("Error updating user data:", err)
               }
             }
             break

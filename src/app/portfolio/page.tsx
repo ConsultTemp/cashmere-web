@@ -142,7 +142,6 @@ export default function PortfolioPage() {
 
   return (
     <>
-      <NavbarVariants variant="Home" />
       <div className="bg-white">
         {/* Breadcrumbs con lo stesso padding delle altre sezioni */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
@@ -213,7 +212,6 @@ export default function PortfolioPage() {
           </div>
         </section>
       </div>
-      <Footer />
 
       {/* JSON-LD per SEO */}
       <JsonLd data={portfolioSchema(portfolioItems)} />

@@ -15,6 +15,7 @@ import { useRouter } from "next/navigation"
 interface DateAlternative {
   timeRange: string
   date: string
+  studios?: string[]
 }
 
 interface UnavailabilityInfo {
@@ -28,6 +29,7 @@ export default function EngineerPage() {
     setSelectedEngineer,
     needsEngineer,
     setNeedsEngineer,
+    setSelectedStudio,
     timeFrom,
     timeTo,
     selectedDate,
@@ -43,7 +45,11 @@ export default function EngineerPage() {
   const [triggerReload, setTriggerReload] = useState(0)
 
   // Handle selecting alternative slots for engineers
-  const handleSelectAlternativeSlot = (alt: { date: string; timeRange: string }, engineerId: string) => {
+  const handleSelectAlternativeSlot = (alt: { date: string; timeRange: string }, engineerId: string, studio?: string) => {
+    console.log("ci siamo my demon")
+    console.log(alt)
+    console.log(engineerId)
+    console.log(studio)
     try {
       // Parse the date string (e.g., "Lunedì 15 Aprile")
       const dateStr = alt.date
@@ -99,8 +105,10 @@ export default function EngineerPage() {
       // Pre-select the engineer
       //@ts-ignore
       setSelectedEngineer(engineerId)
+      if (studio) {
+        setSelectedStudio(studio)
+      }
       setNeedsEngineer(true)
-
       // Force reload of engineers with new time
       setTimeout(() => {
         setTriggerReload((prev) => prev + 1)
@@ -164,7 +172,9 @@ export default function EngineerPage() {
             if (engineerAvail.alternativeSlots && engineerAvail.alternativeSlots.length > 0) {
               // Convert alternative slots to required format
               engineerAvail.alternativeSlots.forEach(
-                (slot: { start: string | number | Date; end: string | number | Date }) => {
+                (slot: { start: string | number | Date; end: string | number | Date, availableStudios: string[] }) => {
+                  console.log("slots slatt")
+                  console.log(slot)
                   const startDate = new Date(slot.start)
                   const endDate = new Date(slot.end)
 
@@ -174,6 +184,7 @@ export default function EngineerPage() {
                   alternativeDates.push({
                     date: formattedDate,
                     timeRange: formattedTimeRange,
+                    studios: slot.availableStudios
                   })
                 },
               )
@@ -208,17 +219,16 @@ export default function EngineerPage() {
         <BookingSummary />
       </div>
 
-      <div className="mt-4 sm:mt-6 space-y-6 sm:space-y-8">
+      <div className="mt-4 sm:mt-6">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold">Vuoi un fonico?</h1>
-          <p className="text-muted-foreground mt-2">Seleziona se desideri un fonico per la tua sessione.</p>
+          <h1 className="text-2xl sm:text-3xl poppins-semibold">Vuoi un fonico?</h1>
+          <p className="text-muted-foreground my-4">Seleziona se desideri un fonico per la tua sessione.</p>
         </div>
 
         <div className="flex flex-col gap-4">
           <div
-            className={`border rounded-lg p-4 cursor-pointer ${
-              needsEngineer === false ? "border-primary bg-primary/5" : "border-border"
-            }`}
+            className={`border rounded-lg p-4 cursor-pointer ${needsEngineer === false ? "border-primary bg-primary/5" : "border-border"
+              }`}
             onClick={() => {
               setNeedsEngineer(false)
               //@ts-ignore
@@ -227,9 +237,8 @@ export default function EngineerPage() {
           >
             <div className="flex items-center gap-3">
               <div
-                className={`w-5 h-5 rounded-full border flex items-center justify-center ${
-                  needsEngineer === false ? "border-primary" : "border-muted-foreground"
-                }`}
+                className={`w-5 h-5 rounded-full border flex items-center justify-center ${needsEngineer === false ? "border-primary" : "border-muted-foreground"
+                  }`}
               >
                 {needsEngineer === false && <div className="w-3 h-3 rounded-full bg-primary"></div>}
               </div>
@@ -238,16 +247,14 @@ export default function EngineerPage() {
           </div>
 
           <div
-            className={`border rounded-lg p-4 cursor-pointer ${
-              needsEngineer === true ? "border-primary bg-primary/5" : "border-border"
-            }`}
+            className={`border rounded-lg p-4 cursor-pointer ${needsEngineer === true ? "border-primary bg-primary/5" : "border-border"
+              }`}
             onClick={() => setNeedsEngineer(true)}
           >
             <div className="flex items-center gap-3">
               <div
-                className={`w-5 h-5 rounded-full border flex items-center justify-center ${
-                  needsEngineer === true ? "border-primary" : "border-muted-foreground"
-                }`}
+                className={`w-5 h-5 rounded-full border flex items-center justify-center ${needsEngineer === true ? "border-primary" : "border-muted-foreground"
+                  }`}
               >
                 {needsEngineer === true && <div className="w-3 h-3 rounded-full bg-primary"></div>}
               </div>
@@ -257,7 +264,7 @@ export default function EngineerPage() {
         </div>
 
         {needsEngineer && (
-          <div className="space-y-6">
+          <div className="mt-16">
             <h2 className="text-lg sm:text-xl font-semibold">Seleziona un fonico</h2>
 
             {isLoading ? (
@@ -270,7 +277,7 @@ export default function EngineerPage() {
                 {/* Available engineers */}
                 {availableEngineers.length > 0 && (
                   <div>
-                    <h3 className="text-base font-medium mb-4">Fonici disponibili nella tua fascia oraria</h3>
+                    <h3 className="text-base font-medium my-4">Fonici disponibili nella tua fascia oraria</h3>
                     <div className="space-y-4">
                       {availableEngineers.map((engineer) => (
                         <EngineerCard
@@ -287,11 +294,11 @@ export default function EngineerPage() {
                 )}
 
                 {/* Unavailable engineers */}
-                {unavailableEngineers.length > 0 && (
+                {unavailableEngineers.length > 1 && (
                   <div>
                     <h3 className="text-base font-medium mb-4">Fonici non disponibili nella tua fascia oraria</h3>
                     <div className="space-y-4">
-                      {unavailableEngineers.map((engineer) => (
+                      {unavailableEngineers.filter((u) => u.id != 'cm8z06fn00002mytvfftqrkgx').map((engineer) => (
                         <EngineerCard
                           key={engineer.id}
                           //@ts-ignore
@@ -299,7 +306,7 @@ export default function EngineerPage() {
                           name={engineer.name}
                           isUnavailable={true}
                           unavailabilityInfo={engineer.unavailabilityInfo}
-                          onSelectAlternativeSlot={(alt) => handleSelectAlternativeSlot(alt, engineer.id)}
+                          onSelectAlternativeSlot={handleSelectAlternativeSlot}
                         />
                       ))}
                     </div>
@@ -316,7 +323,7 @@ export default function EngineerPage() {
           </div>
         )}
 
-        <div className="flex justify-end">
+        <div className="flex justify-end mt-16">
           <Button
             size="lg"
             asChild

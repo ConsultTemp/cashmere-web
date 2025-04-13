@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import type { ApiError } from "@/types/auth"
-import type { CreateEntity } from "@/types/types"
+import type { CreateEntity, Entity } from "@/types/types"
 import { entityApi } from "@/api/entities"
 import { useUserStore } from "@/store/user-store"
 
@@ -54,10 +54,41 @@ export const useEntity = () => {
         }
     }
 
+    const deleteEntity = async (id: string) => {
+        try {
+            setIsLoading(true)
+            setError(null)
+            const response = await entityApi.delete(id)
+            return response
+        } catch (err) {
+            setError(err as ApiError)
+            return null
+        } finally {
+            setIsLoading(false)
+        }
+    }
+    const updateEntityName = async (id: string, entity: Entity) => {
+        console.log(id)
+        try {
+            setIsLoading(true)
+            setError(null)
+            const response = await entityApi.update(id, entity)
+            return response
+        } catch (err) {
+            setError(err as ApiError)
+            return null
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
+
     return {
         getAll,
         createEntity,
         getInvoices,
+        deleteEntity, 
+        updateEntityName,
         isLoading,
         error,
     }

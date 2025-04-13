@@ -108,21 +108,18 @@ export default function BookingPage() {
       </Head>
 
       <div className="container max-w-3xl py-6 sm:py-8 px-4 sm:px-6 pb-20 sm:pb-32">
-        <div className="mb-4">
-          <Breadcrumbs items={breadcrumbItems} />
-        </div>
-
-        <Link href="/" className="text-sm text-black underline">
-          Torna alla home
-        </Link>
 
         <div className="mt-4 sm:mt-6 space-y-6 sm:space-y-8">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold">Prenota una sessione</h1>
-            <p className="text-gray-400 mt-2">Organizza la tua sessione in modo semplice e veloce</p>
+          <div className="space-y-2 mb-16">
+
+            <Link href="/" className="text-sm text-black underline">
+              Torna alla home
+            </Link>
+            <h1 className="text-2xl sm:text-3xl poppins-semibold">Prenota una sessione</h1>
+            <p className="text-gray-400 text-sm">Organizza la tua sessione in modo semplice e veloce</p>
           </div>
           <div>
-            <h2 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">Di quali servizi hai bisogno?</h2>
+            <h2 className="text-xl sm:text-2xl font-semibold mb-2">Di quali servizi hai bisogno?</h2>
             <p className="text-gray-400 mb-4 sm:mb-6 text-sm sm:text-base">
               Seleziona uno o più servizi oppure scegli tra i pacchetti.
             </p>
@@ -154,18 +151,18 @@ export default function BookingPage() {
             </div>
           </div>
           <div className="bg-gray-100 p-4 sm:p-6 rounded-lg">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-4 sm:mb-6">
-              <div className="w-16 h-16 sm:w-1/6 aspect-square p-4 sm:p-8">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center sm:items-center gap-4 mb-8">
+              <div className="w-16 h-16 sm:w-1/6 aspect-square flex flex-col items-center justify-center">
                 <Image
                   src={"/Pacchetti.svg"}
                   alt={"Pacchetti di servizi musicali di Cashmere Studio"}
-                  width={200}
-                  height={200}
+                  width={50}
+                  height={50}
                   className="object-square object-cover transition-transform duration-300 hover:scale-105 rounded-md"
                 />
               </div>
               <div>
-                <h3 className="font-semibold">Pacchetti</h3>
+                <h3 className="font-semibold text-xl">Pacchetti</h3>
                 <p className="text-sm text-gray-400">Scegli tra i nostri pacchetti di servizi musicali</p>
               </div>
             </div>

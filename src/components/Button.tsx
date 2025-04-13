@@ -7,7 +7,7 @@ import Link from "next/link"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:opacity-[85%]",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:opacity-[85%]",
   {
     variants: {
       variant: {
@@ -20,13 +20,13 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
-        gradient: "bg-gradient-to-r from-[#6FC7DF] to-[#08B1DF] text-white",
+        gradient: "bg-gradient-to-r from-[#6FC7DF] to-[#08B1DF] text-white poppins-medium",
         light_blue:'bg-cashmere-lightblue text-cashmere-dark-lightblue',
         gray: "bg-gray-100 text-black",
         danger: "bg-gradient-to-r from-[#ff0000] to-[#ff0000] text-white"
       },
       size: {
-        default: "h-10 px-4 py-2 text-sm",
+        default: "h-10 px-6 py-2 text-sm",
         sm: "h-9 rounded-md px-3 text-sm",
         lg: "h-11 rounded-md px-8 text-base",
         xs: "h-8 px-2 py-0 text-xs rounded-md",
@@ -52,6 +52,7 @@ export interface ButtonProps
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, bgColor, to, action, onClick, ...props }, ref) => {
     // Gestione dello stile per bgColor
+    //@ts-ignore
     const buttonStyle = variant === 'bgColor' && bgColor ? { backgroundColor: bgColor } : {}
     
     // Gestione del click

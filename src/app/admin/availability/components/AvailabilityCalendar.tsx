@@ -83,7 +83,10 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
     const fetchEngineersBooking = async () => {
       setIsLoading(true)
       try {
+        console.log("fonico selezionato: ", selectedEngineer)
+        console.log(selectedEngineer)
         const data = await getEngineerBookings(selectedEngineer)
+        console.log(data)
         setBookings(data)
         console.log("Prenotazioni ricevute:", data)
       } catch (error) {
@@ -350,11 +353,11 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
     // Genera gli eventi delle ferie
     const generateHolidayEvents = useCallback(() => {
       if (!holidays.length) return []
-
-      return holidays.map((holiday) => {
+      //@ts-ignore
+      return holidays.filter((h) => h.state == "CONFERMATO").map((holiday) => {
         const startDate = new Date(holiday.start)
         const endDate = new Date(holiday.end)
-        
+
         return {
           id: `holiday-${holiday.id}`,
           title: "Ferie",
@@ -371,7 +374,8 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
     const eventsToDisplay = useCallback(() => {
       const availabilityEvents = generateRecurringEvents()
       const holidayEvents = generateHolidayEvents()
-
+      console.log("vacanze")
+      console.log(holidayEvents)
       // Aggiungi le prenotazioni e le ferie
       const allEvents = [
         ...availabilityEvents,
@@ -554,25 +558,25 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
                     eventResize={
                       isEditMode
                         ? (info) => {
-                            // Update the availability duration when resized
-                            // Estrai l'ID originale dalla stringa (rimuovi il suffisso -weekOffset)
-                            const originalId = info.event.extendedProps.originalId
-                            const eventDay = info.event.extendedProps.day
+                          // Update the availability duration when resized
+                          // Estrai l'ID originale dalla stringa (rimuovi il suffisso -weekOffset)
+                          const originalId = info.event.extendedProps.originalId
+                          const eventDay = info.event.extendedProps.day
 
-                            updateAvailability(originalId, {
-                              day: eventDay,
-                              start: format(info.event.start!, "HH:mm"),
-                              end: format(info.event.end!, "HH:mm"),
-                              engineerId: selectedEngineer,
+                          updateAvailability(originalId, {
+                            day: eventDay,
+                            start: format(info.event.start!, "HH:mm"),
+                            end: format(info.event.end!, "HH:mm"),
+                            engineerId: selectedEngineer,
+                          })
+                            .then(() => {
+                              fetchAvailabilities()
                             })
-                              .then(() => {
-                                fetchAvailabilities()
-                              })
-                              .catch((error: any) => {
-                                console.error("Error updating availability:", error)
-                                info.revert()
-                              })
-                          }
+                            .catch((error: any) => {
+                              console.error("Error updating availability:", error)
+                              info.revert()
+                            })
+                        }
                         : undefined
                     }
                   />

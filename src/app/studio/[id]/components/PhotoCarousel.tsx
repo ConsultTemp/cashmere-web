@@ -15,9 +15,9 @@ export function PhotoCarouselDialog({ isOpen, onClose, images, studioName }: Pho
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogTitle />
-            <DialogContent className="max-w-3xl">
+            <DialogContent className="max-w-2xl">
                 <Carousel>
-                    <CarouselContent>
+                    <CarouselContent className="p-8">
                         {images.map((image, index) => (
                             <CarouselItem key={index}>
                                 <div className="aspect-square relative overflow-hidden rounded-lg">

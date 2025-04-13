@@ -205,7 +205,7 @@ export default function HolidaysApprovalPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Tutti i fonici</SelectItem>
-              {engineers.map((en) => {
+              {engineers.filter((e) => e.id != 'cm8z06fn00002mytvfftqrkgx').map((en) => {
                 return (
                   <SelectItem key={en.id} value={en.id}>
                     {en.username}

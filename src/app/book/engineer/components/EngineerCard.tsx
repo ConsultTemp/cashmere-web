@@ -2,27 +2,35 @@
 
 interface EngineerCardProps {
   name: string
+  id: string
   isSelected?: boolean
   isUnavailable?: boolean
   unavailabilityInfo?: {
     alternativeDates: Array<{
       date: string
       timeRange: string
+      studios?: string[]
     }>
     message?: string
   }
   onSelect?: () => void
-  onSelectAlternativeSlot?: (alt: { date: string; timeRange: string }) => void
+  onSelectAlternativeSlot?: (alt: { date: string; timeRange: string }, engineerId: string, studioId?: string) => void
 }
-
+import { studios } from "@/lib/studios"
+import { useBookingStore } from "@/store/booking-store"
 export function EngineerCard({
   name,
+  id,
   isSelected,
   isUnavailable,
   unavailabilityInfo,
   onSelect,
   onSelectAlternativeSlot,
 }: EngineerCardProps) {
+  console.log("unavailability my slatt")
+  
+  const { selectedStudio } = useBookingStore()
+  console.log(selectedStudio)
   return (
     <div className="w-full">
       {!isUnavailable ? (
@@ -56,8 +64,8 @@ export function EngineerCard({
           </div>
 
           {isUnavailable && unavailabilityInfo && (
-            <div className="mt-2 text-red-500">
-              {unavailabilityInfo.message || `${name} non è disponibile nella fascia oraria selezionata.`}
+            <div className="mt-2">
+              <p className="text-red-500">{unavailabilityInfo.message || `${name} non è disponibile nella fascia oraria selezionata.`}</p>
               {unavailabilityInfo.alternativeDates && unavailabilityInfo.alternativeDates.length > 0 && (
                 <div className="mt-2">
                   <p className="text-sm font-medium">Orari alternativi disponibili:</p>
@@ -65,10 +73,19 @@ export function EngineerCard({
                     {unavailabilityInfo.alternativeDates.map((alt, i) => (
                       <div
                         key={i}
-                        className="text-sm p-2 hover:bg-gray-100 cursor-pointer rounded flex items-center"
-                        onClick={() => onSelectAlternativeSlot && onSelectAlternativeSlot(alt)}
+                        className="text-sm p-2 cursor-pointer rounded flex items-center flex flex-row"
                       >
                         <span className="mr-2">📅</span> {alt.date} {alt.timeRange}
+                        <div className="flex flex-row flex-wrap items-center gap-2 mx-2">
+                          { ( selectedStudio && !alt.studios?.includes(selectedStudio)) && 
+                            alt.studios && alt.studios.map((s)=> {
+                              const studioname = studios.find((st) => st.dbId == s)
+                              if(!(studioname && studioname.dbId) ){return null}
+                              return<p onClick={() => onSelectAlternativeSlot && onSelectAlternativeSlot(alt, id, s)} className="py-1 px-2 bg-gray-100 text-black hover:bg-gray-200 rounded-sm" key={s}>{studioname.name}</p>
+                            })
+                          }
+                         {!( selectedStudio && !alt.studios?.includes(selectedStudio)) &&  <p className="py-1 px-2 bg-gray-100 text-black  hover:bg-gray-200 rounded-sm" onClick={() => onSelectAlternativeSlot && onSelectAlternativeSlot(alt, id)}>Seleziona</p>}
+                        </div>
                       </div>
                     ))}
                   </div>

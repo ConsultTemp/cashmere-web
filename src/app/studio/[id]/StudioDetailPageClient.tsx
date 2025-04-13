@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Camera } from "lucide-react"
+import { Camera, GalleryThumbnails, Images } from "lucide-react"
 import { Button } from "@/components/Button"
 import ServicesSection from "@/app/_components/sections/ServicesSection"
 import Footer from "@/components/Footer"
@@ -107,12 +107,8 @@ export default function StudioDetailPageClient() {
   }
 
   return (
-    <div className="h-screen w-screen flex flex-col">
-      <div className="flex-1 overflow-y-auto">
-        {/* Breadcrumbs con lo stesso padding delle altre sezioni */}
-        <div className="px-4 sm:px-8 md:px-12 lg:px-16 xl:px-32 py-2">
-          <Breadcrumbs items={breadcrumbItems} />
-        </div>
+    <div className="">
+      <div className="">
 
         {/* Video Header */}
         <div className="relative h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px]">
@@ -131,15 +127,15 @@ export default function StudioDetailPageClient() {
           </video>
 
           <div className="absolute inset-0 bg-black/40" aria-hidden="true" />
-          <div className="absolute inset-0 top-0 left-0 flex flex-col sm:flex-row items-start justify-start p-4 sm:p-8 md:p-12 lg:p-16 xl:p-32 gap-4 sm:gap-8">
+          <div className="absolute inset-0 top-0 left-0 flex flex-col sm:flex-row items-start justify-start p-4 sm:p-8 md:p-12 lg:p-16 xl:p-12 gap-4 sm:gap-8">
             <h1 className="text-white text-3xl sm:text-4xl md:text-5xl font-bold">{studio.name}</h1>
             <Button
               variant="outline"
-              className="text-white bg-black/50 text-sm"
+              className="text-white bg-black/50 text-sm border border-[1px] border-white"
               onClick={() => setIsPhotoDialogOpen(true)}
               aria-label={`Sfoglia le foto dello studio ${studio.name}`}
             >
-              <Camera className="w-4 h-4 mr-2" aria-hidden="true" />
+              <Images className="w-6 h-6 mr-1" aria-hidden="true" />
               Sfoglia le foto
             </Button>
           </div>
@@ -148,7 +144,7 @@ export default function StudioDetailPageClient() {
         <div className="flex flex-col gap-8 sm:gap-12 md:gap-16 items-center px-4 sm:px-8 md:px-12 lg:px-16 xl:px-32 py-8 sm:py-12 md:py-16">
           {/* Equipment Section */}
           <section className="w-full" aria-labelledby="equipment-heading">
-            <h2 id="equipment-heading" className="text-xl sm:text-2xl font-bold mb-4 sm:mb-8">
+            <h2 id="equipment-heading" className="text-xl sm:text-2xl font-bold mb-4">
               Strumentazione
             </h2>
             <div className="flex flex-wrap gap-2 sm:gap-3">
@@ -162,7 +158,7 @@ export default function StudioDetailPageClient() {
 
           {/* Description Section */}
           <section className="w-full" aria-labelledby="description-heading">
-            <h2 id="description-heading" className="text-xl sm:text-2xl font-bold mb-4 sm:mb-8">
+            <h2 id="description-heading" className="text-xl sm:text-2xl font-bold mb-4">
               Descrizione dello studio
             </h2>
             <div className="space-y-4">
@@ -176,8 +172,6 @@ export default function StudioDetailPageClient() {
 
           <ServicesSection />
         </div>
-
-        <Footer />
       </div>
 
       <PhotoCarouselDialog

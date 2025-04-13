@@ -38,7 +38,7 @@ export default function ServicesSection(id: any) {
   console.log(id)
   return (
     <section>
-      <h2 className="mb-8 sm:mb-12 text-2xl sm:text-3xl font-bold">I nostri servizi</h2>
+      <h2 className="mb-8 sm:mb-8 text-2xl sm:text-3xl poppins-semibold">I nostri servizi</h2>
 
       <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
         {services

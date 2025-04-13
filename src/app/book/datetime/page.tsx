@@ -41,13 +41,13 @@ export default function DateTimePage() {
         <BackButton href="/book" />
         <BookingSummary />
       </div>
-      <div className="mt-4 sm:mt-6 space-y-6 sm:space-y-8">
+      <div className="mt-4 sm:mt-6 space-y-16 sm:space-y-16">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold">Quando vuoi venire in studio?</h1>
           <p className="text-gray-400 font-light mt-2">Seleziona data e ora della sessione</p>
         </div>
 
-        <div>
+        <div className="mt-16">
           <div className="flex flex-col justify-between items-start w-full mb-4">
             <h2 className="text-lg sm:text-xl font-semibold">Seleziona data</h2>
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between w-full gap-2 sm:gap-0">
@@ -77,8 +77,8 @@ export default function DateTimePage() {
                       p-3 sm:p-4 text-center rounded-lg cursor-pointer border text-sm sm:text-base
                       ${
                         selectedDate?.toDateString() === date.toDateString()
-                          ? "border-primary bg-primary/5"
-                          : "hover:bg-muted/50"
+                          ? "border-black bg-gray-50"
+                          : "hover:border-black"
                       }
                     `}
                     onClick={() => setSelectedDate(date)}
@@ -139,7 +139,7 @@ export default function DateTimePage() {
 
         <div className="text-xs sm:text-sm text-gray-400">
           Per prenotazioni periodiche o superiori alle 4 ore scrivi su Whatsapp al numero{" "}
-          <a href="tel:3514206294" className="text-primary hover:underline">
+          <a href="tel:3514206294" className="text-black underline">
             351 420 6294
           </a>{" "}
           oppure su Instagram a questo profilo:{" "}
@@ -147,7 +147,7 @@ export default function DateTimePage() {
             href="https://instagram.com/cashmerestudiomilano"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-primary hover:underline"
+            className="text-black underline"
           >
             @cashmerestudiomilano
           </a>

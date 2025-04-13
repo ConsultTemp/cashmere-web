@@ -95,13 +95,8 @@ export default function ServicePageClient() {
   }
 
   return (
-    <div className="h-screen w-screen flex flex-col">
-      <NavbarVariants variant="Home" />
-      <div className="flex-1 overflow-y-auto">
-        {/* Breadcrumbs con lo stesso padding delle altre sezioni */}
-        <div className="px-4 sm:px-8 md:px-12 lg:px-16 xl:px-32 py-2">
-          <Breadcrumbs items={breadcrumbItems} />
-        </div>
+    <div className="">
+      <div className="">
 
         {/* Hero Section */}
         <div className="relative h-[250px] sm:h-[300px] md:h-[400px]">
@@ -114,10 +109,7 @@ export default function ServicePageClient() {
           </div>
           <div className="relative h-full flex items-center px-4 sm:px-8 md:px-12 lg:px-16 xl:px-32">
             <div className="flex items-center gap-4">
-              <div className="p-2 rounded-lg bg-white backdrop-blur-sm" aria-hidden="true">
-                {service.icon}
-              </div>
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white">{service.title}</h1>
+              <h1 className="text-3xl sm:text-5xl md:text-6xl poppins-semibold text-white">{service.title}</h1>
             </div>
           </div>
         </div>
@@ -127,8 +119,6 @@ export default function ServicePageClient() {
           <article className="w-full prose prose-lg max-w-none">{service.content}</article>
           <ServicesSection id={typeof id == "string" ? id : ""} />
         </div>
-
-        <Footer />
       </div>
 
       {/* JSON-LD per SEO */}

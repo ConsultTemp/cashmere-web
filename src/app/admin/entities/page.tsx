@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Search, X, CalendarIcon, ChevronsUpDown, Check, RefreshCw } from "lucide-react"
+import { Search, X, CalendarIcon, ChevronsUpDown, Check, RefreshCw, Edit } from "lucide-react"
 import { Button } from "@/components/Button"
 import { Input } from "@/components/Input"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/Dialog"
@@ -15,6 +15,8 @@ import { Calendar } from "@/components/Calendar"
 import { format } from "date-fns"
 import { it } from "date-fns/locale"
 import { cn } from "@/lib/utils"
+import { Entity } from "@/types/types"
+import { studios } from "@/lib/studios"
 
 // Data types
 interface User {
@@ -24,14 +26,15 @@ interface User {
   notes?: string
 }
 
-interface Entity {
+interface StudiosData{
   id: string
-  name: string
+  hours: number
 }
 
 interface InvoiceData {
   fonicoName: string
   totHours: number
+  studios: StudiosData[]
 }
 
 export default function RosterManagementPage() {
@@ -50,7 +53,7 @@ export default function RosterManagementPage() {
   const [openEntityCombobox, setOpenEntityCombobox] = useState(false)
   const [selectedUser, setSelectedUser] = useState<string>("")
   const [selectedEntity, setSelectedEntity] = useState<string>("")
-  const [artistNotes, setArtistNotes] = useState<string>("")
+  const [entityToEdit, setEntityToEdit] = useState<Entity | null>(null)
 
   // Billing calculation states
   const [billingEntityOpen, setBillingEntityOpen] = useState(false)
@@ -65,7 +68,7 @@ export default function RosterManagementPage() {
   const [isLoading, setIsLoading] = useState(false)
 
   // Hooks
-  const { getAll, createEntity, getInvoices } = useEntity()
+  const { getAll, createEntity, getInvoices, updateEntityName, deleteEntity } = useEntity()
   const { getUsers, updateEntity } = useUser()
 
   // Fetch entities and users
@@ -106,6 +109,8 @@ export default function RosterManagementPage() {
         }
 
         const data = await getInvoices(id, query)
+        console.log("bomboclat")
+        console.log(data)
         setInvoiceData(data)
       } catch (error) {
         console.error("Error fetching invoice data:", error)
@@ -146,9 +151,13 @@ export default function RosterManagementPage() {
 
   // Create new entity
   const handleCreateEntity = () => {
-    createEntity({
-      name: newEntityName,
-    })
+    if (!(entityToEdit && entityToEdit.id)) {
+      createEntity({
+        name: newEntityName,
+      })
+    } else {
+      updateEntityName(entityToEdit.id, entityToEdit)
+    }
     setAddEntityOpen(false)
     setNewEntityName("")
     setTimeout(() => {
@@ -160,7 +169,6 @@ export default function RosterManagementPage() {
   const openAddArtist = () => {
     setSelectedUser("")
     setSelectedEntity("")
-    setArtistNotes("")
     setAddArtistOpen(true)
   }
 
@@ -169,7 +177,6 @@ export default function RosterManagementPage() {
     setSelectedArtist(artist)
     setSelectedUser(artist.id)
     setSelectedEntity(artist.entityId || "")
-    setArtistNotes(artist.notes || "")
     setEditArtistOpen(true)
   }
 
@@ -193,6 +200,20 @@ export default function RosterManagementPage() {
     setAddArtistOpen(false)
     setEditArtistOpen(false)
     updateEntity(userId, entityId)
+    setTimeout(() => {
+      refresh()
+    }, 1000)
+  }
+  const editEntity = (entity: Entity) => {
+    setAddEntityOpen(true)
+    setEntityToEdit(entity)
+  }
+
+  const entityDelete = () => {
+    if (entityToEdit && entityToEdit.id) {
+      deleteEntity(entityToEdit.id)
+    }
+    setAddEntityOpen(false)
     setTimeout(() => {
       refresh()
     }, 1000)
@@ -235,11 +256,11 @@ export default function RosterManagementPage() {
           {filteredEntities.map((entity) => (
             <AccordionItem key={entity.id} value={`item-${entity.id}`} className="border-b py-2">
               <AccordionTrigger className="hover:no-underline py-2">
-                <span className="font-medium">{entity.name}</span>
+                <span className="font-medium flex flex-row gap-2 items-center">{entity.name} {entity.id !== 'cm9fo3axb0000opynr5h2io9n' && <Edit onClick={() => editEntity(entity)} className="w-4 h-4" strokeWidth={2} />}</span>
               </AccordionTrigger>
               <AccordionContent>
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {getArtistsForEntity(entity.id).map((artist) => (
+                  {getArtistsForEntity(entity.id).filter((a) => a.id !='cm8z07nn20003mytvvatk4fvd').map((artist) => (
                     <div
                       key={artist.id}
                       className="bg-gray-100 rounded-full px-4 py-2 text-sm cursor-pointer"
@@ -295,6 +316,7 @@ export default function RosterManagementPage() {
                           // Reset artist selection when entity changes
                           setBillingArtist("")
                         }}
+                        className="text-black"
                       >
                         <Check
                           className={cn("mr-2 h-4 w-4", billingEntity === entity.id ? "opacity-100" : "opacity-0")}
@@ -366,6 +388,7 @@ export default function RosterManagementPage() {
                   mode="single"
                   selected={fromDate}
                   onSelect={(date) => {
+                    //@ts-ignore
                     setFromDate(date)
                     setFromCalendarOpen(false)
                   }}
@@ -389,6 +412,7 @@ export default function RosterManagementPage() {
                   mode="single"
                   selected={toDate}
                   onSelect={(date) => {
+                    //@ts-ignore
                     setToDate(date)
                     setToCalendarOpen(false)
                   }}
@@ -423,6 +447,15 @@ export default function RosterManagementPage() {
                 <div key={index} className="bg-white rounded-lg p-4 border">
                   <p className={`${color} font-medium`}>{item.fonicoName}</p>
                   <p className="text-2xl font-bold">{Math.round(item.totHours * 10) / 10} ore</p>
+                  <div>
+                    {
+                      item.studios.map((s, index) => {
+                        const stu = studios.find((st) => st.dbId == s.id)
+                        //@ts-ignore
+                        return <p className="font-light" key={index}><span className="font-bold">{stu.name}</span>: {s.hours} ore</p>
+                      })
+                    }
+                  </div>
                 </div>
               )
             })}
@@ -445,9 +478,6 @@ export default function RosterManagementPage() {
         <DialogContent className="sm:max-w-md p-0 overflow-hidden">
           <DialogHeader className="px-6 py-4 border-b flex flex-row items-center justify-between">
             <DialogTitle className="text-xl font-medium">Aggiungi artista</DialogTitle>
-            <Button variant="ghost" size="icon" onClick={() => setAddArtistOpen(false)} className="h-8 w-8">
-              <X size={24} />
-            </Button>
           </DialogHeader>
           <div className="p-6">
             <div className="space-y-6">
@@ -523,6 +553,7 @@ export default function RosterManagementPage() {
                                 setSelectedEntity(entity.id)
                                 setOpenEntityCombobox(false)
                               }}
+                              className="text-black"
                             >
                               <Check
                                 className={cn(
@@ -539,16 +570,6 @@ export default function RosterManagementPage() {
                   </PopoverContent>
                 </Popover>
               </div>
-
-              <div>
-                <label className="text-lg font-medium mb-2 block">Note</label>
-                <Textarea
-                  placeholder="Note"
-                  value={artistNotes}
-                  onChange={(e) => setArtistNotes(e.target.value)}
-                  className="min-h-[120px]"
-                />
-              </div>
             </div>
           </div>
           <div className="border-t p-4 flex justify-between">
@@ -559,6 +580,9 @@ export default function RosterManagementPage() {
               className="bg-black text-white text-lg font-medium px-8 rounded-md"
               onClick={() => {
                 assignUser(selectedUser, selectedEntity)
+                setTimeout(() => {
+                  refresh()
+                }, 1000)
               }}
             >
               Conferma
@@ -635,15 +659,6 @@ export default function RosterManagementPage() {
                 </Popover>
               </div>
 
-              <div>
-                <label className="text-lg font-medium mb-2 block">Note</label>
-                <Textarea
-                  placeholder="Note"
-                  value={artistNotes}
-                  onChange={(e) => setArtistNotes(e.target.value)}
-                  className="min-h-[120px]"
-                />
-              </div>
             </div>
           </div>
           <div className="border-t p-4 flex justify-between">
@@ -663,13 +678,13 @@ export default function RosterManagementPage() {
       </Dialog>
 
       {/* Add Entity Modal */}
-      <Dialog open={addEntityOpen} onOpenChange={setAddEntityOpen}>
+      <Dialog open={addEntityOpen} onOpenChange={() => {
+        setAddEntityOpen(!addEntityOpen)
+        setEntityToEdit(null)
+      }} >
         <DialogContent className="w-[95vw] sm:max-w-md mx-auto">
           <DialogHeader className="px-6 py-4 border-b flex flex-row items-center justify-between">
             <DialogTitle className="text-xl font-medium">Aggiungi entità</DialogTitle>
-            <Button variant="ghost" size="icon" onClick={() => setAddEntityOpen(false)} className="h-8 w-8">
-              <X size={24} />
-            </Button>
           </DialogHeader>
 
           <div className="p-6">
@@ -678,8 +693,8 @@ export default function RosterManagementPage() {
                 <label className="text-lg font-medium mb-2 block">Nome entità</label>
                 <Input
                   placeholder="Nome entità"
-                  value={newEntityName}
-                  onChange={(e) => setNewEntityName(e.target.value)}
+                  value={entityToEdit && entityToEdit.id ? entityToEdit?.name : newEntityName}
+                  onChange={(e) => entityToEdit && entityToEdit.id ? setEntityToEdit({ ...entityToEdit, name: e.target.value }) : setNewEntityName(e.target.value)}
                 />
               </div>
             </div>
@@ -688,9 +703,12 @@ export default function RosterManagementPage() {
             <Button variant="ghost" onClick={() => setAddEntityOpen(false)} className="text-lg font-medium">
               Annulla
             </Button>
-            <Button className="bg-black text-white text-lg font-medium px-8 rounded-md" onClick={handleCreateEntity}>
+            <Button className="bg-black text-white text-lg font-medium px-4 rounded-md" onClick={handleCreateEntity}>
               Conferma
             </Button>
+            {entityToEdit && entityToEdit.id && <Button className="bg-red-500 text-white text-lg font-medium px-4 rounded-md" onClick={entityDelete}>
+              Elimina
+            </Button>}
           </div>
         </DialogContent>
       </Dialog>

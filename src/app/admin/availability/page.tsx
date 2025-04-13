@@ -138,7 +138,7 @@ export default function AvailabilityPage() {
                     <SelectValue placeholder="Seleziona fonico" />
                   </SelectTrigger>
                   <SelectContent>
-                    {engineerOptions.map((engineer) => (
+                    {engineerOptions.filter((e) => e.id != 'cm8z06fn00002mytvfftqrkgx').map((engineer) => (
                       <SelectItem key={engineer.id} value={engineer.id}>
                         {/* @ts-ignore */}
                         {engineer.username}
@@ -155,6 +155,7 @@ export default function AvailabilityPage() {
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">
+                  {/* @ts-ignore */}
                   <Calendar mode="single" selected={date} onSelect={handleDateSelect} initialFocus />
                 </PopoverContent>
               </Popover>

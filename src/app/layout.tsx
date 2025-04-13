@@ -5,6 +5,8 @@ import "./globals.css"
 import { defaultSEO } from "@/lib/seo-config"
 import JsonLd from "@/components/SEO/JsonLd"
 import { organizationSchema, websiteSchema } from "@/lib/seo-config"
+import { NavbarVariants } from "@/components/navbar/Navbar"
+import Footer from "@/components/Footer"
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -133,11 +135,18 @@ export default function RootLayout({
         {/* Preload delle risorse critiche */}
         <link rel="preload" as="image" href="/cashmere-logo.svg" />
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        {children}
-        <JsonLd data={organizationSchema} />
-        <JsonLd data={websiteSchema} />
-      </body>
-    </html>
-  )
+      <body className="poppins-regular" >
+        <div className="h-screen w-screen flex flex-col">
+          <NavbarVariants variant="Home" />
+          <div className="flex-1 overflow-y-auto">
+            {children}
+            <Footer/>
+            </div>
+            
+            </div>
+            <JsonLd data={organizationSchema} />
+            <JsonLd data={websiteSchema} />
+          </body>
+        </html>
+        )
 }

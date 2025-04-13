@@ -109,7 +109,7 @@ export default function ConfirmPage() {
 
       <div className="mt-6 space-y-8">
         <div>
-          <h1 className="text-3xl font-bold">Conferma prenotazione</h1>
+          <h1 className="text-3xl poppins-semibold">Conferma prenotazione</h1>
           <p className="text-gray-400 mt-2">Controlla i dettagli e conferma la tua prenotazione</p>
         </div>
 

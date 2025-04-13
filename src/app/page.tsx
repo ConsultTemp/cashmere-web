@@ -42,9 +42,8 @@ export const metadata: Metadata = {
 export default function Home() {
   console.log("Versione 1 brodi")
   return (
-    <div className="h-screen w-screen flex flex-col">
-      <NavbarVariants variant="Home" />
-      <div className="flex-1 overflow-y-auto">
+    <div className="">
+      <div className="">
         <Header />
         <h1 className="text-white">Cashmere Studio Milano - Studio di registrazione</h1>
         <div className="flex flex-col gap-16 sm:gap-24 md:gap-32 items-center px-4 sm:px-8 md:px-12 lg:px-16 xl:px-32 py-16 sm:py-24 md:py-32">
@@ -54,7 +53,6 @@ export default function Home() {
           <MapsSection />
           <PortfolioGrid />
         </div>
-        <Footer />
       </div>
 
       {/* JSON-LD structured data for SEO */}

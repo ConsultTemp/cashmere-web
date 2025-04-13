@@ -122,7 +122,7 @@ export default function AdminLayout({
   }
 
   return (
-    <div className="h-screen overflow-y-auto relative">
+    <div className="">
       {/* Overlay che appare quando la sidebar è aperta */}
       {!isCollapsed && (
         <div

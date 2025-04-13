@@ -51,14 +51,14 @@ export default function ContactPage() {
         </button>
       </div>
 
-      <div className="mt-6 space-y-8">
+      <div className="mt-6">
         <div>
-          <h1 className="text-3xl font-bold">L'ultimo step!</h1>
-          <p className="text-gray-400 mt-2">Inserisci i tuoi contatti</p>
+          <h1 className="text-3xl poppins-semibold">L'ultimo step!</h1>
+          <p className="text-gray-400 my-3">Inserisci i tuoi contatti</p>
           <p className="text-gray-400 mt-1">Ci serviranno per confermare la sessione.</p>
         </div>
 
-        <div className="space-y-6">
+        <div className="mt-12">
           <div className="space-y-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">Nome utente di Instagram</label>
@@ -101,7 +101,7 @@ export default function ContactPage() {
               />
             </div>
           </div>
-          <div>
+          <div className="mt-12 mb-6">
             <h6 className="font-bold mb-4">Riepilogo prenotazione</h6>
             <SummaryContent />
           </div>
