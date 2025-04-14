@@ -15,7 +15,9 @@ export default function DateTimePage() {
     useBookingStore()
 
   const dates = Array.from({ length: 30 }, (_, i) => addDays(new Date(), i))
-
+console.log(selectedDate)
+console.log(timeFrom)
+console.log(timeTo)
   const selectedService = services.find((s) => s.id === selectedPackage)
   const packageHasDuration = !!selectedService?.duration
 
@@ -153,11 +155,11 @@ export default function DateTimePage() {
           </a>
         </div>
 
-        <div className="flex justify-end">
+        {selectedDate && timeFrom && timeTo &&<div className="flex justify-end">
           <Button size="lg" asChild variant="gradient" className="px-8 sm:px-12 py-4 sm:py-6">
             <Link href="/book/studio">Avanti</Link>
           </Button>
-        </div>
+        </div>}
       </div>
     </div>
   )
