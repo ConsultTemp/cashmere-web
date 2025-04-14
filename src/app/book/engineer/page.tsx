@@ -295,7 +295,7 @@ export default function EngineerPage() {
 
                 {/* Unavailable engineers */}
                 {unavailableEngineers.length > 1 && (
-                  <div>
+                  <div className="mt-16">
                     <h3 className="text-base font-medium mb-4">Fonici non disponibili nella tua fascia oraria</h3>
                     <div className="space-y-4">
                       {unavailableEngineers.filter((u) => u.id != 'cm8z06fn00002mytvfftqrkgx').map((engineer) => (

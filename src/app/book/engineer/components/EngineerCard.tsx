@@ -66,7 +66,7 @@ export function EngineerCard({
           {isUnavailable && unavailabilityInfo && (
             <div className="mt-2">
               <p className="text-red-500">{unavailabilityInfo.message || `${name} non è disponibile nella fascia oraria selezionata.`}</p>
-              {unavailabilityInfo.alternativeDates && unavailabilityInfo.alternativeDates.length > 0 && (
+              {/* {unavailabilityInfo.alternativeDates && unavailabilityInfo.alternativeDates.length > 0 && (
                 <div className="mt-2">
                   <p className="text-sm font-medium">Orari alternativi disponibili:</p>
                   <div className="mt-1 space-y-1">
@@ -76,21 +76,12 @@ export function EngineerCard({
                         className="text-sm p-2 cursor-pointer rounded flex items-center flex flex-row"
                       >
                         <span className="mr-2">📅</span> {alt.date} {alt.timeRange}
-                        <div className="flex flex-row flex-wrap items-center gap-2 mx-2">
-                          { ( selectedStudio && !alt.studios?.includes(selectedStudio)) && 
-                            alt.studios && alt.studios.map((s)=> {
-                              const studioname = studios.find((st) => st.dbId == s)
-                              if(!(studioname && studioname.dbId) ){return null}
-                              return<p onClick={() => onSelectAlternativeSlot && onSelectAlternativeSlot(alt, id, s)} className="py-1 px-2 bg-gray-100 text-black hover:bg-gray-200 rounded-sm" key={s}>{studioname.name}</p>
-                            })
-                          }
-                         {!( selectedStudio && !alt.studios?.includes(selectedStudio)) &&  <p className="py-1 px-2 bg-gray-100 text-black  hover:bg-gray-200 rounded-sm" onClick={() => onSelectAlternativeSlot && onSelectAlternativeSlot(alt, id)}>Seleziona</p>}
-                        </div>
+                        
                       </div>
                     ))}
                   </div>
                 </div>
-              )}
+              )} */}
             </div>
           )}
         </div>
