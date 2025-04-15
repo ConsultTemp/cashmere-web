@@ -8,7 +8,7 @@ import spotify from '../../../public/spotify-grey.svg'
 import mambolosco from '../../../public/Foto artisti/Mambolosco.jpg'
 import flacog from '../../../public/Foto artisti/Flaco-G.jpg'
 import moise from '../../../public/Foto artisti/Moise Kean.jpg'
-import niko from '../../../public/Foto artisti/Niko-Pandetta.jpg'
+import niko from '../../../public/Foto artisti/Niko-pandetta.jpg'
 import neima from '../../../public/Foto artisti/Neima.jpg'
 import niky from '../../../public/Foto artisti/Niky-Savage.jpg'
 
