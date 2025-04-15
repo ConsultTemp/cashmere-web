@@ -13,12 +13,15 @@ import { useAvailability } from "@/hooks/useAvailability"
 import { useBooking } from "@/hooks/useBooking"
 import { useHoliday } from "@/hooks/useHoliday"
 import { Card, CardContent } from "@/components/Card"
+import { useUserStore } from "@/store/user-store"
 
 interface AvailabilityCalendarProps {
   view: "timeGridDay" | "timeGridWeek"
   onViewChange: (view: "timeGridDay" | "timeGridWeek") => void
   selectedEngineer: string
   date: Date
+  engineerName: string
+  isEditMode: boolean
 }
 
 interface Availability {
@@ -37,9 +40,9 @@ interface Holiday {
 }
 
 export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
-  ({ view, onViewChange, selectedEngineer, date }, ref) => {
+  ({ view, onViewChange, selectedEngineer,engineerName, date, isEditMode }, ref) => {
     const calendarRef = useRef<any>(null)
-    const [isEditMode, setIsEditMode] = useState(false)
+
     const [availabilities, setAvailabilities] = useState<Availability[]>([])
     const [holidays, setHolidays] = useState<Holiday[]>([])
     const [selectedSlot, setSelectedSlot] = useState<{ start: Date; end: Date; day: string } | null>(null)
@@ -52,6 +55,7 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
     const { getEngineerAvailability, createAvailability, updateAvailability, deleteAvailability } = useAvailability()
     const { getEngineerBookings } = useBooking()
     const { getUserHolidays } = useHoliday()
+    const {user} = useUserStore()
 
     useImperativeHandle(ref, () => ({
       getApi: () => calendarRef.current?.getApi(),
@@ -423,7 +427,6 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
     }
 
     const handleSaveChanges = async () => {
-      setIsEditMode(false)
       await fetchAvailabilities()
     }
 
@@ -488,22 +491,12 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
       <div className="overflow-y-scroll">
         <div className="">
           <div className="h-fit">
-            {/* Edit mode overlay button */}
-            <div className="right-4 top-4 z-10 py-4">
-              <Button
-                variant={isEditMode ? "default" : "outline"}
-                onClick={isEditMode ? handleSaveChanges : () => setIsEditMode(true)}
-                className={isEditMode ? "bg-emerald-500 hover:bg-emerald-600" : ""}
-                disabled={isLoading}
-              >
-                {isEditMode ? "Salva modifiche" : "Modifica disponibilità"}
-              </Button>
-            </div>
             <div className="overflow-x-auto">
               <div className="w-full min-w-[800px]">
                 <div className="min-h-[600px] overflow-y-hidden">
                   <FullCalendar
                     ref={calendarRef}
+                    eventDurationEditable={false}
                     plugins={[timeGridPlugin, interactionPlugin]}
                     initialView={view}
                     locale={itLocale}
@@ -520,7 +513,7 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
                       ...getEventColor(event.type),
                     }))}
                     eventContent={(eventInfo) => (
-                      <div className="h-full w-full p-1">
+                      <div className="h-full w-full p-1 overflow-hidden">
                         {isEditMode && eventInfo.event.extendedProps.originalId && (
                           <button
                             className="right-1 top-1 rounded-full bg-white/20 p-0.5 text-white hover:bg-white/40"
@@ -553,7 +546,6 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
                     height="100%"
                     editable={isEditMode}
                     eventStartEditable={false}
-                    eventDurationEditable={isEditMode}
                     datesSet={handleDatesSet}
                     eventResize={
                       isEditMode
@@ -585,7 +577,7 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
             </div>
 
             <div className="mt-24 pb-12 right-4 top-4 z-10 pb-24">
-              <h2 className="mb-4 text-xl font-semibold">Panoramica</h2>
+              <h2 className="mb-4 text-xl font-semibold">Panoramica {engineerName}</h2>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <Card>
                   <CardContent className="pt-6">
@@ -606,7 +598,7 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
                 <Card>
                   <CardContent className="pt-6">
                     <div className="space-y-1">
-                      <p className="text-sm text-indigo-500">Ferie</p>
+                      <p className="text-sm text-red-500">Ferie</p>
                       <p className="text-2xl font-semibold">{getTotalHolidayHours().toFixed(1)} ore</p>
                     </div>
                   </CardContent>

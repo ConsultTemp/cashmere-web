@@ -20,6 +20,8 @@ export default function AvailabilityPage() {
   const [selectedEngineer, setSelectedEngineer] = useState<string>(user?.role == "ENGINEER" ? user?.id : "")
   const [engineers, setEngineers] = useState<Array<{ id: string; name: string }>>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isEditMode, setIsEditMode] = useState(false)
+
   const calendarRef = useRef(null)
   const { getEngineers } = useUser()
   const { getUserHolidays } = useHoliday()
@@ -108,7 +110,8 @@ export default function AvailabilityPage() {
 
   // Gestisci il caso in cui engineers è vuoto
   const engineerOptions = engineers && engineers.length > 0 ? engineers : []
-  const selectedEngineerName = engineerOptions.find((eng) => eng.id === selectedEngineer)?.name || ""
+  //@ts-ignore
+  const selectedEngineerName = engineerOptions.find((eng) => eng.id === selectedEngineer)?.username || ""
 
   return (
     <div className="bg-white p-0 md:p-6 lg:p-8 py-12">
@@ -119,13 +122,24 @@ export default function AvailabilityPage() {
               <Button variant="outline" className="rounded-md px-4 py-2 text-sm font-medium" onClick={handleTodayClick}>
                 Oggi
               </Button>
+              <div className="">
+              <Button
+                variant={isEditMode ? "default" : "outline"}
+                onClick={isEditMode ? () => setIsEditMode(false) : () => setIsEditMode(true)}
+                className={isEditMode ? "bg-emerald-500 hover:bg-emerald-600 rounded-md" : "bg-black border-black text-white hover:bg-black-90 hover:text-white rounded-md"}
+                disabled={isLoading}
+              >
+                {isEditMode ? "Salva modifiche" : "Modifica disponibilità"}
+              </Button>
+            </div>
             </div>
 
             <div className="flex items-center space-x-2">
               <Button variant="ghost" size="icon" onClick={handlePrevClick}>
                 <ChevronLeft className="h-5 w-5" />
               </Button>
-              <h2 className="text-xl font-semibold">{format(date, "MMMM yyyy", { locale: it })}</h2>
+              <h2 className="text-xl font-semibold">{format(date,"MMMM yyyy", { locale: it }).charAt(0).toUpperCase() + 
+                format(date,"MMMM yyyy", { locale: it }).slice(1)}</h2>
               <Button variant="ghost" size="icon" onClick={handleNextClick}>
                 <ChevronRight className="h-5 w-5" />
               </Button>
@@ -150,7 +164,7 @@ export default function AvailabilityPage() {
 
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" size="icon">
+                  <Button variant="outline" size="icon" className="bg-gray-100 border-0">
                     <CalendarIcon className="h-5 w-5" />
                   </Button>
                 </PopoverTrigger>
@@ -171,6 +185,8 @@ export default function AvailabilityPage() {
               onViewChange={handleViewChange}
               selectedEngineer={selectedEngineer}
               date={date}
+              engineerName={selectedEngineerName}
+              isEditMode={isEditMode}
             />
           )}
         </div>

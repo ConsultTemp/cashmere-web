@@ -34,7 +34,40 @@ export default function DateTimePage() {
       const endHour = startHour + selectedService!.duration
       setTimeRange(value, `${endHour}:00`)
     } else {
-      setTimeRange(value, timeTo) // mantiene timeTo
+      // Controlla se l'orario di fine è valido rispetto al nuovo inizio
+      if (timeTo) {
+        const [endHour] = timeTo.split(":").map(Number)
+        if (startHour >= endHour) {
+          // Se l'ora di inizio è >= ora di fine, resetta l'ora di fine
+          setTimeRange(value, null)
+        } else {
+          setTimeRange(value, timeTo)
+        }
+      } else {
+        setTimeRange(value, null)
+      }
+    }
+  }
+
+  const handleEndTimeChange = (value: string) => {
+    if (!value) {
+      setTimeRange(timeFrom, null)
+      return
+    }
+    
+    // Controlla se l'orario di inizio è valido rispetto al nuovo fine
+    if (timeFrom) {
+      const [startHour] = timeFrom.split(":").map(Number)
+      const [endHour] = value.split(":").map(Number)
+      
+      if (endHour <= startHour) {
+        // Se l'ora di fine è <= ora di inizio, resetta l'ora di inizio
+        setTimeRange(null, value)
+      } else {
+        setTimeRange(timeFrom, value)
+      }
+    } else {
+      setTimeRange(null, value)
     }
   }
 
@@ -121,7 +154,11 @@ export default function DateTimePage() {
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">Alle</label>
-              <Select value={timeTo || ""} onValueChange={(value) => setTimeRange(timeFrom, value)} disabled={packageHasDuration}>
+              <Select 
+                value={timeTo || ""} 
+                onValueChange={(value) => handleEndTimeChange(value)} 
+                disabled={packageHasDuration}
+              >
                 <SelectTrigger className="w-full p-2 rounded-md border text-sm">
                   <SelectValue placeholder="Seleziona orario"/>
                 </SelectTrigger>
@@ -164,4 +201,3 @@ export default function DateTimePage() {
     </div>
   )
 }
-

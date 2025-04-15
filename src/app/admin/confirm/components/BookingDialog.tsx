@@ -258,19 +258,19 @@ export function ViewBookingDialog({ isOpen, onClose, booking, onAccept, onReject
         </DialogHeader>
 
         {booking && (
-          <ScrollArea className="max-h-[70vh]">
-            <div className="space-y-6 py-4 pr-4">
+          <ScrollArea className="max-h-[70vh] no-scrollbar">
+            <div className="space-y-6 pt-4">
               <div>
                 <h3 className="text-lg font-semibold mb-2">Data e ora</h3>
                 <div className="flex items-center gap-4">
-                  <div className="bg-gray-100 rounded-md py-3 px-4 flex-1">
+                  <div className="bg-gray-100 rounded-md py-[3.5px] px-4 flex-1">
                     <span>{formatDate(booking.start)}</span>
                   </div>
-                  <div className="bg-gray-100 rounded-md py-3 px-4 w-24 text-center">
+                  <div className="bg-gray-100 rounded-md py-[3.5px] px-4 w-24 text-center">
                     <span>{formatTime(booking.start)}</span>
                   </div>
                   <span>-</span>
-                  <div className="bg-gray-100 rounded-md py-3 px-4 w-24 text-center">
+                  <div className="bg-gray-100 rounded-md py-[3.5px] px-4 w-24 text-center">
                     <span>{formatTime(booking.end)}</span>
                   </div>
                 </div>
@@ -464,24 +464,22 @@ export function ViewBookingDialog({ isOpen, onClose, booking, onAccept, onReject
               </div>
 
               {hasAvailabilityIssues && (
-                <Alert variant="destructive">
+                <Alert variant="destructive" className="flex flex-row items-center">
                   <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>
+                  <AlertDescription className="text-xs">
                     Attenzione: ci sono problemi di disponibilità con il fonico o lo studio selezionato.
                   </AlertDescription>
                 </Alert>
               )}
 
               {report && report.userId && (
-                <Alert variant="destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>Questo utente ha una segnalazione per: {report.reason}</AlertDescription>
+                <Alert variant="destructive"  className="flex flex-row items-center">
+                  <AlertCircle className="h-4 w-4 m-0" />
+                  <AlertDescription className="text-xs flex flex-row items-center">Questo utente è stato precedentemente segnalato per la seguente ragione: {report.reason}</AlertDescription>
                 </Alert>
               )}
 
-              <Separator />
-
-              <DialogFooter className="flex flex-col sm:flex-row sm:justify-between flex-wrap gap-2 px-0">
+              <DialogFooter className="sticky bottom-0 flex flex-col sm:flex-row sm:justify-between flex-wrap gap-2 px-0 bg-white py-4">
                 {/* Prima riga di bottoni */}
                 <div className="flex gap-2 w-full">
                   <Button
@@ -491,23 +489,24 @@ export function ViewBookingDialog({ isOpen, onClose, booking, onAccept, onReject
                   >
                     Rifiuta
                   </Button>
+                  
+                  <Button
+                    variant="outline"
+                    className="border-blue-500 text-blue-500 hover:bg-blue-50 hover:text-blue-500"
+                    onClick={handleContact}
+                  >
+                    Contatta
+                  </Button>
                   <Button className="flex-1 bg-black text-white hover:bg-gray-800" onClick={accept}>
                     Accetta
                   </Button>
                 </div>
 
                 {/* Seconda riga di bottoni */}
-                <div className="flex gap-2 w-full mt-2 sm:mt-0">
-                  <Button
-                    variant="outline"
-                    className="flex-1 border-blue-500 text-blue-500 hover:bg-blue-50 hover:text-blue-500"
-                    onClick={handleContact}
-                  >
-                    <Phone className="mr-2 h-4 w-4" />
-                    Contatta
-                  </Button>
+                <div className="flex flex-row justify-end w-full">
+                  
                   {isModified && (
-                    <Button className="flex-1 bg-green-600 text-white hover:bg-green-700" onClick={handleSaveChanges}>
+                    <Button className="w-fit  bg-green-600 text-white hover:bg-green-700" onClick={handleSaveChanges}>
                       Salva modifiche
                     </Button>
                   )}

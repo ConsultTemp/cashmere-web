@@ -243,7 +243,7 @@ export default function Confirm() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto sm:p-4 md:p-6 py-8 sm:py-12 h-screen overflow-y-auto">
+    <div className="max-w-6xl mx-auto sm:p-4 md:p-6 py-8 sm:py-12">
       <h1 className="text-xl sm:text-2xl font-semibold mb-4 sm:mb-6">Conferma prenotazioni</h1>
       <div className="border rounded-md overflow-x-auto">
         <Table>
@@ -281,7 +281,7 @@ export default function Confirm() {
                   <div>{formatDate(booking.created_at)}</div>
                   <div className="text-gray-500">{formatTime(booking.created_at)}</div>
                 </TableCell>
-                <TableCell className="whitespace-nowrap flex flex-row items-center gap-2">
+                <TableCell className="h-24 flex flex-row items-center justify-center gap-2">
                   {/* @ts-ignore */}
                   {booking.user.username}
                   {/* @ts-ignore */}
@@ -291,12 +291,12 @@ export default function Confirm() {
 
                   {booking.services.map((service, index) => (
                     //@ts-ignore
-                    <div key={index}>{service.name}</div>
+                    <div key={index} className="px-2 py-1 rounded-sm bg-gray-100 text-xs">{service.name}</div>
                   ))}
                 </TableCell>
-                <TableCell className={booking.fonicoId === "Estel" ? "text-pink-500" : "text-gray-500"}>
+                <TableCell>
                   {/* @ts-ignore */}
-                  {booking.fonico.username}
+                  <p className="px-2 py-1 rounded-sm bg-gray-100 text-xs w-fit">{booking.fonico.username}</p>
                 </TableCell>
                 <TableCell className="align-center">
                   <div>{formatDate(booking.start)}</div>
@@ -305,7 +305,7 @@ export default function Confirm() {
                     <span>{formatTime(booking.end)}</span>
                   </div>
                 </TableCell>
-                <TableCell>{getStudioName(booking.studioId)}</TableCell>
+                <TableCell className="whitespace-nowrap"><p className="whitespace-nowrap px-2 py-1 rounded-sm bg-gray-100 text-xs w-fit">{getStudioName(booking.studioId)}</p></TableCell>
                 <TableCell className={booking.state === "CONTATTATO" ? "text-orange-500" : "text-red-500"}>
                   {booking.state}
                 </TableCell>
@@ -313,7 +313,7 @@ export default function Confirm() {
                   <div className="flex gap-2 justify-end">
                     <Button
                       variant="outline"
-                      className="rounded-full px-3 sm:px-6 py-2 h-auto"
+                      className="rounded-full p-2 aspect-square h-auto"
                       onClick={() => handleView(booking)}
                     >
                       <Eye className="h-4 w-4" />
@@ -321,10 +321,10 @@ export default function Confirm() {
                     </Button>
                     <Button
                       variant="gradient"
-                      className="rounded-full px-3 sm:px-6 py-2 h-auto"
+                      className="rounded-full p-2 aspect-square h-auto"
                       onClick={() => handleConfirm(booking)}
                     >
-                      <Check className="h-4 w-4" />
+                      <Check className="h-4 w-4" strokeWidth={3} />
                       <span className="sr-only">Conferma</span>
                     </Button>
                   </div>

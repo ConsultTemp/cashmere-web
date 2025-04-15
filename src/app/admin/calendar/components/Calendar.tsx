@@ -316,6 +316,7 @@ export const BookingCalendar = forwardRef<any, BookingCalendarProps>(({ view, se
             firstDay={1}
             events={filteredEvents}
             editable={canEdit}
+            eventResizableFromStart={canEdit}
             selectable={canEdit}
             selectMirror={true}
             dayMaxEvents={false}
