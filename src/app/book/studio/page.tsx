@@ -155,7 +155,7 @@ export default function StudioPage() {
           const studioData = {
             id: studioAvail.id,
             name: studioDetail.name,
-            description: studioDetail.description.join(" "),
+            description: studioDetail.briefDescription,
             image: studioDetail.image,
           }
 

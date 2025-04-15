@@ -318,3 +318,32 @@
 .poppins-bold {
   font-family: 'PoppinsBold';
 }
+
+.custom-radio {
+  appearance: none; /* Remove default styling */
+  width: 15px; /* Set width */
+  height: 15px; /* Set height */
+  border: 1px solid black; /* Black border */
+  border-radius: 50%; /* Make it circular */
+  outline: none; /* Remove outline */
+  cursor: pointer; /* Change cursor on hover */
+  position: relative; /* Position for the pseudo-element */
+}
+
+.custom-radio:checked {
+  background-color: black; /* Black background when checked */
+}
+
+.custom-radio:checked::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border: 3px solid black; /* Black border */
+  width: 10px; /* Inner circle size */
+  height: 10px; /* Inner circle size */
+  background-color: white; /* Inner circle color */
+  border-radius: 50%; /* Make it circular */
+  transform: translate(-50%, -50%); /* Center the inner circle */
+}
+

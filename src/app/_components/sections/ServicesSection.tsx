@@ -8,7 +8,7 @@ const services = [
     title: "Affitto sala",
     description:
       "Cashmere Studio è il tuo punto di riferimento per la registrazione e la produzione musicale a Milano.",
-    imageUrl: "/Studio 1/1.jpg",
+    imageUrl: "/Affitto sala.jpg",
     hasStudioButtons: true,
   },
   {
@@ -16,21 +16,21 @@ const services = [
     title: "Registrazione",
     description:
       "La fase di registrazione è quella in cui l'artista viene al microfono e registra le sue parti vocali.",
-    imageUrl: "/rec.png",
+    imageUrl: "/Registrazione.jpg",
   },
   {
     id: "2",
     title: "Mix & Master",
     description:
       "Processo finale di lavorazione sulla traccia, in breve è l'attività che serve per far suonare bene una canzone.",
-    imageUrl: "/mixmaster.png",
+    imageUrl: "/Mix&Master.jpg",
   },
   {
     id: "3",
     title: "Produzione",
     description:
       "Il nostro servizio di produzione musicale offre beat personalizzati di alta qualità su misura per l'artista.",
-    imageUrl: "/Studio 2/1.jpg",
+    imageUrl: "/Produzione.jpg",
   },
 ]
 

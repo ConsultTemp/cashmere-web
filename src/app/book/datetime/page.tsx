@@ -9,15 +9,16 @@ import { BackButton } from "../components/BackButton"
 import { BookingSummary } from "../components/BookingSummary"
 import { useBookingStore } from "../../../store/booking-store"
 import { services } from "@/lib/types"
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/Select"
 
 export default function DateTimePage() {
   const { selectedDate, setSelectedDate, setTimeRange, selectedServices, selectedPackage, timeFrom, timeTo } =
     useBookingStore()
 
-  const dates = Array.from({ length: 30 }, (_, i) => addDays(new Date(), i))
-console.log(selectedDate)
-console.log(timeFrom)
-console.log(timeTo)
+  const dates = Array.from({ length: 28 }, (_, i) => addDays(new Date(), i))
+  console.log(selectedDate)
+  console.log(timeFrom)
+  console.log(timeTo)
   const selectedService = services.find((s) => s.id === selectedPackage)
   const packageHasDuration = !!selectedService?.duration
 
@@ -39,7 +40,7 @@ console.log(timeTo)
 
   return (
     <div className="container max-w-3xl py-6 sm:py-8 px-4 sm:px-6">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center flex-wrap">
         <BackButton href="/book" />
         <BookingSummary />
       </div>
@@ -63,7 +64,7 @@ console.log(timeTo)
               <Button
                 variant="ghost"
                 onClick={() => setSelectedDate(new Date())}
-                className="underline px-0 text-sm sm:text-base"
+                className="underline px-2 py-1 text-sm"
               >
                 Torna alla data di oggi
               </Button>
@@ -73,14 +74,13 @@ console.log(timeTo)
           <Carousel className="w-full">
             <CarouselContent>
               {dates.map((date) => (
-                <CarouselItem key={date.toISOString()} className="basis-1/2 sm:basis-1/3 md:basis-1/4">
+                <CarouselItem key={date.toISOString()} className="w-full sm:basis-1/3">
                   <div
                     className={`
                       p-3 sm:p-4 text-center rounded-lg cursor-pointer border text-sm sm:text-base
-                      ${
-                        selectedDate?.toDateString() === date.toDateString()
-                          ? "border-black bg-gray-50"
-                          : "hover:border-black"
+                      ${selectedDate?.toDateString() === date.toDateString()
+                        ? "border-black bg-gray-50"
+                        : "hover:border-black"
                       }
                     `}
                     onClick={() => setSelectedDate(date)}
@@ -94,6 +94,7 @@ console.log(timeTo)
             <CarouselPrevious className="hidden sm:flex" />
             <CarouselNext className="hidden sm:flex" />
           </Carousel>
+
         </div>
 
         <div className="space-y-4">
@@ -105,36 +106,35 @@ console.log(timeTo)
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">Dalle</label>
-              <select
-                className="w-full p-2 rounded-md border"
-                value={timeFrom || ""}
-                onChange={(e) => handleStartTimeChange(e.target.value)}
-              >
-                <option value="">Seleziona orario</option>
-                {Array.from({ length: 13 }, (_, i) => i + 10).map((hour) => (
-                  <option key={hour} value={`${hour}:00`}>
-                    {`${hour}:00`}
-                  </option>
-                ))}
-              </select>
+              <Select value={timeFrom || ""} onValueChange={(value) => handleStartTimeChange(value)}>
+                <SelectTrigger className="w-full p-2 rounded-md border text-sm focus-visible:ring-0">
+                  <SelectValue placeholder="Seleziona orario" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Array.from({ length: 13 }, (_, i) => i + 10).map((hour) => (
+                    <SelectItem key={hour} value={`${hour}:00`}>
+                      {`${hour}:00`}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">Alle</label>
-              <select
-                className="w-full p-2 rounded-md border"
-                value={timeTo || ""}
-                disabled={packageHasDuration}
-                onChange={(e) => setTimeRange(timeFrom, e.target.value)}
-              >
-                <option value="">Seleziona orario</option>
-                {Array.from({ length: 13 }, (_, i) => i + 10)
-                  .filter((hour) => !timeFrom || hour > Number.parseInt(timeFrom.split(":")[0]))
-                  .map((hour) => (
-                    <option key={hour} value={`${hour}:00`}>
-                      {`${hour}:00`}
-                    </option>
-                  ))}
-              </select>
+              <Select value={timeTo || ""} onValueChange={(value) => setTimeRange(timeFrom, value)} disabled={packageHasDuration}>
+                <SelectTrigger className="w-full p-2 rounded-md border text-sm">
+                  <SelectValue placeholder="Seleziona orario"/>
+                </SelectTrigger>
+                <SelectContent>
+                  {Array.from({ length: 13 }, (_, i) => i + 10)
+                    .filter((hour) => !timeFrom || hour > Number.parseInt(timeFrom.split(":")[0]))
+                    .map((hour) => (
+                      <SelectItem key={hour} value={`${hour}:00`}>
+                        {`${hour}:00`}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </div>
@@ -155,7 +155,7 @@ console.log(timeTo)
           </a>
         </div>
 
-        {selectedDate && timeFrom && timeTo &&<div className="flex justify-end">
+        {selectedDate && timeFrom && timeTo && <div className="flex justify-end">
           <Button size="lg" asChild variant="gradient" className="px-8 sm:px-12 py-4 sm:py-6">
             <Link href="/book/studio">Avanti</Link>
           </Button>

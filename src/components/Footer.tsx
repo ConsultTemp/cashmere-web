@@ -21,12 +21,15 @@ const serviceLinks = [
   { label: "Produzione", href: "/service/3" },
 ]
 
-const portfolioLinks = [{ label: "Visualizza portfolio", href: "/portfolio" }]
+const portfolioLinks = [{ label: "Artisti", href: "/portfolio" }]
+
+
+const legalLinks = [{ label: "Privacy", href: "/privacy" }]
 
 export default function Footer() {
   const pathname = usePathname();
   const hideNavbar = pathname.startsWith('/admin')
-  if(hideNavbar) return null
+  if (hideNavbar) return null
   return (
     <footer className="w-full px-4 sm:px-8 md:px-12 lg:px-16 xl:px-32 pb-12 md:pb-4">
       <div className="py-8 sm:py-12 md:py-16">
@@ -98,9 +101,9 @@ export default function Footer() {
 
             {/* Portfolio */}
             <div>
-              <h3 className="mb-4 text-base sm:text-lg font-semibold">Portfolio</h3>
+              <h3 className="mb-4 text-base sm:text-lg font-semibold">Legal</h3>
               <ul className="space-y-2">
-                {portfolioLinks.map((link) => (
+                {legalLinks.map((link) => (
                   <li key={link.href}>
                     <Link href={link.href} className="text-gray-400 transition-colors hover:text-black hover:underline">
                       {link.label}
@@ -113,8 +116,11 @@ export default function Footer() {
 
           {/* left Column - Contacts */}
           <div className="lg:col-span-4 text-left">
-            <h3 className="mb-4 text-base sm:text-lg font-semibold">Contatti</h3>
+            <h3 className="mb-4 text-base sm:text-lg font-semibold">About Us</h3>
             <div className="space-y-4 text-gray-400">
+                  <Link href="/portfolio" className="text-gray-400 transition-colors hover:text-black hover:underline">
+                    Artisti
+                  </Link>
               <p>
                 <a
                   href="tel:+393514206294"

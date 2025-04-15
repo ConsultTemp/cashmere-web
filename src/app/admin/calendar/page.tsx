@@ -117,7 +117,8 @@ export default function CalendarPage() {
                 <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
               <h2 className="text-sm sm:text-base md:text-xl font-semibold">
-                {format(date, view === "dayGridMonth" ? "MMMM yyyy" : "MMMM yyyy", { locale: it })}
+                {format(date, view === "dayGridMonth" ? "MMMM yyyy" : "MMMM yyyy", { locale: it }).charAt(0).toUpperCase() + 
+                format(date, view === "dayGridMonth" ? "MMMM yyyy" : "MMMM yyyy", { locale: it }).slice(1)}
               </h2>
               <Button variant="ghost" size="icon" onClick={handleNextClick}>
                 <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -161,11 +162,12 @@ export default function CalendarPage() {
 
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" size="icon" className="h-8 w-8 sm:h-10 sm:w-10">
+                  <Button variant="gray" size="icon" className="h-8 w-8 sm:h-10 sm:w-10">
                     <CalendarIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">
+                  {/* @ts-ignore */}
                   <Calendar mode="single" selected={date} onSelect={handleDateSelect} initialFocus />
                 </PopoverContent>
               </Popover>

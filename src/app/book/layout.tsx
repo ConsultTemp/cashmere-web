@@ -1,19 +1,18 @@
 "use client"
-
-
-import { NavbarVariants } from "@/components/navbar/Navbar"
-import type React from "react" // Added import for React
+import type React from "react"
+import { NavigationGuard } from "./components/NavigationGuard"
 
 export default function DashboardLayout({
-    children,
+  children,
 }: {
-    children: React.ReactNode
+  children: React.ReactNode
 }) {
 
-    return <>
-        <div className="flex flex-col w-full items-center pb-12">
-            {children}
-        </div>
+    
+  return (
+    <>
+      <NavigationGuard />
+      <div className="flex flex-col w-full items-center pb-12">{children}</div>
     </>
+  )
 }
-

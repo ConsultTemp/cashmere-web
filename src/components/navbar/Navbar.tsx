@@ -109,9 +109,6 @@ console.log("hide: ", hideNavbar)
                 <Link href="/contacts" className=" text-sm text-gray-700 hover:text-black">
                   Contatti
                 </Link>
-                <Link href="/portfolio" className="text-sm  text-gray-700 hover:text-black">
-                  Portfolio
-                </Link>
               </div>
             </div>
             <div className="flex flex-row gap-4">
@@ -260,16 +257,6 @@ console.log("hide: ", hideNavbar)
                         </Link>
                       </li>
 
-                      <li>
-                        <Link
-                          href="/portfolio"
-                          className="flex items-center space-x-3 text-gray-700 hover:text-black"
-                          onClick={() => setSidebarOpen(false)}
-                        >
-                          <Book className="h-5 w-5" />
-                          <span>Portfolio</span>
-                        </Link>
-                      </li>
                     </ul>
 
                     <div className="absolute bottom-8 left-0 right-0 px-4 space-y-4">

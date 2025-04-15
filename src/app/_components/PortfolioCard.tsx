@@ -1,9 +1,9 @@
-import Image from "next/image"
+import Image, { StaticImageData } from "next/image"
 
 interface PortfolioCardProps {
   title: string
   artist: string
-  imageUrl: string
+  imageUrl: string | StaticImageData
   tags: string[]
 }
 

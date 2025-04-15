@@ -18,16 +18,13 @@ export function BookingFilters({ onFilterChange }: BookingFiltersProps) {
 
   return (
     <div className="flex gap-2 flex-row flex-wrap">
-      <Button variant={activeFilter === "future" ? "default" : "outline"} onClick={() => handleFilterClick("future")}>
+      <Button variant={"outline"} onClick={() => handleFilterClick("future")} className={`border border-2 border-${activeFilter === "future" ? "black bg-gray-100" : "gray-300"} rounded-full`}>
         Future
       </Button>
-      <Button variant={activeFilter === "pending" ? "default" : "outline"} onClick={() => handleFilterClick("pending")}>
+      <Button variant={"outline"} onClick={() => handleFilterClick("pending")} className={`border border-2 border-${activeFilter === "pending" ? "black bg-gray-100" : "gray-300"} rounded-full`}>
         In attesa di conferma
       </Button>
-      <Button
-        variant={activeFilter === "past" ? "default" : "outline"}
-        onClick={() => handleFilterClick("past")}
-      >
+      <Button variant={"outline"} onClick={() => handleFilterClick("past")} className={`border border-2 border-${activeFilter === "past" ? "black bg-gray-100" : "gray-300"} rounded-full`}>
         Completate
       </Button>
     </div>

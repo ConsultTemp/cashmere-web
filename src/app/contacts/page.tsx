@@ -1,6 +1,6 @@
 "use client"
 
-import { Phone, Mail, MapPin, Clock, Instagram } from "lucide-react"
+import { Phone, Mail, MapPin, Clock, Instagram, MessageCircle } from "lucide-react"
 import { NavbarVariants } from "@/components/navbar/Navbar"
 import Footer from "@/components/Footer"
 import Head from "next/head"
@@ -17,7 +17,7 @@ export default function ContactsPage() {
       link: "tel:+393514206294",
     },
     {
-      icon: <Phone className="h-6 w-6" />,
+      icon: <MessageCircle className="h-6 w-6" />,
       title: "WhatsApp",
       content: "+39 351 420 6294",
       link: "https://wa.me/393514206294",
@@ -42,8 +42,8 @@ export default function ContactsPage() {
     {
       icon: <Instagram className="h-6 w-6" />,
       title: "Instagram",
-      content: "@cashmerestudio",
-      link: "https://instagram.com/cashmerestudio",
+      content: "@cashmerestudiomilano",
+      link: "https://instagram.com/cashmerestudiomilano",
     },
   ]
 
@@ -91,15 +91,10 @@ export default function ContactsPage() {
         <meta property="og:type" content="website" />
       </Head>
 
-      <NavbarVariants variant="Home" />
       <div className="bg-white">
-        {/* Breadcrumbs con lo stesso padding delle altre sezioni */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
-          <Breadcrumbs items={breadcrumbItems} />
-        </div>
 
         <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-          <h1 className="text-3xl font-bold mb-12 text-center">Contatti</h1>
+          <h1 className="text-2xl poppins-semibold mb-12 text-center">Contatti</h1>
 
           <div className="max-w-6xl mx-auto lg:grid lg:grid-cols-2 lg:gap-12">
             {/* Colonna sinistra con i contatti */}
@@ -110,13 +105,13 @@ export default function ContactsPage() {
                     {item.icon}
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold">{item.title}</h3>
+                    <h3 className="text-base font-semibold">{item.title}</h3>
                     {item.link ? (
                       <a
                         href={item.link}
                         target={item.link.startsWith("http") ? "_blank" : undefined}
                         rel={item.link.startsWith("http") ? "noopener noreferrer" : undefined}
-                        className="text-gray-600 hover:text-black text-lg transition-colors"
+                        className="text-gray-600 hover:text-black text-sm transition-colors"
                       >
                         {item.content}
                       </a>
@@ -129,25 +124,25 @@ export default function ContactsPage() {
             </div>
 
             {/* Colonna destra con i contatti */}
-            <div className="space-y-8 mt-8 lg:mt-0 lg:pl-8 lg:border-l lg:border-gray-200">
+            <div className="space-y-8 mt-8 lg:mt-0">
               {contactInfo.slice(3).map((item, index) => (
                 <div key={index} className="flex items-center group">
                   <div className="flex-shrink-0 h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center mr-6 group-hover:bg-gray-200 transition-colors">
                     {item.icon}
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold">{item.title}</h3>
+                    <h3 className="text-base font-semibold">{item.title}</h3>
                     {item.link ? (
                       <a
                         href={item.link}
                         target={item.link.startsWith("http") ? "_blank" : undefined}
                         rel={item.link.startsWith("http") ? "noopener noreferrer" : undefined}
-                        className="text-gray-600 hover:text-black text-lg transition-colors"
+                        className="text-gray-600 hover:text-black text-sm transition-colors"
                       >
                         {item.content}
                       </a>
                     ) : (
-                      <p className="text-gray-600 text-lg">{item.content}</p>
+                      <p className="text-gray-600 text-sm">{item.content}</p>
                     )}
                   </div>
                 </div>
@@ -158,7 +153,7 @@ export default function ContactsPage() {
 
         {/* Map Section */}
         <section className="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-          <h2 className="text-2xl font-bold mb-8 text-center">Dove Trovarci</h2>
+          <h2 className="text-2xl poppins-semibold mb-8 text-center">Dove Trovarci</h2>
           <div className="rounded-lg overflow-hidden shadow-md h-[400px] lg:h-[500px] relative">
             <iframe
               src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2799.9821302969377!2d9.2326!3d45.4554!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4786c6a6e1b835a3%3A0x2d8f95f69e4692e9!2sVia%20Oreste%20Salomone%2C%2061%2C%2020138%20Milano%20MI!5e0!3m2!1sit!2sit!4v1617289345678!5m2!1sit!2sit"
@@ -173,7 +168,6 @@ export default function ContactsPage() {
           </div>
         </section>
       </div>
-      <Footer />
 
       {/* JSON-LD per SEO */}
       <JsonLd data={contactPageSchema} />

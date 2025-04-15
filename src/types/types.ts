@@ -1,7 +1,9 @@
+import { StaticImageData } from "next/image"
+
 export interface PortfolioItem {
   title: string
   artist: string
-  imageUrl: string
+  imageUrl: string | StaticImageData
   tags: string[]
 }
 

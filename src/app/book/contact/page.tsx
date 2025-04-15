@@ -1,12 +1,14 @@
 "use client"
 import { Instagram, Phone } from "lucide-react"
 import { Textarea } from "@/components/TextArea"
+import Image from "next/image"
 import { Input } from "@/components/Input"
 import { SummaryContent } from "../components/BookingSummary"
 import { useBookingStore } from "../../../store/booking-store"
 import { BookButton } from "../components/BookButton"
 import { useRouter } from "next/navigation"
-
+import whatsapp from '../../../../public/whatsapp.svg'
+import instagram from '../../../../public/instagram.svg'
 export default function ContactPage() {
   const { instagramUsername, phoneNumber, notes, setContactInfo, selectedServices } = useBookingStore()
   const router = useRouter()
@@ -54,7 +56,7 @@ export default function ContactPage() {
       <div className="mt-6">
         <div>
           <h1 className="text-3xl poppins-semibold">L'ultimo step!</h1>
-          <p className="text-gray-400 my-3">Inserisci i tuoi contatti</p>
+          <p className="text-3xl poppins-semibold mt-1">Inserisci i tuoi contatti</p>
           <p className="text-gray-400 mt-1">Ci serviranno per confermare la sessione.</p>
         </div>
 
@@ -63,10 +65,10 @@ export default function ContactPage() {
             <div className="space-y-2">
               <label className="text-sm font-medium">Nome utente di Instagram</label>
               <div className="relative">
-                <Instagram className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+              <Image src={instagram} alt="Whatsapp logo" className="absolute left-3 top-2.5 h-5 w-5 text-gray-400"/>
                 <Input
                   placeholder="@nomeutente"
-                  className="pl-10"
+                  className="pl-10 focus-visible:ring-0"
                   value={instagramUsername}
                   onChange={(e) => setContactInfo(e.target.value, phoneNumber, notes)}
                   required
@@ -77,11 +79,11 @@ export default function ContactPage() {
             <div className="space-y-2">
               <label className="text-sm font-medium">Numero di telefono</label>
               <div className="relative">
-                <Phone className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                <Image src={whatsapp} alt="Whatsapp logo" className="absolute left-3 top-2.5 h-5 w-5 text-gray-400"/>
                 <Input
                   type="tel"
                   placeholder="Numero di telefono"
-                  className="pl-10"
+                  className="pl-10 focus-visible:ring-0"
                   value={phoneNumber}
                   onChange={(e) => setContactInfo(instagramUsername, e.target.value, notes)}
                   required
@@ -95,7 +97,7 @@ export default function ContactPage() {
               </label>
               <Textarea
                 placeholder="Es. Indicazione per il fonico, preferenze sul microfono, dettagli vari..."
-                className="min-h-[100px]"
+                className="min-h-[100px] focus-visible:ring-0"
                 value={notes}
                 onChange={(e) => setContactInfo(instagramUsername, phoneNumber, e.target.value)}
               />

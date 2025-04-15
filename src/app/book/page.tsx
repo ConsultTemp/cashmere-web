@@ -142,7 +142,7 @@ export default function BookingPage() {
               />
 
               <ServiceCard
-                imageUrl="/Studio.svg"
+                imageUrl="/affittosala.svg"
                 title="Affitto Sala"
                 description="Affitta la sala per le tue sessioni senza servizi aggiuntivi."
                 selected={services.includes("wtscbdf9xv7qkz0m2y4nlgr3p")}
@@ -168,11 +168,7 @@ export default function BookingPage() {
             </div>
             <div className="px-4 sm:px-8 pb-4 sm:pb-8">
               <h4 className="mb-4">Seleziona pacchetto</h4>
-              <RadioGroup
-                value={selectedPackage || ""}
-                onValueChange={(value) => handlePackageSelect(value as PackageType)}
-                className="grid grid-cols-1 md:grid-cols-2 gap-4"
-              >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {[
                   { id: "ivljinhh3cj10wem26i7mup2kr", label: "2h + Mix & Master" },
                   { id: "x8o0secmg2jie6o3jqiviaz7kx", label: "2h + Mix & Master + Beat" },
@@ -180,15 +176,20 @@ export default function BookingPage() {
                   { id: "838jf1d16rf5q25ddlxszgtxo6", label: "Beat in session" },
                 ].map((pkg) => (
                   <div key={pkg.id} className="flex items-center space-x-2">
-                    <RadioGroupItem
+                    <input
+                      type="radio"
                       value={pkg.id}
                       id={pkg.id}
+                      name="package"
+                      className="custom-radio"
+                      checked={selectedPackage === pkg.id}
+                      onChange={() => handlePackageSelect(pkg.id as PackageType)}
                       disabled={services.includes("wtscbdf9xv7qkz0m2y4nlgr3p")}
                     />
                     <Label htmlFor={pkg.id}>{pkg.label}</Label>
                   </div>
                 ))}
-              </RadioGroup>
+              </div>
             </div>
           </div>
         </div>

@@ -22,7 +22,7 @@ export function SummaryContent() {
     })
     return (
 
-        <div className="flex flex-row flex-wrap gap-4">
+        <div className="flex flex-row flex-wrap gap-4 text-sm">
             <div className="flex flex-row justify-between flex-nowrap bg-gray-100 py-2 px-4 rounded-sm">
                 <span className="mr-1">Servizi: </span>
                 <span className='font-semibold'>
@@ -49,7 +49,7 @@ export function SummaryContent() {
 
             <div className="flex flex-row justify-between flex-nowrap bg-gray-100 py-2 px-4 rounded-sm">
                 <span className="mr-1">Fonico:</span>
-                <span className='font-semibold'>{engineer}</span>
+                <span className='font-semibold'>{engineer ? engineer : "Senza fonico"}</span>
             </div>
         </div>
 

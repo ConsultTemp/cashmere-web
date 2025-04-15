@@ -46,9 +46,9 @@ export function BookingInfoTooltip({ event, position, onClose }: BookingInfoTool
         <div className="flex items-start gap-2 text-sm">
           <Calendar className="h-4 w-4 mt-0.5 text-primary" />
           <div>
-            <p className="font-medium">Data e Ora</p>
-            <p>{format(event.start, "EEEE d MMMM yyyy", { locale: it })}</p>
-            <p>
+            <p className="poppins-semibold">Data e Ora</p>
+            <p className="font-xs">{format(event.start, "EEEE d MMMM yyyy", { locale: it })}</p>
+            <p className="font-xs">
               {format(event.start, "HH:mm")} - {format(event.end, "HH:mm")}
             </p>
           </div>
@@ -57,17 +57,17 @@ export function BookingInfoTooltip({ event, position, onClose }: BookingInfoTool
         <div className="flex items-start gap-2 text-sm">
           <User className="h-4 w-4 mt-0.5 text-primary" />
           <div>
-            <p className="font-medium">Fonico</p>
-            <p>{event.fonico.username}</p>
+            <p className="poppins-semibold">Fonico</p>
+            <p className="font-xs">{event.fonico.username}</p>
           </div>
         </div>
 
         <div className="flex items-start gap-2 text-sm">
           <MapPin className="h-4 w-4 mt-0.5 text-primary" />
           <div>
-            <p className="font-medium">Studio</p>
+            <p className="poppins-semibold">Studio</p>
             {/* @ts-ignore */}
-            <p>Studio {event.studio.value}</p>
+            <p className="font-xs">Studio {event.studio.value}</p>
           </div>
         </div>
 

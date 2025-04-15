@@ -3,11 +3,11 @@
 import { useState, useEffect } from "react"
 import { type RoleType, useUserStore } from "@/store/user-store"
 import type React from "react"
-import { Menu, Home, Calendar, CheckCircle, Phone, Sun, Music2, User, Clock } from "lucide-react"
+import { Menu, Home, Calendar, CheckCircle, Phone, Sun, Music2, User, Clock, House, CopyCheck, CalendarDays, BookHeadphones, UserRound, Users, Briefcase, UserCog } from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
-import logo from "../../../public/cashmere-color.svg"
+import logo from "../../../public/cashmere-logo.svg"
 import { Button } from "@/components/Button"
 import { useRouter } from "next/navigation"
 
@@ -20,49 +20,49 @@ interface SidebarItem {
 
 const sidebarItems: SidebarItem[] = [
   {
-    icon: <Home className="min-w-4 h-4" />,
+    icon: <House className="min-w-5 h-5" />,
     label: "Home",
     href: "/admin/home",
     roles: ["ENGINEER"],
   },
   {
-    icon: <Clock className="min-w-4 h-4" />,
+    icon: <House className="min-w-5 h-5" />,
     label: "Situazione",
     href: "/admin/current",
     roles: ["ADMIN", "SECRETARY"],
   },
   {
-    icon: <Calendar className="min-w-4 h-4" />,
+    icon: <CalendarDays className="min-w-5 h-5" />,
     label: "Calendario",
     href: "/admin/calendar",
     roles: ["ADMIN", "ENGINEER", "SECRETARY"],
   },
   {
-    icon: <CheckCircle className="min-w-4 h-4" />,
-    label: "Conferma prenotazioni",
+    icon: <CopyCheck className="min-w-5 h-5" />,
+    label: "Conferma",
     href: "/admin/confirm",
     roles: ["ADMIN", "SECRETARY"],
   },
   {
-    icon: <Phone className="min-w-4 h-4" />,
+    icon: <Users className="min-w-5 h-5" />,
     label: "Fonici",
     href: "/admin/availability",
     roles: ["ADMIN", "ENGINEER", "SECRETARY"],
   },
   {
-    icon: <Sun className="min-w-4 h-4" />,
-    label: "Ferie e permessi",
+    icon: <Briefcase className="min-w-5 h-5" />,
+    label: "Ferie",
     href: "/admin/holidays",
     roles: ["ADMIN", "SECRETARY", "ENGINEER"],
   },
   {
-    icon: <Music2 className="min-w-4 h-4" />,
+    icon: <BookHeadphones className="min-w-5 h-5" />,
     label: "Entità",
     href: "/admin/entities",
     roles: ["ADMIN", "SECRETARY"],
   },
   {
-    icon: <User className="min-w-4 h-4" />,
+    icon: <UserCog className="min-w-5 h-5" />,
     label: "Utenti",
     href: "/admin/users",
     roles: ["ADMIN", "SECRETARY"],
@@ -140,14 +140,14 @@ export default function AdminLayout({
         )}
       >
         <div className="flex flex-col h-full p-2">
-          <div className={`flex flex-col items-${isCollapsed ? 'center' : 'start'} justify-between mb-8`}>
+          <div className={`flex flex-col items-${isCollapsed ? 'center' : ' px-4 start'} justify-between mb-8`}>
             <Button variant="ghost" size="icon" onClick={() => setIsCollapsed(!isCollapsed)} className="h-8 w-8">
               <Menu className="h-4 w-4" />
             </Button>
           </div>
 
           <nav className={`flex-1 flex flex-col items-${isCollapsed ? 'center' : 'start'}`}>
-            <Image src={logo || "/placeholder.svg"} width={30} height={30} alt="Cashmere logo" className="mb-8" />
+            <Image src={logo || "/placeholder.svg"} width={30} height={30} alt="Cashmere logo" className={`mb-8 ${isCollapsed ? '' : 'ml-4'}`} />
             {sidebarItems
               .filter((s) => s.roles.includes(user.role))
               .map((item, index) => (
@@ -168,11 +168,10 @@ export default function AdminLayout({
           </nav>
 
           {!isCollapsed && (
-            <div className="border-t pt-4">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-gray-200" />
+            <div className="pt-4 pl-4">
+              <div className="flex items-center gap-3 mb-8">
                 <div className="flex-1">
-                  <p className="text-sm font-medium">{user.username}</p>
+                  <p className="text-xs font-medium">{user.username}</p>
                   <div className="flex flex-row justify-between">
                     <p className="text-xs text-gray-500">
                       Ruolo: {(() => {
@@ -188,12 +187,12 @@ export default function AdminLayout({
                         }
                       })()}
                     </p>
-                    <p className="text-xs text-blue-600 underline cursor-pointer" onClick={handleLogout}>
-                      Logout
-                    </p>
+                   
                   </div>
+
                 </div>
               </div>
+              <p className="text-red-500 mb-4 cursor-pointer" onClick={handleLogout}>Esci</p>
             </div>
           )}
         </div>

@@ -28,7 +28,7 @@ export function EngineerCard({
   onSelectAlternativeSlot,
 }: EngineerCardProps) {
   console.log("unavailability my slatt")
-  
+
   const { selectedStudio } = useBookingStore()
   console.log(selectedStudio)
   return (
@@ -37,16 +37,16 @@ export function EngineerCard({
         <div
           onClick={onSelect}
           className={`
-              w-full p-3 sm:p-4 rounded-lg border transition-all cursor-pointer
+              w-full p-3 sm:p-8 rounded-lg border transition-all cursor-pointer
               flex items-center justify-between
-              ${isSelected ? "border-primary bg-primary/5" : "border-border hover:bg-muted/50"}
+              ${isSelected ? "border-black bg-black/5" : "border-border hover:bg-muted/50"}
             `}
         >
-          <span className="text-base sm:text-lg">{name}</span>
+          <span className="text-base">{name}</span>
           <div
             className={`
                 w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 flex items-center justify-center
-                ${isSelected && !isUnavailable ? "bg-primary border-primary text-white" : "border-gray-300"}
+                ${isSelected && !isUnavailable ? "bg-black border-black text-white" : "border-gray-300"}
               `}
           >
             {isSelected && !isUnavailable && (
@@ -57,31 +57,33 @@ export function EngineerCard({
           </div>
         </div>
       ) : (
-        <div className="w-full rounded-lg border p-6 opacity-80">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-lg text-gray-400">{name}</span>
+        <div className="w-full rounded-lg border p-3 sm:p-8 opacity-80">
+          <div className="flex items-center justify-between ">
+            <span className="text-base text-gray-400">{name}</span>
             <div className="w-6 h-6 rounded-full bg-muted" />
           </div>
 
           {isUnavailable && unavailabilityInfo && (
-            <div className="mt-2">
-              <p className="text-red-500">{unavailabilityInfo.message || `${name} non è disponibile nella fascia oraria selezionata.`}</p>
-              {/* {unavailabilityInfo.alternativeDates && unavailabilityInfo.alternativeDates.length > 0 && (
-                <div className="mt-2">
-                  <p className="text-sm font-medium">Orari alternativi disponibili:</p>
-                  <div className="mt-1 space-y-1">
-                    {unavailabilityInfo.alternativeDates.map((alt, i) => (
-                      <div
-                        key={i}
-                        className="text-sm p-2 cursor-pointer rounded flex items-center flex flex-row"
-                      >
-                        <span className="mr-2">📅</span> {alt.date} {alt.timeRange}
-                        
-                      </div>
-                    ))}
+            <div>
+              <p className="text-red-500 text-sm">{unavailabilityInfo.message || `${name} non è disponibile nella fascia oraria selezionata.`}</p>
+              {/* {unavailabilityInfo.alternativeDates.map((alt, i) => (
+                <div
+                  key={i}
+                  className="text-sm p-2 cursor-pointer rounded flex items-center flex flex-row"
+                >
+                  <span className="mr-2">📅</span> {alt.date} {alt.timeRange}
+                  <div className="flex flex-row flex-wrap items-center gap-2 mx-2">
+                    {(selectedStudio && !alt.studios?.includes(selectedStudio)) &&
+                      alt.studios && alt.studios.map((s) => {
+                        const studioname = studios.find((st) => st.dbId == s)
+                        if (!(studioname && studioname.dbId)) { return null }
+                        return <p onClick={() => onSelectAlternativeSlot && onSelectAlternativeSlot(alt, id, s)} className="py-1 px-2 bg-gray-100 text-black hover:bg-gray-200 rounded-sm" key={s}>{studioname.name}</p>
+                      })
+                    }
+                    {!(selectedStudio && !alt.studios?.includes(selectedStudio)) && <p className="py-1 px-2 bg-gray-100 text-black  hover:bg-gray-200 rounded-sm" onClick={() => onSelectAlternativeSlot && onSelectAlternativeSlot(alt, id)}>Seleziona</p>}
                   </div>
                 </div>
-              )} */}
+              ))} */}
             </div>
           )}
         </div>

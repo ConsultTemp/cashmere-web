@@ -21,6 +21,7 @@ export function BookingCard({ booking }: BookingCardProps) {
           />
         </div>
         <div className="p-4">
+          {/* @ts-ignore */}
           <h3 className="font-semibold text-lg">{studio?.name || `Studio ${booking.studio.value}`}</h3>
           <p className="text-muted-foreground">{new Date(booking.start).toLocaleDateString()}</p>
         </div>

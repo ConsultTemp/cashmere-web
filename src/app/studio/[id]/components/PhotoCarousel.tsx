@@ -13,10 +13,10 @@ interface PhotoCarouselDialogProps {
 
 export function PhotoCarouselDialog({ isOpen, onClose, images, studioName }: PhotoCarouselDialogProps) {
     return (
-        <Dialog open={isOpen} onOpenChange={onClose}>
+        <Dialog open={isOpen} onOpenChange={onClose} >
             <DialogTitle />
             <DialogContent className="max-w-2xl">
-                <Carousel>
+                <Carousel scrollAmount={1}>
                     <CarouselContent className="p-8">
                         {images.map((image, index) => (
                             <CarouselItem key={index}>

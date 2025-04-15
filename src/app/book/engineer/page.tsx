@@ -227,7 +227,17 @@ export default function EngineerPage() {
 
         <div className="flex flex-col gap-4">
           <div
-            className={`border rounded-lg p-4 cursor-pointer ${needsEngineer === false ? "border-primary bg-primary/5" : "border-border"
+            className={`border rounded-lg p-8 cursor-pointer ${needsEngineer === true ? "border-black bg-black/5" : "border-border"
+              }`}
+            onClick={() => setNeedsEngineer(true)}
+          >
+            <div className="flex items-center gap-3">
+
+            </div>
+            <span className="font-medium">Desidero il fonico</span>
+          </div>
+          <div
+            className={`border rounded-lg p-8 cursor-pointer ${needsEngineer === false ? "border-black bg-black/5" : "border-border"
               }`}
             onClick={() => {
               setNeedsEngineer(false)
@@ -236,105 +246,86 @@ export default function EngineerPage() {
             }}
           >
             <div className="flex items-center gap-3">
-              <div
-                className={`w-5 h-5 rounded-full border flex items-center justify-center ${needsEngineer === false ? "border-primary" : "border-muted-foreground"
-                  }`}
-              >
-                {needsEngineer === false && <div className="w-3 h-3 rounded-full bg-primary"></div>}
-              </div>
-              <span className="font-medium">No, non ho bisogno di un fonico</span>
+
+              <span className="font-medium">No, voglio solo affittare la sala</span>
             </div>
           </div>
 
-          <div
-            className={`border rounded-lg p-4 cursor-pointer ${needsEngineer === true ? "border-primary bg-primary/5" : "border-border"
-              }`}
-            onClick={() => setNeedsEngineer(true)}
-          >
-            <div className="flex items-center gap-3">
-              <div
-                className={`w-5 h-5 rounded-full border flex items-center justify-center ${needsEngineer === true ? "border-primary" : "border-muted-foreground"
-                  }`}
-              >
-                {needsEngineer === true && <div className="w-3 h-3 rounded-full bg-primary"></div>}
-              </div>
-              <span className="font-medium">Sì, desidero un fonico</span>
-            </div>
-          </div>
-        </div>
-
-        {needsEngineer && (
-          <div className="mt-16">
-            <h2 className="text-lg sm:text-xl font-semibold">Seleziona un fonico</h2>
-
-            {isLoading ? (
-              <div className="py-8 text-center">
-                <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-                <p>Verificando la disponibilità dei fonici...</p>
-              </div>
-            ) : (
-              <>
-                {/* Available engineers */}
-                {availableEngineers.length > 0 && (
-                  <div>
-                    <h3 className="text-base font-medium my-4">Fonici disponibili nella tua fascia oraria</h3>
-                    <div className="space-y-4">
-                      {availableEngineers.map((engineer) => (
-                        <EngineerCard
-                          key={engineer.id}
-                          //@ts-ignore
-                          id={engineer.id}
-                          name={engineer.name}
-                          isSelected={selectedEngineer === engineer.id}
-                          onSelect={() => setSelectedEngineer(engineer.id)}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Unavailable engineers */}
-                {unavailableEngineers.length > 1 && (
-                  <div className="mt-16">
-                    <h3 className="text-base font-medium mb-4">Fonici non disponibili nella tua fascia oraria</h3>
-                    <div className="space-y-4">
-                      {unavailableEngineers.filter((u) => u.id != 'cm8z06fn00002mytvfftqrkgx').map((engineer) => (
-                        <EngineerCard
-                          key={engineer.id}
-                          //@ts-ignore
-                          id={engineer.id}
-                          name={engineer.name}
-                          isUnavailable={true}
-                          unavailabilityInfo={engineer.unavailabilityInfo}
-                          onSelectAlternativeSlot={handleSelectAlternativeSlot}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {availableEngineers.length === 0 && unavailableEngineers.length === 0 && (
-                  <div className="text-center py-8 text-muted-foreground">
-                    Nessun fonico trovato per questa fascia oraria.
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        )}
-
-        <div className="flex justify-end mt-16">
-          <Button
-            size="lg"
-            asChild
-            variant="gradient"
-            className="px-8 sm:px-12 py-4 sm:py-6"
-            disabled={isLoading || (needsEngineer && !selectedEngineer)}
-          >
-            <Link href="/book/contact">Avanti</Link>
-          </Button>
         </div>
       </div>
+
+      {needsEngineer && (
+        <div className="mt-16">
+          <h2 className="text-lg sm:text-xl font-semibold">Seleziona un fonico</h2>
+
+          {isLoading ? (
+            <div className="py-8 text-center">
+              <div className="animate-spin h-8 w-8 border-4 border-black border-t-transparent rounded-full mx-auto mb-4"></div>
+              <p>Verificando la disponibilità dei fonici...</p>
+            </div>
+          ) : (
+            <>
+              {/* Available engineers */}
+              {availableEngineers.length > 0 && (
+                <div>
+                  <h3 className="text-base font-medium my-4">Fonici disponibili nella tua fascia oraria</h3>
+                  <div className="space-y-4">
+                    {availableEngineers.map((engineer) => (
+                      <EngineerCard
+                        key={engineer.id}
+                        //@ts-ignore
+                        id={engineer.id}
+                        name={engineer.name}
+                        isSelected={selectedEngineer === engineer.id}
+                        onSelect={() => setSelectedEngineer(engineer.id)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Unavailable engineers */}
+              {unavailableEngineers.length > 1 && (
+                <div className="mt-16">
+                  <h3 className="text-base font-medium mb-4">Fonici non disponibili nella tua fascia oraria</h3>
+                  <div className="space-y-4">
+                    {unavailableEngineers.filter((u) => u.id != 'cm8z06fn00002mytvfftqrkgx').map((engineer) => (
+                      <EngineerCard
+                        key={engineer.id}
+                        //@ts-ignore
+                        id={engineer.id}
+                        name={engineer.name}
+                        isUnavailable={true}
+                        unavailabilityInfo={engineer.unavailabilityInfo}
+                        onSelectAlternativeSlot={handleSelectAlternativeSlot}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {availableEngineers.length === 0 && unavailableEngineers.length === 0 && (
+                <div className="text-center py-8 text-muted-foreground">
+                  Nessun fonico trovato per questa fascia oraria.
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
+
+      <div className="flex justify-end mt-16">
+        <Button
+          size="lg"
+          asChild
+          variant="gradient"
+          className="px-8 sm:px-12 py-4 sm:py-6"
+          disabled={isLoading || (needsEngineer && !selectedEngineer)}
+        >
+          <Link href="/book/contact">Avanti</Link>
+        </Button>
+      </div>
     </div>
+
   )
 }

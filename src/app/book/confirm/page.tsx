@@ -31,6 +31,8 @@ export default function ConfirmPage() {
     resetBooking,
   } = useBookingStore()
 
+  const [confirmationSent, setConfirmationSent] = useState(false)
+
   // Carica i dati della prenotazione dal localStorage
   useEffect(() => {
     loadBookingFromLocalStorage()
@@ -79,6 +81,9 @@ export default function ConfirmPage() {
         // Resetta lo store della prenotazione
         resetBooking()
 
+        // Set the confirmation state to true
+        setIsSubmitting(false)
+        setConfirmationSent(true)
         // Reindirizza alla dashboard o alla home
         router.push(user.id ? "/dashboard" : "/")
       }
@@ -151,6 +156,16 @@ export default function ConfirmPage() {
           </div>
         </div>
       </div>
+
+      {confirmationSent ? (
+        <div className="text-center">
+          <h2 className="text-2xl font-bold">Prenotazione inviata!</h2>
+          <p>Verrai rimandato alla pagina richiesta.</p>
+        </div>
+      ) : (
+        // ... existing content ...
+        <div></div>
+      )}
     </div>
   )
 }

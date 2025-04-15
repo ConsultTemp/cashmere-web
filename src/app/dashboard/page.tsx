@@ -69,7 +69,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between">
             <h1 className="text-xl font-semibold">{user.username}</h1>
           </div>
-          <Button onClick={handleLogout} className="my-4">
+          <Button onClick={handleLogout} className="my-4" variant="outline">
             Logout
           </Button>
           {/* Bookings Section */}
@@ -90,11 +90,16 @@ export default function DashboardPage() {
             <BookingFilters onFilterChange={setFilter} />
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredBookings.map((booking, _i) => (
+              { filteredBookings.length > 0 && filteredBookings.map((booking, _i) => (
                 <div key={booking.userId + booking.start + _i} onClick={() => setSelectedBooking(booking)}>
                   <BookingCard booking={booking} />
                 </div>
               ))}
+              { filteredBookings.length < 1 && 
+              <p className="w-full whitespace-nowrap mt-10 px-2 rounded-lg">
+                Nessuna prenotazione {filter == "future" ? "in programma" : filter == "past" ? "passata" : "in attesa di conferma"}
+              </p>
+              }
             </div>
           </div>
 

@@ -370,7 +370,7 @@ export function BookingDialog({ isOpen, onClose, onSave, booking, onDelete, canE
                 rules={{ required: "Seleziona un cliente" }}
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
-                    <FormLabel>Cliente</FormLabel>
+                    <FormLabel className="my-1">Cliente</FormLabel>
                     <Popover open={openCombobox} onOpenChange={setOpenCombobox}>
                       <PopoverTrigger asChild>
                         <FormControl>
@@ -378,7 +378,7 @@ export function BookingDialog({ isOpen, onClose, onSave, booking, onDelete, canE
                             variant="outline"
                             role="combobox"
                             aria-expanded={openCombobox}
-                            className="w-full justify-between"
+                            className="w-full justify-between overflow-hidden"
                           >
                             {field.value
                               ? users.find((user) => user.id === field.value)?.username
@@ -593,7 +593,7 @@ export function BookingDialog({ isOpen, onClose, onSave, booking, onDelete, canE
                 <FormItem>
                   <FormLabel>Note</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="Inserisci eventuali note" {...field} />
+                    <Textarea placeholder="Inserisci eventuali note" rows={5}  {...field} style={{resize:"none"}} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

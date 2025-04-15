@@ -1,5 +1,6 @@
 "use client"
 
+import { Calendar } from "lucide-react"
 import Image from "next/image"
 
 interface StudioCardProps {
@@ -36,7 +37,7 @@ export function StudioCard({
       className={`
         relative rounded-lg border transition-all
         ${isUnavailable ? "opacity-80 cursor-default pb-6 sm:pb-8" : "cursor-pointer hover:bg-muted/50"}
-        ${isSelected && !isUnavailable ? "border-primary" : "border-border"}
+        ${isSelected && !isUnavailable ? "border-black" : "border-border"}
       `}
       onClick={() => !isUnavailable && onSelect?.()}
     >
@@ -47,7 +48,7 @@ export function StudioCard({
             <div
               className={`
                 w-8 h-8 rounded-full border-2 flex items-center justify-center
-                ${isSelected && !isUnavailable ? "bg-primary border-primary text-white" : "border-gray-300"}
+                ${isSelected && !isUnavailable ? "bg-black border-black text-white" : "border-gray-300"}
               `}
             >
               {isSelected && !isUnavailable && (
@@ -59,9 +60,9 @@ export function StudioCard({
           </div>
 
           {/* Content */}
-          <div className="flex-grow text-center sm:text-left">
-            <h3 className="text-xl sm:text-2xl font-bold">{name}</h3>
-            <p className="text-gray-700 mt-1 text-sm sm:text-base">
+          <div className="flex-1 text-center sm:text-left flex flex-col items-start justify-center">
+            <h3 className="text-xl sm:text-2xl poppins-semibold">{name}</h3>
+            <p className=" mt-1 text-sm text-gray-400">
               {description.length > 100 ? description.slice(0, 100) + "..." : description}
             </p>
           </div>
@@ -86,7 +87,7 @@ export function StudioCard({
                       className="text-sm p-2 hover:bg-gray-100 cursor-pointer rounded flex items-center"
                       onClick={() => onSelectAlternativeSlot && onSelectAlternativeSlot(alt)}
                     >
-                      <span className="mr-2">📅</span> {alt.date} {alt.timeRange}
+                      <span className="mr-2"><Calendar className="w-4 h-4"/></span> {alt.date} {alt.timeRange}
                     </div>
                   ))}
                 </div>

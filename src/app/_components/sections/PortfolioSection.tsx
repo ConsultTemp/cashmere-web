@@ -3,56 +3,50 @@
 import { Carousel, CarouselItem, CarouselNext, CarouselPrevious, CarouselContent } from "@/components/Carousel"
 import PortfolioCard from "../PortfolioCard"
 import type { PortfolioItem } from "@/types/types"
+import mambolosco from '../../../../public/Foto artisti/Mambolosco.jpg'
+import flacog from '../../../../public/Foto artisti/Flaco-G.jpg'
+import moise from '../../../../public/Foto artisti/Moise Kean.jpg'
+import niko from '../../../../public/Foto artisti/Niko-pandetta.jpg'
+import neima from '../../../../public/Foto artisti/Neima.jpg'
+import niky from '../../../../public/Foto artisti/Niky-Savage.jpg'
 
 const portfolioItems: PortfolioItem[] = [
   {
-    title: "Pistole nella Fendi",
-    artist: "Niko Pandetta",
-    imageUrl: "/Studio 1/1.jpg",
+    title: "Mambolosco",
+    artist: "Mambolosco",
+    imageUrl: mambolosco,
     tags: ["Rec", "Mix & Master"],
   },
   {
-    title: "Plaquette",
-    artist: "Nabi",
-    imageUrl: "/Studio 1/1.jpg",
+    title: "Niky Savage",
+    artist: "Niky Savage",
+    imageUrl: niky,
     tags: ["Rec"],
   },
   {
-    title: "Giù EP",
+    title: "Neima Ezza",
     artist: "Neima Ezza",
-    imageUrl: "/Studio 1/1.jpg",
+    imageUrl: neima,
     tags: ["Rec", "Produzione"],
   },
   {
-    title: "Go Go Jack",
-    artist: "Minur, Simba la Rue",
-    imageUrl: "/Studio 1/1.jpg",
+    title: "KMB (Moise Kean)",
+    artist: "KMB (Moise Kean)",
+    imageUrl: moise,
     tags: ["Rec"],
   },
   {
-    title: "Pistole nella Fendi",
+    title: "Niko Pandetta",
     artist: "Niko Pandetta",
-    imageUrl: "/Studio 1/1.jpg",
+    imageUrl: niko,
     tags: ["Rec", "Mix & Master"],
   },
   {
-    title: "Plaquette",
-    artist: "Nabi",
-    imageUrl: "/Studio 1/1.jpg",
+    title: "Flaco G",
+    artist: "Flaco G",
+    imageUrl: flacog,
     tags: ["Rec"],
-  },
-  {
-    title: "Giù EP",
-    artist: "Neima Ezza",
-    imageUrl: "/Studio 1/1.jpg",
-    tags: ["Rec", "Produzione"],
-  },
-  {
-    title: "Go Go Jack",
-    artist: "Minur, Simba la Rue",
-    imageUrl: "/Studio 1/1.jpg",
-    tags: ["Rec"],
-  },
+  }
 ]
 
 export default function PortfolioGrid() {
@@ -62,7 +56,7 @@ export default function PortfolioGrid() {
       <div className="mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <h2 className="text-xl sm:text-3xl poppins-semibold">Artisti</h2>
         <a href="/portfolio" className="text-black text-sm underline-offset-4 hover:underline">
-          Visualizza portfolio completo →
+          Visualizza tutti gli artisti
         </a>
       </div>
 
@@ -73,6 +67,8 @@ export default function PortfolioGrid() {
           loop: true,
         }}
         className="w-full"
+        scrollAmount={2}
+
       >
         <CarouselContent className="-ml-2 md:-ml-4">
           {portfolioItems.map((item, index) => (
