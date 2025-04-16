@@ -92,11 +92,11 @@ export default function AdminLayout({
   const { user, clearUser, setUser } = useUserStore()
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
-  const [error, setError ] = useState(false)
+  const [error, setError] = useState(false)
   // Aggiungi questi stati per il dialog di cambio nome utente
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [newUsername, setNewUsername] = useState("")
-  const {updateUsername} = useUser()
+  const { updateUsername } = useUser()
   const pathname = usePathname()
 
   console.log(user)
@@ -119,17 +119,17 @@ export default function AdminLayout({
   }
 
   // Aggiungi questa funzione per gestire il cambio nome utente
-  const handleUsernameUpdate = async ()  => {
+  const handleUsernameUpdate = async () => {
     const data = await updateUsername(user.id, newUsername)
     console.log(data)
-    if(data && data.username){
-      setUser({...user, username: newUsername})
+    if (data && data.username) {
+      setUser({ ...user, username: newUsername })
       setError(false)
       setIsDialogOpen(false)
-    }else{
+    } else {
       setError(true)
     }
-    
+
   }
 
   if (isLoading) {
@@ -181,13 +181,15 @@ export default function AdminLayout({
           </div>
 
           <nav className={`flex-1 flex flex-col items-${isCollapsed ? "center" : "start"}`}>
-            <Image
-              src={logo || "/placeholder.svg"}
-              width={30}
-              height={30}
-              alt="Cashmere logo"
-              className={`mb-8 ${isCollapsed ? "" : "ml-4"}`}
-            />
+            <Link href="/">
+              <Image
+                src={logo || "/placeholder.svg"}
+                width={30}
+                height={30}
+                alt="Cashmere logo"
+                className={`mb-8 ${isCollapsed ? "" : "ml-4"}`}
+              />
+            </Link>
             {sidebarItems
               .filter((s) => s.roles.includes(user.role))
               .map((item, index) => (
@@ -215,7 +217,7 @@ export default function AdminLayout({
                   {/* Modifica qui per aggiungere il popover */}
                   <Popover>
                     <PopoverTrigger asChild>
-                      <button className="text-xs font-medium hover:underline cursor-pointer flex flex-row items-center gap-2" onClick={() => setNewUsername(user.username)}>{user.username}<Pencil className="w-3 h-3"/></button>
+                      <button className="text-xs font-medium hover:underline cursor-pointer flex flex-row items-center gap-2" onClick={() => setNewUsername(user.username)}>{user.username}<Pencil className="w-3 h-3" /></button>
                     </PopoverTrigger>
                     <PopoverContent className="w-56">
                       <div className="space-y-2">
