@@ -300,7 +300,7 @@ export default function HolidaysApprovalPage() {
 
           {selectedRequest && (
             <ScrollArea className="max-h-[70vh]">
-              <div className="space-y-6 py-4 pr-4">
+              <div className="space-y-6 pt-4">
                 <div>
                   <h3 className="text-lg font-semibold mb-2">Dipendente</h3>
                   <div className="bg-gray-100 rounded-md py-3 px-4">
@@ -363,7 +363,7 @@ export default function HolidaysApprovalPage() {
                 </div>
 
                 {selectedRequest.state === "CONFERMARE" && user.role !== "ENGINEER" && (
-                  <div className="flex gap-4 pt-4">
+                  <div className=" sticky bottom-0 bg-white  flex gap-4 py-4">
                     <Button
                       variant="outline"
                       className="flex-1 border-red-500 text-red-500 hover:bg-red-50 hover:text-red-500"
@@ -431,7 +431,7 @@ export default function HolidaysApprovalPage() {
               </p>
             )}
           </div>
-          <DialogFooter className="flex sm:justify-between gap-2">
+          <DialogFooter className="sticky bottom-0 flex sm:justify-between gap-2">
             <Button variant="outline" className="flex-1" onClick={() => setRejectDialogOpen(false)}>
               Annulla
             </Button>

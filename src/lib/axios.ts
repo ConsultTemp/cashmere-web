@@ -29,7 +29,7 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     // Log dettagliato dell'errore per debug
-    console.error("API Error:", {
+    console.log("API Error:", {
       status: error.response?.status,
       statusText: error.response?.statusText,
       data: error.response?.data,

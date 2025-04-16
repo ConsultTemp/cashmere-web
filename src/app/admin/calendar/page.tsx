@@ -77,7 +77,7 @@ export default function CalendarPage() {
   }
 
   return (
-    <div className="bg-white mx-auto py-12 sm:py-6 md:py-8 px-0 sm:px-4 md:px-6">
+    <div className="bg-white mx-auto py-24 sm:py-6 md:py-36 px-0 sm:px-4 md:px-6">
       <div className="container mx-auto max-w-7xl">
         <div className="mb-4 sm:mb-6 flex flex-col space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-4">

@@ -156,7 +156,7 @@ export default function StudioPage() {
             id: studioAvail.id,
             name: studioDetail.name,
             description: studioDetail.briefDescription,
-            image: studioDetail.image,
+            image: studioDetail.imagesUrl[0],
           }
 
           if (studioAvail.isAvailable) {

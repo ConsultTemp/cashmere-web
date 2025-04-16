@@ -264,7 +264,7 @@ export default function CurrentPage() {
           <div className="mb-6 w-full md:w-1/2">
             <p className="mb-2 text-sm">Seleziona fonico</p>
             <div className="flex flex-wrap gap-2">
-              {engineers.filter((e) => e.id != "cm8z06fn00002mytvfftqrkgx").map((engineer) => (
+              {engineers.map((engineer) => (
                 <Button
                   key={engineer.id}
                   onClick={() => setSelectedEngineer(engineer.id)}

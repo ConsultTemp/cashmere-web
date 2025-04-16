@@ -320,6 +320,12 @@ export const BookingCalendar = forwardRef<any, BookingCalendarProps>(({ view, se
             selectable={canEdit}
             selectMirror={true}
             dayMaxEvents={false}
+            eventClassNames={(event) => {
+              if (event.view.type === 'dayGridMonth') {
+                return ['bg-blue-500 text-white hover:bg-blue-400']; // Applica la classe blu
+              }
+              return []; // Nessuna classe per altre viste
+            }}
             allDaySlot={false}
             slotMinTime="10:00:00"
             slotMaxTime="28:00:00"

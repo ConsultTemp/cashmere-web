@@ -32,17 +32,17 @@ export function BookingInfoTooltip({ event, position, onClose }: BookingInfoTool
   return (
     <div
       ref={tooltipRef}
-      className="absolute z-50 rounded-md border border-border bg-card p-4 shadow-md"
+      className="absolute w-48 z-50 rounded-md border border-border bg-card p-4 shadow-md"
       style={{
         top: `${position.y}px`,
         left: `${position.x}px`,
-        transform: "translate(10px, -50%)",
+        transform: "translate(-200px, -100%)",
         maxWidth: "300px",
       }}
     >
       <div className="space-y-3">
-{/* @ts-ignore */}
-      <h3 className="font-medium">{event.user.username}</h3>
+        {/* @ts-ignore */}
+        <h3 className="font-medium">{event.user.username}</h3>
         <div className="flex items-start gap-2 text-sm">
           <Calendar className="h-4 w-4 mt-0.5 text-primary" />
           <div>
@@ -78,7 +78,7 @@ export function BookingInfoTooltip({ event, position, onClose }: BookingInfoTool
               <p className="font-medium">Servizi</p>
               <ul className="list-disc pl-4">
                 {event.services.map((service) => (
-                   //@ts-ignore
+                  //@ts-ignore
                   <li key={service.id}>{service.name}</li>
                 ))}
               </ul>

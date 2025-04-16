@@ -19,7 +19,7 @@ import { cn } from "@/lib/utils"
 import Image from "next/image"
 import logo from "../../../public/cashmere-logo.svg"
 import { Button } from "@/components/Button"
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/Popover"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/Dialog"
 import { Input } from "@/components/Input"
@@ -97,6 +97,7 @@ export default function AdminLayout({
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [newUsername, setNewUsername] = useState("")
   const {updateUsername} = useUser()
+  const pathname = usePathname()
 
   console.log(user)
 
@@ -195,9 +196,10 @@ export default function AdminLayout({
                   href={item.href}
                   onClick={() => setIsCollapsed(true)}
                   className={cn(
-                    "flex items-center gap-3 py-4 rounded-lg mb-1 hover:bg-gray-100 transition-colors w-full",
+                    "flex items-center gap-3 py-4 rounded-lg mb-1 transition-colors w-full",
                     "text-gray-700 hover:text-black",
                     isCollapsed ? "flex-col" : "px-4",
+                    pathname === item.href ? "bg-gray-100" : ""
                   )}
                 >
                   {item.icon}

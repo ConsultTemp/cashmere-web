@@ -666,9 +666,9 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
                    
                     <Popover>
                 <PopoverTrigger>
-                  <Button variant="outline" size="icon" className="bg-gray-100 px-2 py-2 border-0 w-full">
+                  <p className="bg-gray-100 px-2 py-2 border-0 w-full flex flex-row gap-2 rounded-sm">
                     <Filter/>Filtra per data
-                  </Button>
+                  </p>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">
                   {/* @ts-ignore */}
