@@ -217,6 +217,22 @@ export const useBooking = () => {
         }
     }
 
+    const getEngineerFutureBookings = async (id: string) => {
+        try {
+            setIsLoading(true)
+            setError(null)
+            const response = await bookingApi.getEngineerFutureBookings(id)
+            return response
+        } catch (err) {
+            setError(err as ApiError)
+            return null
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
+
+
     return {
         getAll,
         createBooking,
@@ -229,6 +245,7 @@ export const useBooking = () => {
         getEngineerBookings,
         getAvailableTimeSlots,
         getCurrentBookings,
+        getEngineerFutureBookings,
         updateBookingState,
         bookingUpdate,
         isLoading,

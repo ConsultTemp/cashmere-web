@@ -20,6 +20,7 @@ import type { BookingState, HolidayTypeType } from "@/types/types"
 import { useHoliday } from "@/hooks/useHoliday"
 import { useBooking } from "@/hooks/useBooking"
 import { useUserStore } from "@/store/user-store"
+import { useAvailability } from "@/hooks/useAvailability"
 
 type RequestType = "FERIE" | "PERMESSO" | null
 
@@ -36,6 +37,7 @@ export default function DashboardPage() {
   const router = useRouter()
   const [requestDialogOpen, setRequestDialogOpen] = useState(false)
   const [bookings, setBookings] = useState([])
+  const [availabilities, setAvailabilities] = useState([])
   const [requestType, setRequestType] = useState<RequestType>(null)
   const [dateRange, setDateRange] = useState<{
     from: Date | undefined
@@ -54,17 +56,18 @@ export default function DashboardPage() {
 
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
   const { createHoliday } = useHoliday()
-  const {getEngineerBookings} = useBooking()
+  const {getEngineerFutureBookings} = useBooking()
+  const {getEngineerAvailability} = useAvailability()
   const {user} = useUserStore()
   const handleCalendarClick = () => {
     router.push("/admin/calendar")
   }
 
   useEffect(() => {
-
+    
     const loadBookings = async () => {
       try {
-        const data = await getEngineerBookings(user.id)
+        const data = await getEngineerFutureBookings(user.id)
         setBookings(data)
         console.log(data)
       } catch (error) {
@@ -201,25 +204,25 @@ export default function DashboardPage() {
     <div className="container mx-auto px-4 md:px-6 space-y-6 md:space-y-8 py-8 md:py-12">
       <div>
         <div className="text-sm text-muted-foreground">{user.username}</div>
-        <h1 className="text-2xl font-bold">Bentornato</h1>
+        <h1 className="text-4xl poppins-semibold">Bentornato</h1>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Button variant="outline" className="h-20 md:h-24 bg-gray-50 hover:bg-gray-100" onClick={handleCalendarClick}>
+        <Button variant="outline" className="h-20 md:h-24 bg-violet-500 hover:bg-violet-480 border-0" onClick={handleCalendarClick}>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-violet-500 flex items-center justify-center">
-              <Calendar className="h-5 w-5 md:h-6 md:w-6 text-white" />
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full  flex items-center justify-center">
+              <Calendar className="h-6 w-6 md:h-12 md:w-8 text-white" />
             </div>
-            <span className="text-base md:text-lg">Calendario</span>
+            <span className="text-base text-white md:text-lg">Calendario</span>
           </div>
         </Button>
 
-        <Button variant="outline" className="h-20 md:h-24 bg-gray-50 hover:bg-gray-100" onClick={handleRequestClick}>
+        <Button variant="outline" className="h-20 md:h-24 bg-emerald-500 hover:bg-emerald-400  border-0" onClick={handleRequestClick}>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-emerald-500 flex items-center justify-center">
-              <Briefcase className="h-5 w-5 md:h-6 md:w-6 text-white" />
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full  flex items-center justify-center">
+              <Briefcase className="h-6 w-6 md:h-8 md:w-8 text-white" />
             </div>
-            <span className="text-base md:text-lg">Richiedi ferie o permesso</span>
+            <span className="text-base md:text-lg text-white">Richiedi ferie o permesso</span>
           </div>
         </Button>
       </div>
@@ -234,7 +237,6 @@ export default function DashboardPage() {
                 <TableHead className="font-medium whitespace-nowrap">
                   <div className="flex items-center gap-1">
                     Giorno richiesta
-                    <ArrowUpDown className="h-4 w-4 text-gray-400" />
                   </div>
                 </TableHead>
                 <TableHead className="font-medium whitespace-nowrap">Utente</TableHead>
@@ -242,7 +244,6 @@ export default function DashboardPage() {
                 <TableHead className="font-medium whitespace-nowrap">
                   <div className="flex items-center gap-1">
                     Data e fascia oraria
-                    <ArrowUpDown className="h-4 w-4 text-gray-400" />
                   </div>
                 </TableHead>
                 <TableHead className="font-medium whitespace-nowrap">Sala</TableHead>
@@ -267,7 +268,7 @@ export default function DashboardPage() {
                     <TableCell className="align-top">
                       {/* @ts-ignore */}
                       {booking.services.map((service, index) => (
-                        <div key={index}>{getServiceName(service.id)}</div>
+                        <div className="px-1 py-1 text-xs bg-gray-100 rounded-sm w-fit m-1" key={index}>{getServiceName(service.id)}</div>
                       ))}
                     </TableCell>
                     <TableCell className="align-top">
@@ -281,7 +282,7 @@ export default function DashboardPage() {
                       </div>
                     </TableCell>
                     {/* @ts-ignore */}
-                    <TableCell>{getStudioName(booking.studioId)}</TableCell>
+                    <TableCell><p className="px-2 py-1 text-xs rounded-sm bg-gray-100 w-fit">{getStudioName(booking.studioId)}</p></TableCell>
                     {/* @ts-ignore */}
                     <TableCell className={!booking.isWithinAvailability ? "text-red-500" : "text-green-500"}>
                       {/* @ts-ignore */}
@@ -476,7 +477,8 @@ export default function DashboardPage() {
       <Dialog open={viewSessionDialogOpen} onOpenChange={setViewSessionDialogOpen}>
         <DialogContent className="sm:max-w-[500px] w-[95vw] max-h-[90vh] overflow-y-auto">
           <DialogHeader className="flex flex-row items-center justify-between">
-            <DialogTitle className="text-center flex-1">{selectedBooking?.userId}</DialogTitle>
+            {/* @ts-ignore */}
+            <DialogTitle className="text-center flex-1">{selectedBooking?.user.username}</DialogTitle>
           </DialogHeader>
 
           {selectedBooking && (
@@ -485,14 +487,14 @@ export default function DashboardPage() {
                 <div>
                   <h3 className="text-lg font-semibold mb-2">Data e ora</h3>
                   <div className="flex items-center gap-4">
-                    <div className="bg-gray-100 rounded-md py-3 px-4 flex-1">
+                    <div className="bg-gray-100 rounded-md py-2 px-2 flex-1">
                       <span>{formatDate(selectedBooking.start)}</span>
                     </div>
-                    <div className="bg-gray-100 rounded-md py-3 px-4 w-24 text-center">
+                    <div className="bg-gray-100 rounded-md py-2 px-2 w-24 text-center">
                       <span>{formatTime(selectedBooking.start)}</span>
                     </div>
                     <span>-</span>
-                    <div className="bg-gray-100 rounded-md py-3 px-4 w-24 text-center">
+                    <div className="bg-gray-100 rounded-md py-2 px-2 w-24 text-center">
                       <span>{formatTime(selectedBooking.end)}</span>
                     </div>
                   </div>
@@ -513,36 +515,13 @@ export default function DashboardPage() {
                       const isAffittoSala = serviceName === "Affitto sala"
                       const isRegistrazione = serviceName === "Registrazione"
                       const isMixMaster = serviceName === "Mix&Master"
-
                       return (
-                        <div
-                          key={index}
-                          className={`border rounded-md p-3 flex-1 flex items-center gap-2 ${isAffittoSala || isRegistrazione ? "bg-blue-50 border-blue-200 text-blue-600" : ""
-                            }`}
-                        >
-                          <svg
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              d="M12 14C13.1046 14 14 13.1046 14 12C14 10.8954 13.1046 10 12 10C10.8954 10 10 10.8954 10 12C10 13.1046 10.8954 14 12 14Z"
-                              fill="currentColor"
-                            />
-                            <path
-                              d="M19 4C15.96 4 13.1 5.17 11 7.09C8.9 5.17 6.04 4 3 4C3 4 1 14 11 20C21 14 19 4 19 4Z"
-                              fill="currentColor"
-                            />
-                          </svg>
-                          <span>
+                          <span className="px-2 py-1 rounded-sm bg-gray-100 w-fit text-xs">
                             {isAffittoSala && "Affitto sala"}
                             {isRegistrazione && "Registrazione"}
                             {isMixMaster && "Mix & Master"}
                             {!isAffittoSala && !isRegistrazione && !isMixMaster && serviceName}
                           </span>
-                        </div>
                       )
                     })}
                   </div>

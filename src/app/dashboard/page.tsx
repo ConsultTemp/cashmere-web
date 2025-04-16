@@ -5,21 +5,28 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/Button"
 import { BookingCard } from "./components/BookingCard"
 import { BookingFilters } from "./components/BookingFilters"
-import { NavbarVariants } from "@/components/navbar/Navbar"
 import { useBooking } from "@/hooks/useBooking"
 import { BookingState } from "@/types/types"
 import type { Booking } from "@/types/booking"
 import { useUserStore } from "@/store/user-store"
-import { MessageSquare } from "lucide-react"
+import { MessageSquare, Pencil } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/Popover"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/Dialog"
+import { Input } from "@/components/Input"
 
 export default function DashboardPage() {
   const router = useRouter()
-  const { user, clearUser } = useUserStore()
+  const { user, clearUser, setUser } = useUserStore()
   const [filter, setFilter] = useState<BookingState | "future" | "past" | "pending">("future")
   const [sortOrder, setSortOrder] = useState<"recent" | "oldest">("recent")
   const [bookings, setBookings] = useState<Booking[]>([])
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
+  // Aggiungi questi stati per il dialog di cambio nome utente
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [newUsername, setNewUsername] = useState("")
+  const [error, setError ] = useState(false)
+  const {updateUsername} = useUser()
 
   const { getUserBookings } = useBooking()
 
@@ -60,14 +67,45 @@ export default function DashboardPage() {
     router.push("/")
   }
 
+  // Aggiungi questa funzione per gestire il cambio nome utente
+  const handleUsernameUpdate = async ()  => {
+    const data = await updateUsername(user.id, newUsername)
+    console.log(data)
+    if(data && data.username){
+      setUser({...user, username: newUsername})
+      setError(false)
+      setIsDialogOpen(false)
+    }else{
+      setError(true)
+    }
+    
+  }
+
   return (
     <div className="">
-     
       <div className="flex-1 flex flex-col w-full items-center overflow-y-auto">
         <div className="container py-8 px-4 md:px-8 lg:px-16 xl:px-32 2xl:px-72">
           {/* Header */}
           <div className="flex items-center justify-between">
-            <h1 className="text-xl font-semibold">{user.username}</h1>
+            {/* Modifica qui per aggiungere il popover */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <h1 className="text-xl font-semibold cursor-pointer hover:underline flex flex-row gap-2 items-center">{user.username} <Pencil className="w-4 h-4"/></h1>
+              </PopoverTrigger>
+              <PopoverContent className="w-56">
+                <div className="space-y-2">
+                  <h4 className="font-medium">Il tuo account</h4>
+                  <Button
+                    variant="outline"
+                    color="black"
+                    className="w-full justify-start"
+                    onClick={() => {setIsDialogOpen(true); setNewUsername(user.username)}}
+                  >
+                    Cambia nome utente
+                  </Button>
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
           <Button onClick={handleLogout} className="my-4" variant="outline">
             Logout
@@ -90,16 +128,18 @@ export default function DashboardPage() {
             <BookingFilters onFilterChange={setFilter} />
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              { filteredBookings.length > 0 && filteredBookings.map((booking, _i) => (
-                <div key={booking.userId + booking.start + _i} onClick={() => setSelectedBooking(booking)}>
-                  <BookingCard booking={booking} />
-                </div>
-              ))}
-              { filteredBookings.length < 1 && 
-              <p className="w-full whitespace-nowrap mt-10 px-2 rounded-lg">
-                Nessuna prenotazione {filter == "future" ? "in programma" : filter == "past" ? "passata" : "in attesa di conferma"}
-              </p>
-              }
+              {filteredBookings.length > 0 &&
+                filteredBookings.map((booking, _i) => (
+                  <div key={booking.userId + booking.start + _i} onClick={() => setSelectedBooking(booking)}>
+                    <BookingCard booking={booking} />
+                  </div>
+                ))}
+              {filteredBookings.length < 1 && (
+                <p className="w-full whitespace-nowrap mt-10 px-2 rounded-lg">
+                  Nessuna prenotazione{" "}
+                  {filter == "future" ? "in programma" : filter == "past" ? "passata" : "in attesa di conferma"}
+                </p>
+              )}
             </div>
           </div>
 
@@ -121,14 +161,52 @@ export default function DashboardPage() {
           onClose={() => setSelectedBooking(null)}
         />
       )}
+
+      {/* Aggiungi il dialog per il cambio nome utente */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Cambia nome utente</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label htmlFor="username" className="text-sm font-medium">
+                Nuovo nome utente
+              </label>
+              <Input
+                id="username"
+                value={newUsername}
+                onChange={(e) => setNewUsername(e.target.value)}
+                placeholder="Inserisci nuovo nome utente"
+              />
+              {error && <p className="text-xs text-red-500">Questo nome utente appartiente gia ad un altro user.</p>}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" color="black" onClick={() => setIsDialogOpen(false)}>
+              Annulla
+            </Button>
+            <Button color="black" onClick={handleUsernameUpdate}>
+              Salva
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/Dialog"
+import {
+  Dialog as BookingDialog,
+  DialogContent as BookingDialogContent,
+  DialogHeader as BookingDialogHeader,
+  DialogTitle as BookingDialogTitle,
+  DialogFooter as BookingDialogFooter,
+} from "@/components/Dialog"
 import { format } from "date-fns"
 import { it } from "date-fns/locale"
 import { services, studios } from "@/lib/types"
+import { useUser } from "@/hooks/useUser"
 
 interface BookingViewDialogProps {
   booking: Booking
@@ -161,11 +239,11 @@ function BookingViewDialog({ booking, isOpen, onClose }: BookingViewDialogProps)
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle>Dettagli Prenotazione</DialogTitle>
-        </DialogHeader>
+    <BookingDialog open={isOpen} onOpenChange={onClose}>
+      <BookingDialogContent className="sm:max-w-[500px]">
+        <BookingDialogHeader>
+          <BookingDialogTitle>Dettagli Prenotazione</BookingDialogTitle>
+        </BookingDialogHeader>
 
         <div className="space-y-4 py-4">
           <div>
@@ -220,12 +298,11 @@ function BookingViewDialog({ booking, isOpen, onClose }: BookingViewDialogProps)
             </div>
           )}
 
-          <DialogFooter>
+          <BookingDialogFooter>
             <Button onClick={onClose}>OK</Button>
-          </DialogFooter>
+          </BookingDialogFooter>
         </div>
-      </DialogContent>
-    </Dialog>
+      </BookingDialogContent>
+    </BookingDialog>
   )
 }
-

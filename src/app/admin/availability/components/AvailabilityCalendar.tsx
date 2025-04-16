@@ -5,15 +5,19 @@ import FullCalendar from "@fullcalendar/react"
 import timeGridPlugin from "@fullcalendar/timegrid"
 import interactionPlugin from "@fullcalendar/interaction"
 import itLocale from "@fullcalendar/core/locales/it"
-import { format } from "date-fns"
+import { format, isWithinInterval, startOfWeek, endOfWeek } from "date-fns"
+import { it } from "date-fns/locale"
 import { Button } from "@/components/Button"
-import { X } from 'lucide-react'
+import { X, CalendarIcon, Filter } from "lucide-react"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/Dialog"
 import { useAvailability } from "@/hooks/useAvailability"
 import { useBooking } from "@/hooks/useBooking"
 import { useHoliday } from "@/hooks/useHoliday"
 import { Card, CardContent } from "@/components/Card"
 import { useUserStore } from "@/store/user-store"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/Popover"
+import { Calendar } from "@/components/Calendar"
+import { cn } from "@/lib/utils"
 
 interface AvailabilityCalendarProps {
   view: "timeGridDay" | "timeGridWeek"
@@ -39,8 +43,13 @@ interface Holiday {
   userId: string
 }
 
+interface DateRange {
+  from: Date
+  to: Date
+}
+
 export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
-  ({ view, onViewChange, selectedEngineer,engineerName, date, isEditMode }, ref) => {
+  ({ view, onViewChange, selectedEngineer, engineerName, date, isEditMode }, ref) => {
     const calendarRef = useRef<any>(null)
 
     const [availabilities, setAvailabilities] = useState<Availability[]>([])
@@ -52,10 +61,17 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
     const [bookings, setBookings] = useState([])
     const [visibleRange, setVisibleRange] = useState<{ start: Date; end: Date } | null>(null)
 
+    // Aggiungi stato per il range di date personalizzato
+    const [dateRange, setDateRange] = useState<DateRange | undefined>({
+      from: startOfWeek(new Date(), { weekStartsOn: 1 }),
+      to: endOfWeek(new Date(), { weekStartsOn: 1 }),
+    })
+    const [isCustomRange, setIsCustomRange] = useState(false)
+
     const { getEngineerAvailability, createAvailability, updateAvailability, deleteAvailability } = useAvailability()
     const { getEngineerBookings } = useBooking()
     const { getUserHolidays } = useHoliday()
-    const {user} = useUserStore()
+    const { user } = useUserStore()
 
     useImperativeHandle(ref, () => ({
       getApi: () => calendarRef.current?.getApi(),
@@ -358,20 +374,23 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
     const generateHolidayEvents = useCallback(() => {
       if (!holidays.length) return []
       //@ts-ignore
-      return holidays.filter((h) => h.state == "CONFERMATO").map((holiday) => {
-        const startDate = new Date(holiday.start)
-        const endDate = new Date(holiday.end)
+      return holidays
+      //@ts-ignore
+        .filter((h) => h.state == "CONFERMATO")
+        .map((holiday) => {
+          const startDate = new Date(holiday.start)
+          const endDate = new Date(holiday.end)
 
-        return {
-          id: `holiday-${holiday.id}`,
-          title: "Ferie",
-          start: startDate,
-          end: endDate,
-          userId: holiday.userId,
-          type: "holiday",
-          allDay: false,
-        }
-      })
+          return {
+            id: `holiday-${holiday.id}`,
+            title: "Ferie",
+            start: startDate,
+            end: endDate,
+            userId: holiday.userId,
+            type: "holiday",
+            allDay: false,
+          }
+        })
     }, [holidays])
 
     // Genera gli eventi da visualizzare
@@ -440,40 +459,64 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
       }, 0)
     }
 
+    // Modifica le funzioni di calcolo per utilizzare il range di date personalizzato
     const getTotalAvailabilityHours = () => {
-      const availabilityEvents = eventsToDisplay().filter((event) => event.type === "availability")
+      const availabilityEvents = eventsToDisplay().filter((event) => {
+        if (!isCustomRange || !dateRange) {
+          // Se non è selezionato un range personalizzato, usa la vista corrente del calendario
+          if (!calendarRef.current) return false
+          const api = calendarRef.current.getApi()
+          const viewStart = api.view.activeStart
+          const viewEnd = api.view.activeEnd
+          const eventStart = new Date(event.start)
+          return event.type === "availability" && eventStart >= viewStart && eventStart < viewEnd
+        }
+
+        // Altrimenti, filtra in base al range personalizzato
+        const eventStart = new Date(event.start)
+        return (
+          event.type === "availability" && isWithinInterval(eventStart, { start: dateRange.from, end: dateRange.to })
+        )
+      })
+
       return calculateTotalHours(availabilityEvents)
     }
 
     const getTotalBookingHours = () => {
-      // Ottieni l'intervallo di date attualmente visualizzato nel calendario
-      if (!calendarRef.current) return 0
-
-      const api = calendarRef.current.getApi()
-      const viewStart = api.view.activeStart
-      const viewEnd = api.view.activeEnd
-
-      // Filtra solo le prenotazioni che rientrano nell'intervallo di date visualizzato
       const bookingEvents = eventsToDisplay().filter((event) => {
+        if (!isCustomRange || !dateRange) {
+          // Se non è selezionato un range personalizzato, usa la vista corrente del calendario
+          if (!calendarRef.current) return false
+          const api = calendarRef.current.getApi()
+          const viewStart = api.view.activeStart
+          const viewEnd = api.view.activeEnd
+          const eventStart = new Date(event.start)
+          return event.type === "booking" && eventStart >= viewStart && eventStart < viewEnd
+        }
+
+        // Altrimenti, filtra in base al range personalizzato
         const eventStart = new Date(event.start)
-        return event.type === "booking" && eventStart >= viewStart && eventStart < viewEnd
+        return event.type === "booking" && isWithinInterval(eventStart, { start: dateRange.from, end: dateRange.to })
       })
 
       return calculateTotalHours(bookingEvents)
     }
 
     const getTotalHolidayHours = () => {
-      // Ottieni l'intervallo di date attualmente visualizzato nel calendario
-      if (!calendarRef.current) return 0
-
-      const api = calendarRef.current.getApi()
-      const viewStart = api.view.activeStart
-      const viewEnd = api.view.activeEnd
-
-      // Filtra solo le ferie che rientrano nell'intervallo di date visualizzato
       const holidayEvents = eventsToDisplay().filter((event) => {
+        if (!isCustomRange || !dateRange) {
+          // Se non è selezionato un range personalizzato, usa la vista corrente del calendario
+          if (!calendarRef.current) return false
+          const api = calendarRef.current.getApi()
+          const viewStart = api.view.activeStart
+          const viewEnd = api.view.activeEnd
+          const eventStart = new Date(event.start)
+          return event.type === "holiday" && eventStart >= viewStart && eventStart < viewEnd
+        }
+
+        // Altrimenti, filtra in base al range personalizzato
         const eventStart = new Date(event.start)
-        return event.type === "holiday" && eventStart >= viewStart && eventStart < viewEnd
+        return event.type === "holiday" && isWithinInterval(eventStart, { start: dateRange.from, end: dateRange.to })
       })
 
       return calculateTotalHours(holidayEvents)
@@ -486,6 +529,30 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
         end: info.view.activeEnd,
       })
     }, [])
+
+    // Funzione per formattare l'intervallo di date
+    const formatDateRange = (range: DateRange | undefined) => {
+      if (!range || !range.from) return "Settimana corrente"
+
+      if (!range.to) {
+        return format(range.from, "d MMMM yyyy", { locale: it })
+      }
+
+      if (range.from.getMonth() === range.to.getMonth()) {
+        return `${format(range.from, "d", { locale: it })} - ${format(range.to, "d MMMM yyyy", { locale: it })}`
+      }
+
+      return `${format(range.from, "d MMM", { locale: it })} - ${format(range.to, "d MMM yyyy", { locale: it })}`
+    }
+
+    // Funzione per resettare alla settimana corrente
+    const resetToCurrentWeek = () => {
+      setDateRange({
+        from: startOfWeek(new Date(), { weekStartsOn: 1 }),
+        to: endOfWeek(new Date(), { weekStartsOn: 1 }),
+      })
+      setIsCustomRange(false)
+    }
 
     return (
       <div className="overflow-y-scroll">
@@ -577,7 +644,51 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
             </div>
 
             <div className="mt-24 pb-12 right-4 top-4 z-10 pb-24">
-              <h2 className="mb-4 text-xl font-semibold">Panoramica {engineerName}</h2>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold">Panoramica {engineerName}</h2>
+
+                {/* Aggiungi il selettore di intervallo di date */}
+                <div className="flex items-center gap-2">
+                  {isCustomRange && (
+                    <Button variant="outline" size="sm" onClick={resetToCurrentWeek}>
+                      Settimana corrente
+                    </Button>
+                  )}
+
+
+                  <div
+                    className="pointer-events-auto relative z-50"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      console.log("Click intercepted and passed through");
+                    }}
+                  >
+                   
+                    <Popover>
+                <PopoverTrigger>
+                  <Button variant="outline" size="icon" className="bg-gray-100 px-2 py-2 border-0 w-full">
+                    <Filter/>Filtra per data
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  {/* @ts-ignore */}
+                  <Calendar
+                      initialFocus
+                      mode="range"
+                      selected={dateRange}
+                      onSelect={(range) => {
+                        console.log("Calendar selection attempted", range);
+                        //@ts-ignore
+                        setDateRange(range);
+                          setIsCustomRange(true);
+                      }}
+                    />
+                </PopoverContent>
+              </Popover>
+                  </div>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <Card>
                   <CardContent className="pt-6">

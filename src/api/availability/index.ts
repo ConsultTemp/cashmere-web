@@ -42,6 +42,26 @@ export class AvailabilityApi {
     }
   }
 
+  async getUserAvailability(engineerId: string): Promise<object> {
+    try {
+      const response = await api.get<object>(`${this.BASE_PATH}/user/${engineerId}`, {
+        headers: {
+          "Cache-Control": "no-cache",
+        },
+      })
+      return response.data
+    } catch (error) {
+      console.log(error)
+      if (axios.isAxiosError(error)) {
+        throw {
+          message: error.response?.data?.message || "Failed to fetch engineer availability",
+          statusCode: error.response?.status || 500,
+        }
+      }
+      throw error
+    }
+  }
+
   async getWeeklyAvailability(engineerId: string): Promise<object> {
     try {
       const response = await api.get<object>(`${this.BASE_PATH}/weekly`, {

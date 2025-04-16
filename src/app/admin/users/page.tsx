@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
-import { Eye, UserCog, Flag, AlertCircle, Search } from "lucide-react"
+import { Eye, UserCog, Flag, AlertCircle, Search, Pencil } from "lucide-react"
 import { Button } from "@/components/Button"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/Dialog"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/Table"
@@ -15,7 +15,7 @@ import {
   PaginationPrevious,
 } from "@/components/Pagination"
 import { useUser } from "@/hooks/useUser"
-import type { RoleType } from "@/store/user-store"
+import { useUserStore, type RoleType } from "@/store/user-store"
 import { RadioGroup, RadioGroupItem } from "@/components/RadioGroup"
 import { Label } from "@/components/Label"
 import { Textarea } from "@/components/TextArea"
@@ -26,6 +26,7 @@ interface User {
   id: string
   username: string
   role: RoleType
+  notes?: string
 }
 
 interface Report {
@@ -45,7 +46,10 @@ export default function UserManagement() {
   const [selectedRole, setSelectedRole] = useState<RoleType>("USER")
   const [reportReason, setReportReason] = useState("")
   const [searchQuery, setSearchQuery] = useState("")
-  const { getAllUsers, updateRole } = useUser()
+  const [notesDialogOpen, setNotesDialogOpen] = useState(false)
+  const [newNotes, setNewNotes] = useState("")
+  const { getAllUsers, updateRole, updateNotes } = useUser()
+  const {setUser} = useUserStore()
   const { getAll, createReport, deleteReport } = useReport()
 
   useEffect(() => {
@@ -70,6 +74,33 @@ export default function UserManagement() {
     fetchData()
   }, [])
 
+  const handleUpdateNotes = () => {
+    if (selectedUser && selectedUser.id) {
+      updateNotes(selectedUser?.id, newNotes ? newNotes : "")
+    }
+    setNotesDialogOpen(false)
+    setTimeout(()=> {
+      fetchUsers()
+    }, 500)
+  }
+
+  const fetchUsers = async () => {
+    try {
+      const usersData = await getAllUsers()
+      setUsersState(usersData || [])
+
+      try {
+        const reportsData = await getAll()
+        setReports(reportsData || [])
+      } catch (reportError) {
+        console.error("Failed to fetch reports:", reportError)
+        setReports([])
+      }
+    } catch (userError) {
+      console.error("Failed to fetch users:", userError)
+      setUsersState([])
+    }
+  }
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 10
@@ -299,6 +330,14 @@ export default function UserManagement() {
                       <Flag className={`h-4 w-4 ${hasReport(user.id) ? "text-red-500" : ""}`} />
                       <span className="sr-only">Segnala Utente</span>
                     </Button>
+                    <Button
+                      variant="outline"
+                      className={`rounded-full px-2 py-2 h-auto ${hasReport(user.id) ? "bg-red-50" : ""}`}
+                      onClick={() => { setNewNotes(user.notes ? user.notes : ""); setNotesDialogOpen(true); setSelectedUser(user) }}
+                    >
+                      <Pencil className={`h-4 w-4`} />
+                      <span className="sr-only">Segnala Utente</span>
+                    </Button>
                   </div>
                 </TableCell>
               </TableRow>
@@ -322,6 +361,10 @@ export default function UserManagement() {
               <div>
                 <p className="font-medium">Ruolo:</p>
                 <p>{selectedUser.role}</p>
+              </div>
+              <div>
+                <p className="font-medium">Note:</p>
+                <p>{selectedUser.notes}</p>
               </div>
               {hasReport(selectedUser.id) && (
                 <div>
@@ -419,6 +462,40 @@ export default function UserManagement() {
             ) : (
               <Button onClick={handleSubmitReport}>Invia Segnalazione</Button>
             )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Notes User Dialog */}
+      <Dialog open={notesDialogOpen} onOpenChange={setNotesDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-center">
+              Modifica note
+            </DialogTitle>
+          </DialogHeader>
+          {selectedUser && (
+            <div className="space-y-4">
+              <>
+                <p>Inserisci note per {selectedUser.username}:</p>
+                <Textarea
+                  placeholder="Note..."
+                  value={newNotes}
+                  onChange={(e) => setNewNotes(e.target.value)}
+                  rows={4}
+                  className="h-24"
+                />
+              </>
+            </div>
+          )}
+          <DialogFooter className="flex sm:justify-between gap-2">
+            <Button variant="outline" onClick={() => setNotesDialogOpen(false)}>
+              Annulla
+            </Button>
+            <Button variant="gradient" onClick={handleUpdateNotes}>
+              Salva
+            </Button>
+
           </DialogFooter>
         </DialogContent>
       </Dialog>

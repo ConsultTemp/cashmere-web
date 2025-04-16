@@ -3,13 +3,27 @@
 import { useState, useEffect } from "react"
 import { type RoleType, useUserStore } from "@/store/user-store"
 import type React from "react"
-import { Menu, Home, Calendar, CheckCircle, Phone, Sun, Music2, User, Clock, House, CopyCheck, CalendarDays, BookHeadphones, UserRound, Users, Briefcase, UserCog } from "lucide-react"
+import {
+  Menu,
+  HomeIcon as House,
+  CopyCheck,
+  CalendarDays,
+  BookHeadphones,
+  Users,
+  Briefcase,
+  UserCog,
+  Pencil,
+} from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
 import logo from "../../../public/cashmere-logo.svg"
 import { Button } from "@/components/Button"
 import { useRouter } from "next/navigation"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/Popover"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/Dialog"
+import { Input } from "@/components/Input"
+import { useUser } from "@/hooks/useUser"
 
 interface SidebarItem {
   icon: React.ReactNode
@@ -75,9 +89,14 @@ export default function AdminLayout({
   children: React.ReactNode
 }) {
   const [isCollapsed, setIsCollapsed] = useState(true)
-  const { user, clearUser } = useUserStore()
+  const { user, clearUser, setUser } = useUserStore()
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
+  const [error, setError ] = useState(false)
+  // Aggiungi questi stati per il dialog di cambio nome utente
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [newUsername, setNewUsername] = useState("")
+  const {updateUsername} = useUser()
 
   console.log(user)
 
@@ -96,6 +115,20 @@ export default function AdminLayout({
 
   const closeSidebar = () => {
     setIsCollapsed(true)
+  }
+
+  // Aggiungi questa funzione per gestire il cambio nome utente
+  const handleUsernameUpdate = async ()  => {
+    const data = await updateUsername(user.id, newUsername)
+    console.log(data)
+    if(data && data.username){
+      setUser({...user, username: newUsername})
+      setError(false)
+      setIsDialogOpen(false)
+    }else{
+      setError(true)
+    }
+    
   }
 
   if (isLoading) {
@@ -140,14 +173,20 @@ export default function AdminLayout({
         )}
       >
         <div className="flex flex-col h-full p-2">
-          <div className={`flex flex-col items-${isCollapsed ? 'center' : ' px-4 start'} justify-between mb-8`}>
+          <div className={`flex flex-col items-${isCollapsed ? "center" : " px-4 start"} justify-between mb-8`}>
             <Button variant="ghost" size="icon" onClick={() => setIsCollapsed(!isCollapsed)} className="h-8 w-8">
               <Menu className="h-4 w-4" />
             </Button>
           </div>
 
-          <nav className={`flex-1 flex flex-col items-${isCollapsed ? 'center' : 'start'}`}>
-            <Image src={logo || "/placeholder.svg"} width={30} height={30} alt="Cashmere logo" className={`mb-8 ${isCollapsed ? '' : 'ml-4'}`} />
+          <nav className={`flex-1 flex flex-col items-${isCollapsed ? "center" : "start"}`}>
+            <Image
+              src={logo || "/placeholder.svg"}
+              width={30}
+              height={30}
+              alt="Cashmere logo"
+              className={`mb-8 ${isCollapsed ? "" : "ml-4"}`}
+            />
             {sidebarItems
               .filter((s) => s.roles.includes(user.role))
               .map((item, index) => (
@@ -171,7 +210,25 @@ export default function AdminLayout({
             <div className="pt-4 pl-4">
               <div className="flex items-center gap-3 mb-8">
                 <div className="flex-1">
-                  <p className="text-xs font-medium">{user.username}</p>
+                  {/* Modifica qui per aggiungere il popover */}
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button className="text-xs font-medium hover:underline cursor-pointer flex flex-row items-center gap-2" onClick={() => setNewUsername(user.username)}>{user.username}<Pencil className="w-3 h-3"/></button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-56">
+                      <div className="space-y-2">
+                        <h4 className="font-medium">Il tuo account</h4>
+                        <Button
+                          variant="outline"
+                          color="black"
+                          className="w-full justify-start"
+                          onClick={() => setIsDialogOpen(true)}
+                        >
+                          Cambia nome utente
+                        </Button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                   <div className="flex flex-row justify-between">
                     <p className="text-xs text-gray-500">
                       Ruolo: {(() => {
@@ -187,12 +244,12 @@ export default function AdminLayout({
                         }
                       })()}
                     </p>
-                   
                   </div>
-
                 </div>
               </div>
-              <p className="text-red-500 mb-4 cursor-pointer" onClick={handleLogout}>Esci</p>
+              <p className="text-red-500 mb-4 cursor-pointer" onClick={handleLogout}>
+                Esci
+              </p>
             </div>
           )}
         </div>
@@ -200,7 +257,37 @@ export default function AdminLayout({
 
       {/* Main content - non ha più il margine condizionale */}
       <div className="w-full p-4 pl-16 md:pl-20 pb-16">{children}</div>
+
+      {/* Aggiungi il dialog per il cambio nome utente */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Cambia nome utente</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label htmlFor="username" className="text-sm font-medium">
+                Nuovo nome utente
+              </label>
+              <Input
+                id="username"
+                value={newUsername}
+                onChange={(e) => setNewUsername(e.target.value)}
+                placeholder="Inserisci nuovo nome utente"
+              />
+              {error && <p className="text-xs text-red-500">Questo nome utente appartiente gia ad un altro user.</p>}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" color="black" onClick={() => setIsDialogOpen(false)}>
+              Annulla
+            </Button>
+            <Button color="black" onClick={handleUsernameUpdate}>
+              Salva
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
-

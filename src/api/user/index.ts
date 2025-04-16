@@ -10,7 +10,7 @@ export class UserApi {
 
   public static getInstance(): UserApi {
     if (!UserApi.instance) {
-        UserApi.instance = new UserApi()
+      UserApi.instance = new UserApi()
     }
     return UserApi.instance
   }
@@ -121,7 +121,37 @@ export class UserApi {
       throw error
     }
   }
-  
+
+  async updateUsername(id: string, newUsername: string): Promise<any> {
+    console.log(id)
+    try {
+      const response = await api.put<any>(`${this.BASE_PATH}/user/${id}/${newUsername}`, {
+        headers: {
+          "Cache-Control": "no-cache",
+        },
+      })
+      console.log(response.data)
+      return response.data
+    } catch (error) {
+    }
+  }
+
+  async updateNotes(id: string, notes: string): Promise<any> {
+    console.log(id)
+    try {
+      const response = await api.put<any>(`${this.BASE_PATH}/notes/${id}`, {
+        notes: notes
+      }, {
+        headers: {
+          "Cache-Control": "no-cache",
+        },
+      })
+      console.log(response.data)
+      return response.data
+    } catch (error) {
+    }
+  }
+
 }
 
 export const userApi = UserApi.getInstance()

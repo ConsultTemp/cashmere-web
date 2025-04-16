@@ -290,6 +290,27 @@ export class BookingApi {
     }
   }
 
+  async getEngineerFutureBookings(id: string): Promise<any> {
+    try {
+      const response = await api.get<any>(`${this.BASE_PATH}/future/${id}`, {
+        headers: {
+          "Cache-Control": "no-cache",
+        },
+      })
+      console.log(response.data)
+      return response.data
+    } catch (error) {
+      console.log(error)
+      if (axios.isAxiosError(error)) {
+        throw {
+          message: error.response?.data?.message || "Booking update failed",
+          statusCode: error.response?.status || 500,
+        }
+      }
+      throw error
+    }
+  }
+
   async updateBooking(id: string, booking:Booking): Promise<any> {
     console.log(id)
     try {

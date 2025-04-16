@@ -7,6 +7,7 @@ export interface User {
   id: string
   role: RoleType
   username: string
+  notes?: string
 }
 
 interface UserState {

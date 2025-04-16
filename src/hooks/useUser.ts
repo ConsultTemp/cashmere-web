@@ -112,12 +112,42 @@ export const useUser = () => {
     }
   }
 
+  const updateUsername = async (id: string, newUsername: string) => {
+    try {
+      setIsLoading(true)
+      setError(null)
+      const response = await userApi.updateUsername(id, newUsername)
+      return response
+    } catch (err) {
+      setError(err as ApiError)
+      return null
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const updateNotes = async (id: string, notes: string) => {
+    try {
+      setIsLoading(true)
+      setError(null)
+      const response = await userApi.updateNotes(id, notes)
+      return response
+    } catch (err) {
+      setError(err as ApiError)
+      return null
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return {
     engineers,
     getEngineers,
     getUsers,
+    updateNotes,
     updateEntity,
     getAllUsers,
+    updateUsername,
     updateRole,
     isLoading,
     error,
