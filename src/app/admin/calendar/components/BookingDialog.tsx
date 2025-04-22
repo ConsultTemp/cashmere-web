@@ -70,6 +70,7 @@ interface BookingDialogProps {
 }
 
 export function BookingDialog({ isOpen, onClose, onSave, booking, onDelete, canEdit }: BookingDialogProps) {
+  console.log(booking)
   const [startDate, setStartDate] = useState<Date | undefined>(booking?.start)
   const [endDate, setEndDate] = useState<Date | undefined>(booking?.end)
   const [startTime, setStartTime] = useState<string>("")
@@ -174,7 +175,7 @@ export function BookingDialog({ isOpen, onClose, onSave, booking, onDelete, canE
 
   const handleSubmit = (data: Booking) => {
     // Combine date and time
-    if (startDate && startTime) {
+    /* if (startDate && startTime) {
       const [hours, minutes] = startTime.split(":").map(Number)
 
       // Create a new date object from the startDate
@@ -216,7 +217,7 @@ export function BookingDialog({ isOpen, onClose, onSave, booking, onDelete, canE
         end.setHours(hours, minutes, 0, 0)
         data.end = end
       }
-    }
+    } */
 
     // If we're editing, include the ID
     if (booking?.id) {
@@ -237,7 +238,7 @@ export function BookingDialog({ isOpen, onClose, onSave, booking, onDelete, canE
       instagram: "",
       phone: "",
     })
-
+console.log(data)
     onSave({
       ...data,
       //@ts-ignore

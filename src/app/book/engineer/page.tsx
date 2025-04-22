@@ -161,7 +161,9 @@ export default function EngineerPage() {
             id: engineerAvail.id,
             name: engineerAvail.username,
           }
-
+          if (engineerAvail.id == "cm8z06fn00002mytvfftqrkgx") {
+            continue
+          }
           if (engineerAvail.isAvailable) {
             // Engineer is available
             available.push(engineerData)
@@ -285,7 +287,7 @@ export default function EngineerPage() {
               )}
 
               {/* Unavailable engineers */}
-              {unavailableEngineers.length > 1 && (
+              {unavailableEngineers.length > 0 && (
                 <div className="mt-16">
                   <h3 className="text-base font-medium mb-4">Fonici non disponibili nella tua fascia oraria</h3>
                   <div className="space-y-4">

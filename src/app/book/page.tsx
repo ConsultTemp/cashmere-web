@@ -2,7 +2,6 @@
 
 import Link from "next/link"
 import { Button } from "@/components/Button"
-import { RadioGroup, RadioGroupItem } from "@/components/RadioGroup"
 import { Label } from "@/components/Label"
 import ServiceCard from "./components/ServiceCard"
 import { useBookingStore } from "../../store/booking-store"
@@ -12,7 +11,6 @@ import { useRouter } from "next/navigation"
 import Head from "next/head"
 import { pageSEO } from "@/lib/seo-config"
 import JsonLd from "@/components/SEO/JsonLd"
-import Breadcrumbs from "@/components/SEO/Breadcrumbs"
 
 // Definizione dei tipi
 export type ServiceType = "p4xv7qk2m90zylwtscbdg3nfr" | "y0m2xv7qkz4nlwt3cbdf9srpg" | "wtscbdf9xv7qkz0m2y4nlgr3p"
@@ -61,19 +59,37 @@ export default function BookingPage() {
   const toggleService = (service: ServiceType) => {
     if (!service) return
 
+    // Verifica se il servizio è già selezionato
+    const isSelected = services.includes(service)
+
     if (service === "wtscbdf9xv7qkz0m2y4nlgr3p") {
-      setServices(["wtscbdf9xv7qkz0m2y4nlgr3p"])
-      setSelectedPackage(null)
+      // Se si seleziona "Affitto Sala"
+      if (isSelected) {
+        // Se è già selezionato, lo rimuoviamo
+        setServices(services.filter((s) => s !== service))
+      } else {
+        // Se non è selezionato, lo impostiamo come unico servizio
+        setServices([service])
+      }
     } else {
-      const newServices = services.includes(service)
-        ? services.filter((s) => s !== service)
-        : [...services.filter((s) => s !== "wtscbdf9xv7qkz0m2y4nlgr3p"), service]
-      setServices(newServices)
+      // Per gli altri servizi
+      if (isSelected) {
+        // Se è già selezionato, lo rimuoviamo
+        setServices(services.filter((s) => s !== service))
+      } else {
+        // Se non è selezionato, verifichiamo che "Affitto Sala" non sia selezionato
+        if (services.includes("wtscbdf9xv7qkz0m2y4nlgr3p")) {
+          // Se "Affitto Sala" è selezionato, non permettiamo di selezionare altri servizi
+          return
+        }
+        // Altrimenti aggiungiamo il servizio
+        setServices([...services, service])
+      }
     }
   }
 
   const handlePackageSelect = (pkg: PackageType) => {
-    if (services.includes("wtscbdf9xv7qkz0m2y4nlgr3p")) return
+    // Permettiamo la selezione dei pacchetti anche con "Affitto Sala"
     //@ts-ignore
     setSelectedPackage(pkg)
   }
@@ -94,6 +110,9 @@ export default function BookingPage() {
     router.push("/book/datetime")
   }
 
+  // Verifica se "Affitto Sala" è selezionato
+  const isRentalSelected = services.includes("wtscbdf9xv7qkz0m2y4nlgr3p")
+
   return (
     <>
       <Head>
@@ -108,10 +127,8 @@ export default function BookingPage() {
       </Head>
 
       <div className="container max-w-3xl py-6 sm:py-8 px-4 sm:px-6 pb-20 sm:pb-32">
-
         <div className="mt-4 sm:mt-6 space-y-6 sm:space-y-8">
           <div className="space-y-2 mb-16">
-
             <Link href="/" className="text-sm text-black underline">
               Torna alla home
             </Link>
@@ -131,6 +148,7 @@ export default function BookingPage() {
                 selected={services.includes("p4xv7qk2m90zylwtscbdg3nfr")}
                 onSelect={() => toggleService("p4xv7qk2m90zylwtscbdg3nfr")}
                 imageUrl="/Microfono.svg"
+                disabled={isRentalSelected}
               />
 
               <ServiceCard
@@ -139,6 +157,7 @@ export default function BookingPage() {
                 description="Il Mix & Master è il processo finale di lavorazione sul beat e sulla voce, che serve a far suonare in modo professionale una canzone."
                 selected={services.includes("y0m2xv7qkz4nlwt3cbdf9srpg")}
                 onSelect={() => toggleService("y0m2xv7qkz4nlwt3cbdf9srpg")}
+                disabled={isRentalSelected}
               />
 
               <ServiceCard
@@ -184,7 +203,6 @@ export default function BookingPage() {
                       className="custom-radio"
                       checked={selectedPackage === pkg.id}
                       onChange={() => handlePackageSelect(pkg.id as PackageType)}
-                      disabled={services.includes("wtscbdf9xv7qkz0m2y4nlgr3p")}
                     />
                     <Label htmlFor={pkg.id}>{pkg.label}</Label>
                   </div>

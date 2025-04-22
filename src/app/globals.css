@@ -355,3 +355,8 @@
 .no-scrollbar::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Opera */
 }
+
+.fc-event.overlapping-event {
+  border-width: 3px !important;
+  border-style: solid !important;
+}

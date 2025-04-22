@@ -1,26 +1,31 @@
 "use client"
 
-import { useState, useMemo, useEffect } from "react"
-import { Eye, UserCog, Flag, AlertCircle, Search, Pencil } from "lucide-react"
+import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "@/components/Command"
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/Popover"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/Tabs"
+import { Eye, UserCog, Flag, AlertCircle, Pencil, ChevronsUpDown, Check } from "lucide-react"
 import { Button } from "@/components/Button"
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/Dialog"
+import { Input } from "@/components/Input"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/Dialog"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/Table"
 import {
   Pagination,
   PaginationContent,
-  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
-  PaginationNext,
+  PaginationEllipsis,
   PaginationPrevious,
+  PaginationNext,
 } from "@/components/Pagination"
 import { useUser } from "@/hooks/useUser"
 import { useUserStore, type RoleType } from "@/store/user-store"
-import { RadioGroup, RadioGroupItem } from "@/components/RadioGroup"
 import { Label } from "@/components/Label"
 import { Textarea } from "@/components/TextArea"
 import { useReport } from "@/hooks/useReport"
-import { Input } from "@/components/Input"
+import { cn } from "@/lib/utils"
+import { Checkbox } from "@/components/Checkbox"
+import { useEffect, useState, useMemo } from "react"
+import { RadioGroup, RadioGroupItem } from "@/components/RadioGroup"
 
 interface User {
   id: string
@@ -33,7 +38,11 @@ interface Report {
   id: string
   userId: string
   reason: string
+  phone?: string
 }
+
+type SortDirection = "asc" | "desc" | null
+type SortField = "start" | "created_at" | null
 
 export default function UserManagement() {
   const [usersState, setUsersState] = useState<User[]>([])
@@ -49,8 +58,14 @@ export default function UserManagement() {
   const [notesDialogOpen, setNotesDialogOpen] = useState(false)
   const [newNotes, setNewNotes] = useState("")
   const { getAllUsers, updateRole, updateNotes } = useUser()
-  const {setUser} = useUserStore()
+  const { setUser } = useUserStore()
   const { getAll, createReport, deleteReport } = useReport()
+  const [isRoleDialogOpen, setIsRoleDialogOpen] = useState(false)
+  const [isPhoneReport, setIsPhoneReport] = useState(false)
+  const [phoneNumber, setPhoneNumber] = useState("")
+  const [activeTab, setActiveTab] = useState("users")
+  const [showOnlyReported, setShowOnlyReported] = useState(false)
+  const [openUserCombobox, setOpenUserCombobox] = useState(false)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -79,9 +94,13 @@ export default function UserManagement() {
       updateNotes(selectedUser?.id, newNotes ? newNotes : "")
     }
     setNotesDialogOpen(false)
-    setTimeout(()=> {
+    setTimeout(() => {
       fetchUsers()
     }, 500)
+  }
+  const hasReport = (userId: string) => {
+    if (!reports || reports.length === 0) return false
+    return reports.some((report) => report && report.userId === userId)
   }
 
   const fetchUsers = async () => {
@@ -107,10 +126,14 @@ export default function UserManagement() {
 
   // Filter users based on search query
   const filteredUsers = useMemo(() => {
-    if (!searchQuery.trim()) return usersState
+    let filtered = usersState.filter((user) => user.username.toLowerCase().includes(searchQuery.toLowerCase()))
 
-    return usersState.filter((user) => user.username.toLowerCase().includes(searchQuery.toLowerCase()))
-  }, [usersState, searchQuery])
+    if (showOnlyReported) {
+      filtered = filtered.filter((user) => hasReport(user.id))
+    }
+
+    return filtered
+  }, [usersState, searchQuery, showOnlyReported])
 
   // Sorted and paginated users
   const sortedAndPaginatedUsers = useMemo(() => {
@@ -126,10 +149,6 @@ export default function UserManagement() {
   const totalPages = Math.ceil(filteredUsers.length / itemsPerPage)
 
   // Check if user has a report
-  const hasReport = (userId: string) => {
-    if (!reports || reports.length === 0) return false
-    return reports.some((report) => report && report.userId === userId)
-  }
 
   // Get report for a user
   const getUserReport = (userId: string) => {
@@ -158,6 +177,7 @@ export default function UserManagement() {
     } else {
       setSelectedReport(null)
       setReportReason("")
+      setPhoneNumber("")
     }
 
     setReportDialogOpen(true)
@@ -181,20 +201,31 @@ export default function UserManagement() {
   }
 
   const handleSubmitReport = async () => {
-    if (!selectedUser || !reportReason.trim()) return
+    if ((!selectedUser && !phoneNumber) || !reportReason.trim()) return
 
     try {
-      console.log(selectedUser)
-      const newReport = await createReport({ userId: selectedUser.id, reason: reportReason })
+      //@ts-ignore
+      let newReport
+      if (isPhoneReport) {
+        //@ts-ignore
+        newReport = await createReport({ userId: null, phone: phoneNumber, reason: reportReason })
+      } else if (selectedUser) {
+        //@ts-ignore
+        newReport = await createReport({ userId: selectedUser.id, phone: null, reason: reportReason })
+      }
 
       // Update local state safely
       setReports((prev) => {
         // Handle case where prev might be null or undefined
         const currentReports = prev || []
+        //@ts-ignore
         return [...currentReports, newReport]
       })
 
       setReportDialogOpen(false)
+      setPhoneNumber("")
+      setSelectedUser(null)
+      setReportReason("")
     } catch (error) {
       console.error("Failed to create report:", error)
     }
@@ -247,6 +278,7 @@ export default function UserManagement() {
         for (let i = totalPages - 2; i <= totalPages; i++) {
           pageNumbers.push(i)
         }
+        pageNumbers.push(totalPages)
       } else {
         // Middle: show first page, ellipsis, current page and adjacent, ellipsis, last page
         pageNumbers.push(1)
@@ -262,91 +294,368 @@ export default function UserManagement() {
     return pageNumbers
   }
 
+  const filteredReports = useMemo(() => {
+    return reports.filter((report) => {
+      const searchTermLower = searchQuery.toLowerCase()
+      const user = usersState.find((u) => u.id === report.userId)
+      const username = user ? user.username.toLowerCase() : ""
+      const phone = report.phone ? report.phone.toLowerCase() : ""
+
+      return username.includes(searchTermLower) || (report.phone && phone.includes(searchTermLower))
+    })
+  }, [reports, searchQuery, usersState])
+
   return (
-    <div className="max-w-6xl mx-auto sm:p-4 md:p-6 py-8 sm:py-12 h-screen overflow-y-auto">
+    <div className="max-w-6xl mx-auto sm:p-4 md:p-6 py-8 sm:py-12">
       <h1 className="text-xl sm:text-2xl font-semibold mb-4 sm:mb-6">Gestione Utenti</h1>
 
-      {/* Search input */}
-      <div className="mb-4 relative">
-        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-          <Search className="h-4 w-4 text-gray-400" />
-        </div>
-        <Input
-          type="text"
-          placeholder="Cerca utenti..."
-          value={searchQuery}
-          onChange={(e) => {
-            setSearchQuery(e.target.value)
-            setCurrentPage(1) // Reset to first page on search
-          }}
-          className="pl-10"
-        />
-      </div>
+      <Tabs defaultValue="users" className="w-full" onValueChange={setActiveTab}>
+        <TabsList className="mb-4">
+          <TabsTrigger value="users">Utenti</TabsTrigger>
+          <TabsTrigger value="reports">Segnalazioni</TabsTrigger>
+        </TabsList>
 
-      {/* Make table responsive */}
-      <div className="border rounded-md overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-white">
-              <TableHead className="font-medium">Utente</TableHead>
-              <TableHead className="font-medium">Ruolo</TableHead>
-              <TableHead className="font-medium text-right">Azioni</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {sortedAndPaginatedUsers.map((user) => (
-              <TableRow key={user.id} className="border-t">
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    {user.username}
-                    {/* @ts-ignore */}
-                    {hasReport(user.id) && <AlertCircle className="h-4 w-4 text-red-500" title="Utente segnalato" />}
-                  </div>
-                </TableCell>
-                <TableCell>{user.role}</TableCell>
-                <TableCell>
-                  <div className="flex gap-2 justify-end">
-                    <Button
-                      variant="outline"
-                      className="rounded-full px-2 py-2 h-auto"
-                      onClick={() => handleView(user)}
-                    >
-                      <Eye className="h-4 w-4" />
-                      <span className="sr-only">Visualizza</span>
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="rounded-full px-2 py-2 h-auto"
-                      onClick={() => handleRoleManagement(user)}
-                    >
-                      <UserCog className="h-4 w-4" />
-                      <span className="sr-only">Gestione Ruolo</span>
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className={`rounded-full px-2 py-2 h-auto ${hasReport(user.id) ? "bg-red-50" : ""}`}
-                      onClick={() => handleReportUser(user)}
-                    >
-                      <Flag className={`h-4 w-4 ${hasReport(user.id) ? "text-red-500" : ""}`} />
-                      <span className="sr-only">Segnala Utente</span>
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className={`rounded-full px-2 py-2 h-auto ${hasReport(user.id) ? "bg-red-50" : ""}`}
-                      onClick={() => { setNewNotes(user.notes ? user.notes : ""); setNotesDialogOpen(true); setSelectedUser(user) }}
-                    >
-                      <Pencil className={`h-4 w-4`} />
-                      <span className="sr-only">Segnala Utente</span>
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+        {/* Tab Utenti */}
+        <TabsContent value="users">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+            <div className="flex items-center gap-4">
+              <Input
+                placeholder="Cerca per nome o entità..."
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value)
+                  setCurrentPage(1) // Reset to first page on search
+                }}
+                className="w-64"
+              />
+            </div>
+            <div className="flex items-center">
+              {/* @ts-ignore */}
+              <Checkbox id="show-reported" checked={showOnlyReported} onCheckedChange={setShowOnlyReported} />
+              <Label htmlFor="show-reported" className="ml-2">
+                Mostra solo utenti segnalati
+              </Label>
+            </div>
+          </div>
 
-      {/* View User Dialog */}
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-white">
+                  <TableHead className="font-medium">Utente</TableHead>
+                  <TableHead className="font-medium">Ruolo</TableHead>
+                  <TableHead className="text-right">Azioni</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {sortedAndPaginatedUsers.map((user) => (
+                  <TableRow key={user.id} className="border-t">
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        {user.username}
+                        {/* @ts-ignore */}
+                        {hasReport(user.id) && (
+                          <AlertCircle className="h-4 w-4 text-red-500" />
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>{user.role}</TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex gap-2 justify-end">
+                        <Button
+                          variant="outline"
+                          className="rounded-full px-2 py-2 h-auto"
+                          onClick={() => handleView(user)}
+                        >
+                          <Eye className="h-4 w-4" />
+                          <span className="sr-only">Visualizza</span>
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="rounded-full px-2 py-2 h-auto"
+                          onClick={() => handleRoleManagement(user)}
+                        >
+                          <UserCog className="h-4 w-4" />
+                          <span className="sr-only">Gestione Ruolo</span>
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className={`rounded-full px-2 py-2 h-auto ${hasReport(user.id) ? "bg-red-50" : ""}`}
+                          onClick={() => handleReportUser(user)}
+                        >
+                          <Flag className={`h-4 w-4 ${hasReport(user.id) ? "text-red-500" : ""}`} />
+                          <span className="sr-only">Segnala Utente</span>
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className={`rounded-full px-2 py-2 h-auto ${hasReport(user.id) ? "bg-red-50" : ""}`}
+                          onClick={() => {
+                            setNewNotes(user.notes ? user.notes : "")
+                            setNotesDialogOpen(true)
+                            setSelectedUser(user)
+                          }}
+                        >
+                          <Pencil className={`h-4 w-4`} />
+                          <span className="sr-only">Segnala Utente</span>
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="mt-4">
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        if (currentPage > 1) setCurrentPage(currentPage - 1)
+                      }}
+                      className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                    />
+                  </PaginationItem>
+
+                  {getPageNumbers().map((page, index) =>
+                    page === "ellipsis" ? (
+                      <PaginationItem key={`ellipsis-${index}`}>
+                        <PaginationEllipsis />
+                      </PaginationItem>
+                    ) : (
+                      <PaginationItem key={page}>
+                        <PaginationLink
+                          href="#"
+                          isActive={currentPage === page}
+                          onClick={(e) => {
+                            e.preventDefault()
+                            setCurrentPage(page as number)
+                          }}
+                        >
+                          {page}
+                        </PaginationLink>
+                      </PaginationItem>
+                    ),
+                  )}
+
+                  <PaginationItem>
+                    <PaginationNext
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        if (currentPage < totalPages) setCurrentPage(currentPage + 1)
+                      }}
+                      className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            </div>
+          )}
+        </TabsContent>
+
+        {/* Tab Segnalazioni */}
+        <TabsContent value="reports">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+            <div className="flex items-center gap-4">
+              <Input
+                placeholder="Cerca per nome utente o numero di telefono..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-64"
+              />
+            </div>
+            <Button variant="outline" onClick={() => setReportDialogOpen(true)}>
+              Crea Segnalazione
+            </Button>
+          </div>
+
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-white">
+                  <TableHead className="font-medium">Utente</TableHead>
+                  <TableHead className="font-medium">Telefono</TableHead>
+                  <TableHead className="font-medium">Motivo</TableHead>
+                  <TableHead className="text-right">Azioni</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredReports.map((report) => (
+                  <TableRow key={report.id} className="border-t">
+                    <TableCell>
+                      {report.userId
+                        ? usersState.find((u) => u.id === report.userId)?.username || "Utente non trovato"
+                        : "N/A"}
+                    </TableCell>
+                    <TableCell>{report.phone || "N/A"}</TableCell>
+                    <TableCell>{report.reason}</TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="outline"
+                        className="rounded-full px-2 py-2 h-auto"
+                        onClick={() => {
+                          setSelectedReport(report)
+                          setReportReason(report.reason)
+                          setReportDialogOpen(true)
+                        }}
+                      >
+                        <Eye className="h-4 w-4" />
+                        <span className="sr-only">Visualizza</span>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </TabsContent>
+      </Tabs>
+
+      {/* Report User Dialog */}
+      <Dialog open={reportDialogOpen} onOpenChange={setReportDialogOpen}>
+        <DialogContent className="w-3/4">
+          <DialogHeader>
+            <DialogTitle className="text-center">
+              {selectedReport ? "Visualizza Segnalazione" : "Segnala Utente"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 w-3/4">
+            <div className="flex items-center space-x-2">
+              {/* @ts-ignore */}
+              <Checkbox id="phone-report" checked={isPhoneReport} onCheckedChange={setIsPhoneReport} />
+              <Label htmlFor="phone-report">Segnala numero di telefono</Label>
+            </div>
+
+            {isPhoneReport ? (
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Numero di telefono</label>
+                <Input
+                  type="tel"
+                  placeholder="Inserisci numero di telefono"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                />
+              </div>
+            ) : (
+              <div className="overflow-hidden">
+                <label className="block text-sm font-medium text-gray-700">Utente</label>
+                <Popover open={openUserCombobox} onOpenChange={setOpenUserCombobox}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={openUserCombobox}
+                      className="w-full justify-between"
+                    >
+                      {selectedUser
+                        ? usersState.find((user) => user.id === selectedUser.id)?.username
+                        : "Seleziona utente"}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0">
+                    <Command>
+                      <CommandInput placeholder="Cerca utente..." />
+                      <CommandList>
+                        <CommandEmpty>Nessun utente trovato.</CommandEmpty>
+                        <CommandGroup>
+                          {usersState.map((user) => (
+                            <CommandItem
+                              key={user.id}
+                              value={user.username}
+                              onSelect={() => {
+                                setSelectedUser(user)
+                                setOpenUserCombobox(false)
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  selectedUser?.id === user.id ? "opacity-100" : "opacity-0",
+                                )}
+                              />
+                              {user.username}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              </div>
+            )}
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Motivo della segnalazione</label>
+              <Textarea
+                placeholder="Motivo della segnalazione..."
+                value={reportReason}
+                onChange={(e) => setReportReason(e.target.value)}
+                rows={4}
+              />
+            </div>
+          </div>
+          <DialogFooter className="w-full flex flex-row  flex-wrap justify-left gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setReportDialogOpen(false)
+                setReportReason("")
+                setPhoneNumber("")
+                setSelectedUser(null)
+                setIsPhoneReport(false)
+                setSelectedReport(null)
+              }}
+              className="px-2 py-1"
+            >
+              Annulla
+            </Button>
+            {selectedReport && (
+              <Button variant="destructive" className="px-2 py-1" onClick={handleDeleteReport}>
+                Elimina Segnalazione
+              </Button>
+            )}
+            <Button className="px-2 py-1" onClick={handleSubmitReport}>Invia Segnalazione</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Notes User Dialog */}
+      <Dialog open={notesDialogOpen} onOpenChange={setNotesDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-center">Modifica note</DialogTitle>
+          </DialogHeader>
+          {selectedUser && (
+            <div className="space-y-4">
+              <>
+                <p>Inserisci note per {selectedUser.username}:</p>
+                <Textarea
+                  placeholder="Note..."
+                  value={newNotes}
+                  onChange={(e) => setNewNotes(e.target.value)}
+                  rows={4}
+                  className="h-24"
+                />
+              </>
+            </div>
+          )}
+          <DialogFooter className="flex sm:justify-between gap-2">
+            <Button variant="outline" onClick={() => setNotesDialogOpen(false)}>
+              Annulla
+            </Button>
+            <Button variant="gradient" onClick={handleUpdateNotes}>
+              Salva
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
         <DialogContent className="w-[95vw] sm:max-w-md mx-auto">
           <DialogHeader>
@@ -374,15 +683,8 @@ export default function UserManagement() {
               )}
             </div>
           )}
-          <DialogFooter className="flex sm:justify-between gap-2">
-            <Button variant="outline" className="flex-1" onClick={() => setViewDialogOpen(false)}>
-              Chiudi
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* Role Management Dialog */}
       <Dialog open={roleDialogOpen} onOpenChange={setRoleDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -391,25 +693,56 @@ export default function UserManagement() {
           {selectedUser && (
             <div className="space-y-4">
               <p>Seleziona il ruolo per {selectedUser.username}:</p>
-              {/* @ts-ignore */}
-              <RadioGroup value={selectedRole} onValueChange={(value) => setSelectedRole(value as RoleType)}>
+              <div className="space-y-2">
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="USER" id="USER" />
-                  <Label htmlFor="USER">Utente</Label>
+                  <input
+                    type="radio"
+                    id="USER"
+                    name="role"
+                    value="USER"
+                    checked={selectedRole === "USER"}
+                    onChange={() => setSelectedRole("USER")}
+                    className="h-4 w-4"
+                  />
+                  <label htmlFor="USER" className="text-sm">Utente</label>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="ADMIN" id="ADMIN" />
-                  <Label htmlFor="ADMIN">Admin</Label>
+                  <input
+                    type="radio"
+                    id="ADMIN"
+                    name="role"
+                    value="ADMIN"
+                    checked={selectedRole === "ADMIN"}
+                    onChange={() => setSelectedRole("ADMIN")}
+                    className="h-4 w-4"
+                  />
+                  <label htmlFor="ADMIN" className="text-sm">Admin</label>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="ENGINEER" id="ENGINEER" />
-                  <Label htmlFor="ENGINEER">Fonico</Label>
+                  <input
+                    type="radio"
+                    id="ENGINEER"
+                    name="role"
+                    value="ENGINEER"
+                    checked={selectedRole === "ENGINEER"}
+                    onChange={() => setSelectedRole("ENGINEER")}
+                    className="h-4 w-4"
+                  />
+                  <label htmlFor="ENGINEER" className="text-sm">Fonico</label>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="SECRETARY" id="SECRETARY" />
-                  <Label htmlFor="SECRETARY">Segreteria</Label>
+                  <input
+                    type="radio"
+                    id="SECRETARY"
+                    name="role"
+                    value="SECRETARY"
+                    checked={selectedRole === "SECRETARY"}
+                    onChange={() => setSelectedRole("SECRETARY")}
+                    className="h-4 w-4"
+                  />
+                  <label htmlFor="SECRETARY" className="text-sm">Segreteria</label>
                 </div>
-              </RadioGroup>
+              </div>
             </div>
           )}
           <DialogFooter className="flex sm:justify-between gap-2">
@@ -420,138 +753,6 @@ export default function UserManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* Report User Dialog */}
-      <Dialog open={reportDialogOpen} onOpenChange={setReportDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-center">
-              {selectedReport ? "Visualizza Segnalazione" : "Segnala Utente"}
-            </DialogTitle>
-          </DialogHeader>
-          {selectedUser && (
-            <div className="space-y-4">
-              {selectedReport ? (
-                <>
-                  <p>Segnalazione esistente per {selectedUser.username}:</p>
-                  <div className="p-3 bg-gray-50 rounded-md">
-                    <p className="text-gray-700">{reportReason}</p>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <p>Inserisci il motivo della segnalazione per {selectedUser.username}:</p>
-                  <Textarea
-                    placeholder="Motivo della segnalazione..."
-                    value={reportReason}
-                    onChange={(e) => setReportReason(e.target.value)}
-                    rows={4}
-                  />
-                </>
-              )}
-            </div>
-          )}
-          <DialogFooter className="flex sm:justify-between gap-2">
-            <Button variant="outline" onClick={() => setReportDialogOpen(false)}>
-              Annulla
-            </Button>
-            {selectedReport ? (
-              <Button variant="destructive" onClick={handleDeleteReport}>
-                Elimina Segnalazione
-              </Button>
-            ) : (
-              <Button onClick={handleSubmitReport}>Invia Segnalazione</Button>
-            )}
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Notes User Dialog */}
-      <Dialog open={notesDialogOpen} onOpenChange={setNotesDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-center">
-              Modifica note
-            </DialogTitle>
-          </DialogHeader>
-          {selectedUser && (
-            <div className="space-y-4">
-              <>
-                <p>Inserisci note per {selectedUser.username}:</p>
-                <Textarea
-                  placeholder="Note..."
-                  value={newNotes}
-                  onChange={(e) => setNewNotes(e.target.value)}
-                  rows={4}
-                  className="h-24"
-                />
-              </>
-            </div>
-          )}
-          <DialogFooter className="flex sm:justify-between gap-2">
-            <Button variant="outline" onClick={() => setNotesDialogOpen(false)}>
-              Annulla
-            </Button>
-            <Button variant="gradient" onClick={handleUpdateNotes}>
-              Salva
-            </Button>
-
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="mt-4">
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault()
-                    if (currentPage > 1) setCurrentPage(currentPage - 1)
-                  }}
-                  className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
-                />
-              </PaginationItem>
-
-              {getPageNumbers().map((page, index) =>
-                page === "ellipsis" ? (
-                  <PaginationItem key={`ellipsis-${index}`}>
-                    <PaginationEllipsis />
-                  </PaginationItem>
-                ) : (
-                  <PaginationItem key={page}>
-                    <PaginationLink
-                      href="#"
-                      isActive={currentPage === page}
-                      onClick={(e) => {
-                        e.preventDefault()
-                        setCurrentPage(page as number)
-                      }}
-                    >
-                      {page}
-                    </PaginationLink>
-                  </PaginationItem>
-                ),
-              )}
-
-              <PaginationItem>
-                <PaginationNext
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault()
-                    if (currentPage < totalPages) setCurrentPage(currentPage + 1)
-                  }}
-                  className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        </div>
-      )}
     </div>
   )
 }
-

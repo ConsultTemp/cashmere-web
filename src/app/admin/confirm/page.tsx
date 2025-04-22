@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
-import { Check, Eye, ArrowUpDown, OctagonAlert } from "lucide-react"
+import { Check, Eye, ArrowUpDown, OctagonAlert, Instagram, Phone } from "lucide-react"
 import type { Booking, Report } from "@/types/booking"
 import { BookingState, type StateType } from "@/types/types"
 import { Button } from "@/components/Button"
@@ -33,7 +33,7 @@ export default function Confirm() {
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false)
   const [bookings, setBookings] = useState<Booking[]>([])
   const [reports, setReports] = useState([])
-  const [report , setReport] = useState()
+  const [report, setReport] = useState()
   const { getToConfirm, updateBookingState } = useBooking()
   const { getAll } = useReport()
   useEffect(() => {
@@ -97,8 +97,8 @@ export default function Confirm() {
 
     if (sortField && sortDirection) {
       sorted.sort((a, b) => {
-        let valueA: number = 0
-        let valueB: number = 0
+        let valueA = 0
+        let valueB = 0
 
         if (sortField === "start") {
           valueA = new Date(a.start).getTime()
@@ -111,7 +111,6 @@ export default function Confirm() {
         return sortDirection === "asc" ? valueA - valueB : valueB - valueA
       })
     }
-
 
     // Calcola gli indici per la paginazione
     const startIndex = (currentPage - 1) * itemsPerPage
@@ -126,13 +125,43 @@ export default function Confirm() {
 
   const handleView = (booking: Booking) => {
     setSelectedBooking(booking)
-    setReport(reports.find((r: Report) => r.userId == booking.userId))
+    console.log(booking.phone)
+    console.log(reports)
+    setReport(reports.find((r: Report) => r.userId == booking.userId || booking.phone == r.phone))
     setViewDialogOpen(true)
   }
 
   const handleConfirm = (booking: Booking) => {
     setSelectedBooking(booking)
     setConfirmDialogOpen(true)
+  }
+
+  const handleInstagramClick = (instagram: string) => {
+    if (!instagram) return
+    // Rimuovi @ se presente all'inizio
+    const username = instagram.startsWith("@") ? instagram.substring(1) : instagram
+    window.open(`https://www.instagram.com/${username}`, "_blank")
+  }
+
+  const handleWhatsAppClick = (booking: Booking) => {
+    if (!booking || !booking.phone) return
+
+    // Formatta il numero di telefono (rimuovi spazi, +, ecc.)
+    const formattedPhone = booking.phone.replace(/\s+/g, "").replace(/^\+/, "")
+
+    // Apri WhatsApp
+    window.open(`https://wa.me/${formattedPhone}`, "_blank")
+
+    // Cambia lo stato della prenotazione in "CONTATTATO"
+    if (booking.state !== BookingState.CONTATTATO) {
+      handleAcceptRefuse(booking.id, BookingState.CONTATTATO)
+
+      // Aggiorna anche l'UI immediatamente
+      const updatedBookings = bookingsState.map((b) =>
+        b.id === booking.id ? { ...b, state: BookingState.CONTATTATO } : b,
+      )
+      setBookingsState(updatedBookings)
+    }
   }
 
   const confermaPrenotazione = () => {
@@ -223,8 +252,6 @@ export default function Confirm() {
 
   // Aggiorna la funzione handleAcceptRefuse per includere il fonico e lo studio selezionati
   const handleAcceptRefuse = (id: string, state: StateType, fonicoId?: string, studioId?: string) => {
-    if (!selectedBooking) return
-
     // Crea un oggetto con i dati da aggiornare
     const updateData: any = { state }
 
@@ -256,17 +283,16 @@ export default function Confirm() {
                 >
                   Giorno richiesta
                   <ArrowUpDown className={`h-6 w-6 ${sortField === "created_at" ? "text-primary" : "text-gray-400"}`} />
-
                 </button>
               </TableHead>
               <TableHead className="font-medium">Utente</TableHead>
+              <TableHead className="font-medium">Telefono</TableHead>
               <TableHead className="font-medium">Servizi</TableHead>
               <TableHead className="font-medium">Fonico</TableHead>
               <TableHead className="font-medium">
                 <button className="flex items-center gap-1 hover:text-gray-700" onClick={() => handleSort("start")}>
                   Data e fascia oraria
                   <ArrowUpDown className={`h-6 w-6 ${sortField === "start" ? "text-primary" : "text-gray-400"}`} />
-
                 </button>
               </TableHead>
               <TableHead className="font-medium">Sala</TableHead>
@@ -281,17 +307,31 @@ export default function Confirm() {
                   <div>{formatDate(booking.created_at)}</div>
                   <div className="text-gray-500">{formatTime(booking.created_at)}</div>
                 </TableCell>
-                <TableCell className="h-24 flex flex-row items-center justify-center gap-2">
+                <TableCell className="">
+                  <div className="flex flex-row items-center justify-start gap-2">
                   {/* @ts-ignore */}
                   {booking.user.username}
                   {/* @ts-ignore */}
                   {reports.some((r) => r.userId == booking.userId) && <OctagonAlert className="w-4 h-4 text-red-500" />}
+                  </div>
                 </TableCell>
-                <TableCell className="align-center">
+                
+                <TableCell className="">
+                <div className="flex flex-row items-center justify-start gap-2">
+                  {/* @ts-ignore */}
+                  {booking.phone}
+                  {/* @ts-ignore */}
+                  {reports.some((r) => r.phone == booking.phone) && <OctagonAlert className="w-4 h-4 text-red-500" />}
+                  </div>
+                </TableCell>
 
+                <TableCell className="align-center">
                   {booking.services.map((service, index) => (
                     //@ts-ignore
-                    <div key={index} className="px-2 py-1 rounded-sm bg-gray-100 text-xs">{service.name}</div>
+                    <div key={index} className="px-2 py-1 rounded-sm bg-gray-100 text-xs">
+                      {/* @ts-ignore */}
+                      {service.name}
+                    </div>
                   ))}
                 </TableCell>
                 <TableCell>
@@ -305,12 +345,44 @@ export default function Confirm() {
                     <span>{formatTime(booking.end)}</span>
                   </div>
                 </TableCell>
-                <TableCell className="whitespace-nowrap"><p className="whitespace-nowrap px-2 py-1 rounded-sm bg-gray-100 text-xs w-fit">{getStudioName(booking.studioId)}</p></TableCell>
+                <TableCell className="whitespace-nowrap">
+                  <p className="whitespace-nowrap px-2 py-1 rounded-sm bg-gray-100 text-xs w-fit">
+                    {getStudioName(booking.studioId)}
+                  </p>
+                </TableCell>
                 <TableCell className={booking.state === "CONTATTATO" ? "text-orange-500" : "text-red-500"}>
                   {booking.state}
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-2 justify-end">
+                    {/* Icona Instagram */}
+                    {booking.instagram && (
+                      <Button
+                        variant="outline"
+                        className="rounded-full p-2 aspect-square h-auto"
+                        onClick={() => handleInstagramClick(booking.instagram ? booking.instagram : "")}
+                        title={`Visita il profilo Instagram: ${booking.instagram}`}
+                      >
+                        <Instagram className="h-4 w-4" />
+                        <span className="sr-only">Instagram</span>
+                      </Button>
+                    )}
+
+                    {/* Icona Telefono/WhatsApp */}
+                    {booking.phone && (
+                      <Button
+                        variant="outline"
+                        className={`rounded-full p-2 aspect-square h-auto ${
+                          booking.state === BookingState.CONTATTATO ? "bg-orange-50" : ""
+                        }`}
+                        onClick={() => handleWhatsAppClick(booking)}
+                        title={`Contatta su WhatsApp: ${booking.phone} (segna come contattato)`}
+                      >
+                        <Phone className="h-4 w-4" />
+                        <span className="sr-only">WhatsApp</span>
+                      </Button>
+                    )}
+
                     <Button
                       variant="outline"
                       className="rounded-full p-2 aspect-square h-auto"
@@ -426,4 +498,3 @@ export default function Confirm() {
     </div>
   )
 }
-

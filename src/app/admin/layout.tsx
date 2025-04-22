@@ -102,9 +102,9 @@ export default function AdminLayout({
   console.log(user)
 
   useEffect(() => {
-    // Semplice verifica che ci sia un utente, senza reindirizzamenti
+    
     setIsLoading(false)
-  }, [user])
+  }, [user, pathname])
 
   const handleLogout = () => {
     // Esegui il logout dallo store
@@ -251,7 +251,7 @@ export default function AdminLayout({
                   </div>
                 </div>
               </div>
-              <p className="text-red-500 mb-4 cursor-pointer" onClick={handleLogout}>
+              <p className="text-red-500 mb-8 cursor-pointer" onClick={handleLogout}>
                 Esci
               </p>
             </div>

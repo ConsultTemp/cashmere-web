@@ -109,6 +109,9 @@ console.log("hide: ", hideNavbar)
                 <Link href="/contacts" className=" text-sm text-gray-700 hover:text-black">
                   Contatti
                 </Link>
+                <Link href="/portfolio" className=" text-sm text-gray-700 hover:text-black">
+                  Hanno registrato da noi
+                </Link>
               </div>
             </div>
             <div className="flex flex-row gap-4">

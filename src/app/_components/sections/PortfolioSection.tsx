@@ -54,9 +54,9 @@ export default function PortfolioGrid() {
     <section className="relative w-full">
       {/* Header */}
       <div className="mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <h2 className="text-xl sm:text-3xl poppins-semibold">Artisti</h2>
+        <h2 className="text-xl sm:text-3xl poppins-semibold">Hanno registrato da noi</h2>
         <a href="/portfolio" className="text-black text-sm underline-offset-4 hover:underline">
-          Visualizza tutti gli artisti
+          Visualizza tutti
         </a>
       </div>
 
@@ -77,7 +77,7 @@ export default function PortfolioGrid() {
             </CarouselItem>
           ))}
         </CarouselContent>
-        <div className="hidden sm:block">
+        <div>
           <CarouselPrevious />
           <CarouselNext />
         </div>

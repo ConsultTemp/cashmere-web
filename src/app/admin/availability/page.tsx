@@ -12,6 +12,7 @@ import { AvailabilityCalendar } from "./components/AvailabilityCalendar"
 import { useUser } from "@/hooks/useUser"
 import { useHoliday } from "@/hooks/useHoliday"
 import { useUserStore } from "@/store/user-store"
+import EngineersAvailabilityCalendar from "./components/EngineersAvailabilityCalendar"
 
 export default function AvailabilityPage() {
   const { user } = useUserStore()
@@ -152,7 +153,7 @@ export default function AvailabilityPage() {
                     <SelectValue placeholder="Seleziona fonico" />
                   </SelectTrigger>
                   <SelectContent>
-                    {engineerOptions.filter((e) => e.id != 'cm8z06fn00002mytvfftqrkgx').map((engineer) => (
+                    {engineerOptions.filter((e) => e.id != 'cm8z06fn00002mytvfftqrkgx' && e.id != "cm9pobzca000018y2aatml5bm").map((engineer) => (
                       <SelectItem key={engineer.id} value={engineer.id}>
                         {/* @ts-ignore */}
                         {engineer.username}
@@ -177,7 +178,7 @@ export default function AvailabilityPage() {
           </div>
         </div>
 
-        <div className="rounded-lg bg-white" style={{ height: "calc(100vh - 300px)", minHeight: "600px" }}>
+        <div className="rounded-lg bg-white">
           {selectedEngineer && (
             <AvailabilityCalendar
               ref={calendarRef}
@@ -189,6 +190,9 @@ export default function AvailabilityPage() {
               isEditMode={isEditMode}
             />
           )}
+        </div>
+        <div>
+          <EngineersAvailabilityCalendar/>
         </div>
       </div>
     </div>

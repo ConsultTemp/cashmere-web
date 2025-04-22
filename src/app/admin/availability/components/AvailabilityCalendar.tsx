@@ -8,7 +8,7 @@ import itLocale from "@fullcalendar/core/locales/it"
 import { format, isWithinInterval, startOfWeek, endOfWeek } from "date-fns"
 import { it } from "date-fns/locale"
 import { Button } from "@/components/Button"
-import { X, CalendarIcon, Filter } from "lucide-react"
+import { X, Filter } from "lucide-react"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/Dialog"
 import { useAvailability } from "@/hooks/useAvailability"
 import { useBooking } from "@/hooks/useBooking"
@@ -17,7 +17,6 @@ import { Card, CardContent } from "@/components/Card"
 import { useUserStore } from "@/store/user-store"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/Popover"
 import { Calendar } from "@/components/Calendar"
-import { cn } from "@/lib/utils"
 
 interface AvailabilityCalendarProps {
   view: "timeGridDay" | "timeGridWeek"
@@ -145,16 +144,17 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
       }
     }, [view])
 
+    // Update the getEventColor function to use borders instead of backgrounds for all event types
     const getEventColor = (type: string) => {
       switch (type) {
         case "availability":
-          return { backgroundColor: "#4ade80", borderColor: "#22c55e" }
+          return { backgroundColor: "transparent", borderColor: "#22c55e", textColor: "#22c55e", borderWidth: "2px", classNames:['overlapping-event'] }
         case "booking":
           return { backgroundColor: "#FF5B00", borderColor: "#FF5B00" }
         case "holiday":
-          return { backgroundColor: "#6366f1", borderColor: "#4f46e5" } // Indigo color for holidays
+          return { backgroundColor: "transparent", borderColor: "#6366f1", textColor: "#6366f1", borderWidth: "2px",classNames:['overlapping-event']  }
         default:
-          return { backgroundColor: "#4ade80", borderColor: "#22c55e" }
+          return { backgroundColor: "transparent", borderColor: "#22c55e", textColor: "#22c55e", borderWidth: "2px" }
       }
     }
 
@@ -374,23 +374,25 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
     const generateHolidayEvents = useCallback(() => {
       if (!holidays.length) return []
       //@ts-ignore
-      return holidays
-      //@ts-ignore
-        .filter((h) => h.state == "CONFERMATO")
-        .map((holiday) => {
-          const startDate = new Date(holiday.start)
-          const endDate = new Date(holiday.end)
+      return (
+        holidays
+          //@ts-ignore
+          .filter((h) => h.state == "CONFERMATO")
+          .map((holiday) => {
+            const startDate = new Date(holiday.start)
+            const endDate = new Date(holiday.end)
 
-          return {
-            id: `holiday-${holiday.id}`,
-            title: "Ferie",
-            start: startDate,
-            end: endDate,
-            userId: holiday.userId,
-            type: "holiday",
-            allDay: false,
-          }
-        })
+            return {
+              id: `holiday-${holiday.id}`,
+              title: "Ferie",
+              start: startDate,
+              end: endDate,
+              userId: holiday.userId,
+              type: "holiday",
+              allDay: false,
+            }
+          })
+      )
     }, [holidays])
 
     // Genera gli eventi da visualizzare
@@ -579,6 +581,7 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
                       ...event,
                       ...getEventColor(event.type),
                     }))}
+                    // Update the eventContent function to handle text colors for all event types
                     eventContent={(eventInfo) => (
                       <div className="h-full w-full p-1 overflow-hidden">
                         {isEditMode && eventInfo.event.extendedProps.originalId && (
@@ -593,8 +596,26 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
                             <X className="h-3 w-3" />
                           </button>
                         )}
-                        <div className="text-xs font-medium text-white">{eventInfo.event.title}</div>
-                        <div className="mt-1 text-xs text-white/90">
+                        <div
+                          className={`text-xs font-medium ${
+                            eventInfo.event.extendedProps.type === "booking"
+                              ? "text-white"
+                              : eventInfo.event.extendedProps.type === "holiday"
+                                ? "text-indigo-600"
+                                : "text-emerald-600"
+                          }`}
+                        >
+                          {eventInfo.event.title}
+                        </div>
+                        <div
+                          className={`mt-1 text-xs ${
+                            eventInfo.event.extendedProps.type === "booking"
+                              ? "text-white/90"
+                              : eventInfo.event.extendedProps.type === "holiday"
+                                ? "text-indigo-600/90"
+                                : "text-emerald-600/90"
+                          }`}
+                        >
                           {format(eventInfo.event.start!, "HH:mm")} - {format(eventInfo.event.end!, "HH:mm")}
                         </div>
                       </div>
@@ -617,25 +638,25 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
                     eventResize={
                       isEditMode
                         ? (info) => {
-                          // Update the availability duration when resized
-                          // Estrai l'ID originale dalla stringa (rimuovi il suffisso -weekOffset)
-                          const originalId = info.event.extendedProps.originalId
-                          const eventDay = info.event.extendedProps.day
+                            // Update the availability duration when resized
+                            // Estrai l'ID originale dalla stringa (rimuovi il suffisso -weekOffset)
+                            const originalId = info.event.extendedProps.originalId
+                            const eventDay = info.event.extendedProps.day
 
-                          updateAvailability(originalId, {
-                            day: eventDay,
-                            start: format(info.event.start!, "HH:mm"),
-                            end: format(info.event.end!, "HH:mm"),
-                            engineerId: selectedEngineer,
-                          })
-                            .then(() => {
-                              fetchAvailabilities()
+                            updateAvailability(originalId, {
+                              day: eventDay,
+                              start: format(info.event.start!, "HH:mm"),
+                              end: format(info.event.end!, "HH:mm"),
+                              engineerId: selectedEngineer,
                             })
-                            .catch((error: any) => {
-                              console.error("Error updating availability:", error)
-                              info.revert()
-                            })
-                        }
+                              .then(() => {
+                                fetchAvailabilities()
+                              })
+                              .catch((error: any) => {
+                                console.error("Error updating availability:", error)
+                                info.revert()
+                              })
+                          }
                         : undefined
                     }
                   />
@@ -655,36 +676,35 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
                     </Button>
                   )}
 
-
                   <div
                     className="pointer-events-auto relative z-50"
                     onClick={(e) => {
-                      e.stopPropagation();
-                      console.log("Click intercepted and passed through");
+                      e.stopPropagation()
+                      console.log("Click intercepted and passed through")
                     }}
                   >
-                   
                     <Popover>
-                <PopoverTrigger>
-                  <p className="bg-gray-100 px-2 py-2 border-0 w-full flex flex-row gap-2 rounded-sm">
-                    <Filter/>Filtra per data
-                  </p>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  {/* @ts-ignore */}
-                  <Calendar
-                      initialFocus
-                      mode="range"
-                      selected={dateRange}
-                      onSelect={(range) => {
-                        console.log("Calendar selection attempted", range);
-                        //@ts-ignore
-                        setDateRange(range);
-                          setIsCustomRange(true);
-                      }}
-                    />
-                </PopoverContent>
-              </Popover>
+                      <PopoverTrigger>
+                        <p className="bg-gray-100 px-2 py-2 border-0 w-full flex flex-row gap-2 rounded-sm">
+                          <Filter />
+                          Filtra per data
+                        </p>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0">
+                        {/* @ts-ignore */}
+                        <Calendar
+                          initialFocus
+                          mode="range"
+                          selected={dateRange}
+                          onSelect={(range) => {
+                            console.log("Calendar selection attempted", range)
+                            //@ts-ignore
+                            setDateRange(range)
+                            setIsCustomRange(true)
+                          }}
+                        />
+                      </PopoverContent>
+                    </Popover>
                   </div>
                 </div>
               </div>

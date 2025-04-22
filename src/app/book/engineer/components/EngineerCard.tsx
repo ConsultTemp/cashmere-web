@@ -66,7 +66,7 @@ export function EngineerCard({
           {isUnavailable && unavailabilityInfo && (
             <div>
               <p className="text-red-500 text-sm">{unavailabilityInfo.message || `${name} non è disponibile nella fascia oraria selezionata.`}</p>
-              {/* {unavailabilityInfo.alternativeDates.map((alt, i) => (
+              {unavailabilityInfo.alternativeDates.map((alt, i) => (
                 <div
                   key={i}
                   className="text-sm p-2 cursor-pointer rounded flex items-center flex flex-row"
@@ -83,7 +83,7 @@ export function EngineerCard({
                     {!(selectedStudio && !alt.studios?.includes(selectedStudio)) && <p className="py-1 px-2 bg-gray-100 text-black  hover:bg-gray-200 rounded-sm" onClick={() => onSelectAlternativeSlot && onSelectAlternativeSlot(alt, id)}>Seleziona</p>}
                   </div>
                 </div>
-              ))} */}
+              ))}
             </div>
           )}
         </div>

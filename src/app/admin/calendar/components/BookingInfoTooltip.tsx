@@ -14,7 +14,6 @@ interface BookingInfoTooltipProps {
 
 export function BookingInfoTooltip({ event, position, onClose }: BookingInfoTooltipProps) {
   const tooltipRef = useRef<HTMLDivElement>(null)
-  console.log(event)
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {

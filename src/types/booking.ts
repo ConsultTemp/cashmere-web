@@ -87,6 +87,7 @@ export interface Booking {
 export interface Report{
   string: string
   reason: string
-  userId: string
+  userId?: string
+  phone?: string
 }
 

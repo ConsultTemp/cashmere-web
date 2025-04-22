@@ -104,7 +104,7 @@ export default function DateTimePage() {
             </div>
           </div>
 
-          <Carousel className="w-full">
+          <Carousel className="w-full" scrollAmount={1}>
             <CarouselContent>
               {dates.map((date) => (
                 <CarouselItem key={date.toISOString()} className="w-full sm:basis-1/3">
@@ -124,8 +124,8 @@ export default function DateTimePage() {
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious className="hidden sm:flex" />
-            <CarouselNext className="hidden sm:flex" />
+            <CarouselPrevious/>
+            <CarouselNext/>
           </Carousel>
 
         </div>
@@ -157,7 +157,6 @@ export default function DateTimePage() {
               <Select 
                 value={timeTo || ""} 
                 onValueChange={(value) => handleEndTimeChange(value)} 
-                disabled={packageHasDuration}
               >
                 <SelectTrigger className="w-full p-2 rounded-md border text-sm">
                   <SelectValue placeholder="Seleziona orario"/>

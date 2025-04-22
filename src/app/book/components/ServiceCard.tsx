@@ -8,13 +8,21 @@ interface ServiceCardProps {
   imageUrl: string
   selected: boolean
   onSelect: () => void
+  disabled?: boolean
 }
 
-export default function ServiceCard({ title, description, imageUrl, selected, onSelect }: ServiceCardProps) {
+export default function ServiceCard({
+  title,
+  description,
+  imageUrl,
+  selected,
+  onSelect,
+  disabled = false,
+}: ServiceCardProps) {
   return (
     <div
-      className={`flex flex-col sm:flex-row gap-4 px-4 sm:px-6 border border-${selected ? "border-[1px] border-black" : "hover:border-black border-[1px]"} rounded-lg transition py-12 cursor-pointer hover:border-black`}
-      onClick={onSelect}
+      className={`flex flex-col sm:flex-row gap-4 px-4 sm:px-6 border border-${selected ? "border-[1px] border-black" : "hover:border-black border-[1px]"} rounded-lg transition py-12 cursor-pointer hover:border-black ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
+      onClick={disabled ? undefined : onSelect}
     >
       <div className="w-16 h-16 sm:w-1/6 aspect-square flex flex-col justify-center items-center mx-auto sm:mx-0">
         <Image
@@ -41,4 +49,3 @@ export default function ServiceCard({ title, description, imageUrl, selected, on
     </div>
   )
 }
-

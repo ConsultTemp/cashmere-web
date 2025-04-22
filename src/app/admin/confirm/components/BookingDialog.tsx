@@ -497,7 +497,7 @@ export function ViewBookingDialog({ isOpen, onClose, booking, onAccept, onReject
                   >
                     Contatta
                   </Button>
-                  <Button className="flex-1 bg-black text-white hover:bg-gray-800" onClick={accept}>
+                  <Button className="flex-1 bg-black text-white hover:bg-gray-800" onClick={accept} disabled={selectedFonico == "cm9pobzca000018y2aatml5bm" }>
                     Accetta
                   </Button>
                 </div>
