@@ -13,7 +13,6 @@ import moise from "../../../public/Foto artisti/Moise Kean.jpg"
 import niko from "../../../public/Foto artisti/Niko-pandetta.jpg"
 import neima from "../../../public/Foto artisti/Neima.jpg"
 import niky from "../../../public/Foto artisti/Niky-Savage.jpg"
-import { Award, CheckCircle, Music, Shield } from "lucide-react"
 
 export default function PortfolioClientPage() {
   const [activeTab, setActiveTab] = useState("artisti")
@@ -66,57 +65,39 @@ export default function PortfolioClientPage() {
   const certifications = [
     {
       id: 1,
-      title: "Certificazione Acustica Professionale",
-      issuer: "Acoustical Society of Italy",
-      year: "2023",
-      description:
-        "Certificazione di eccellenza per l'acustica dello studio, conforme agli standard internazionali per la registrazione professionale.",
-      icon: <Music className="h-10 w-10 text-black" />,
+      song: "Mambolosco - Gucci Benz",
+      image: mambolosco,
+      link: "https://open.spotify.com/intl-it/track/5uvPG968kxvq3M0ZyxZglc",
     },
     {
       id: 2,
-      title: "Pro Tools Certified Studio",
-      issuer: "Avid Technology",
-      year: "2022",
-      description:
-        "Studio certificato per l'utilizzo professionale di Pro Tools HD con hardware e software all'avanguardia.",
-      icon: <CheckCircle className="h-10 w-10 text-black" />,
+      song: "Niky Savage - Touché",
+      image: niky,
+      link: "https://open.spotify.com/intl-it/track/4w9mPW732RnZkoqsy3lRsg",
     },
     {
       id: 3,
-      title: "Certificazione SSL Console",
-      issuer: "Solid State Logic",
-      year: "2021",
-      description:
-        "Certificazione ufficiale per l'utilizzo e la manutenzione delle console SSL, garantendo la massima qualità del suono.",
-      icon: <Shield className="h-10 w-10 text-black" />,
+      song: "KMB - Breakout",
+      image: moise,
+      link: "https://open.spotify.com/intl-it/track/5uvPG968kxvq3M0ZyxZglc",
     },
     {
       id: 4,
-      title: "Premio Miglior Studio Emergente",
-      issuer: "Milano Music Awards",
-      year: "2022",
-      description:
-        "Riconoscimento per l'eccellenza tecnica e creativa tra gli studi di registrazione emergenti nell'area di Milano.",
-      icon: <Award className="h-10 w-10 text-black" />,
+      song: "Neima Ezza - Tesla",
+      image: neima,
+      link: "https://open.spotify.com/intl-it/track/754BUADwzMYecBgOoBaetK",
     },
     {
       id: 5,
-      title: "Certificazione Dolby Atmos",
-      issuer: "Dolby Laboratories",
-      year: "2023",
-      description:
-        "Studio certificato per la produzione e il mixaggio in formato Dolby Atmos, offrendo un'esperienza audio immersiva e tridimensionale.",
-      icon: <Music className="h-10 w-10 text-black" />,
+      song: "Niko Pandetta - Bella Vita",
+      image: niko,
+      link: "https://open.spotify.com/intl-it/track/5H5RWXYleho8amdspskcUb",
     },
     {
       id: 6,
-      title: "Certificazione Tecnici Audio",
-      issuer: "Audio Engineering Society",
-      year: "2022",
-      description:
-        "I nostri tecnici sono certificati AES, garantendo competenze professionali di alto livello in tutte le fasi della produzione audio.",
-      icon: <CheckCircle className="h-10 w-10 text-black" />,
+      song: "Flaco G - Lifestyle",
+      image: flacog,
+      link: "https://open.spotify.com/intl-it/track/7uQjkmip3qpclXt7hJ6EI9",
     },
   ]
 
@@ -144,7 +125,7 @@ export default function PortfolioClientPage() {
                 {portfolioItems.map((item) => (
                   <div
                     key={item.id}
-                    className="overflow-hidden border border-gray-200 rounded-lg transition-all hover:shadow-md"
+                    className="overflow-hidden border border-gray-200 rounded-lg transition-all hover:shadow-md h-[300px]"
                     itemScope
                     itemType="https://schema.org/MusicRecording"
                   >
@@ -190,30 +171,42 @@ export default function PortfolioClientPage() {
             </TabsContent>
 
             <TabsContent value="certificazioni">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {certifications.map((cert) => (
-                  <div
-                    key={cert.id}
-                    className="border border-gray-200 rounded-lg p-6 transition-all hover:shadow-md"
-                    itemScope
-                    itemType="https://schema.org/Certification"
-                  >
-                    <div className="flex items-center mb-4">
-                      {cert.icon}
-                      <div className="ml-4">
-                        <h3 className="text-lg font-semibold" itemProp="name">
-                          {cert.title}
-                        </h3>
-                        <p className="text-sm text-gray-500">
-                          <span itemProp="issuedBy">{cert.issuer}</span> •{" "}
-                          <span itemProp="dateIssued">{cert.year}</span>
-                        </p>
-                      </div>
-                    </div>
-                    <p className="text-sm text-gray-600" itemProp="description">
-                      {cert.description}
-                    </p>
-                  </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {certifications.map((item) => (
+                 <div
+                 key={item.id}
+                 className="overflow-hidden border border-gray-200 rounded-lg transition-all hover:shadow-md h-[300px]"
+                 itemScope
+                 itemType="https://schema.org/MusicRecording"
+               >
+                 <div className="relative aspect-[4/3]">
+                   <Image
+                     src={item.image || "/placeholder.svg"}
+                     alt={`${item.song}`}
+                     fill
+                     className="object-cover aspect-square transition-transform hover:scale-105"
+                     loading="lazy"
+                   />
+                 </div>
+                 <div className="p-4">
+                   <p className="text-sm text-black mb-2 text-xl" itemProp="byArtist">
+                     {item.song}
+                   </p>
+                   <div className="flex flex-row items-center justify-start gap-2">
+                     <Link
+                       href={item.link}
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       className="text-gray-500 hover:text-black"
+                       aria-label={`Visita il profilo Spotify di ${item.song}`}
+                     >
+                       <Image src={spotify || "/placeholder.svg"} alt="Spotify logo" className="h-5 w-5" />
+                     </Link>
+                   </div>
+                   <meta itemProp="inLanguage" content="it" />
+                   <meta itemProp="recordedAt" content="Cashmere Studio Milano" />
+                 </div>
+               </div>
                 ))}
               </div>
             </TabsContent>
