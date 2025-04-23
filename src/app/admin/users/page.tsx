@@ -730,7 +730,7 @@ export default function UserManagement() {
                     onChange={() => setSelectedRole("MANAGER")}
                     className="h-4 w-4"
                   />
-                  <label htmlFor="ADMIN" className="text-sm">Admin</label>
+                  <label htmlFor="ADMIN" className="text-sm">Manager</label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <input
