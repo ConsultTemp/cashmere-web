@@ -8,13 +8,19 @@ import { useUserStore } from "@/store/user-store"
 import { useBooking } from "@/hooks/useBooking"
 import { useRouter } from "next/navigation"
 import { Loader2 } from "lucide-react"
+import { useUser } from "@/hooks/useUser"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/Select"
 
 export default function ConfirmPage() {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState("")
+  const [users, setUsers] = useState<any[]>([])
   const { user } = useUserStore()
+
+  const [selectedUserId, setSelectedUserId] = useState<string>()
   const { createBooking } = useBooking()
+  const { getManagers } = useUser()
 
   const {
     selectedEngineer,
@@ -30,8 +36,20 @@ export default function ConfirmPage() {
     loadBookingFromLocalStorage,
     resetBooking,
   } = useBookingStore()
+   const isManager = user.role === "MANAGER"
 
   const [confirmationSent, setConfirmationSent] = useState(false)
+
+  useEffect(() => {
+    async function fetchData() {
+      if (isManager) {
+        const usersData = await getManagers(user.id)
+        setUsers(usersData)
+      }
+    }
+    
+    fetchData()
+  }, [user.id, isManager])
 
   // Carica i dati della prenotazione dal localStorage
   useEffect(() => {
@@ -45,7 +63,7 @@ export default function ConfirmPage() {
     try {
       // Crea l'oggetto prenotazione
       const booking = {
-        userId: user.id || null, // Può essere null per prenotazioni anonime
+        userId: isManager ? selectedUserId : user.id || null, // Può essere null per prenotazioni anonime
         fonicoId: selectedEngineer || "", // Ingegnere predefinito se non selezionato
         studioId: selectedStudio,
         //@ts-ignore
@@ -118,6 +136,27 @@ export default function ConfirmPage() {
           <p className="text-gray-400 mt-2">Controlla i dettagli e conferma la tua prenotazione</p>
         </div>
 
+        {/* Nuova select per filtrare per utente - visibile solo per manager */}
+        {isManager && (
+              <div className="flex items-center">
+                <label htmlFor="userFilter" className="mr-2 text-sm font-medium">
+                  Filtra per utente:
+                </label>
+                <Select defaultValue="all" onValueChange={(value) => setSelectedUserId(value)}>
+                  <SelectTrigger className="w-60">
+                    <SelectValue placeholder="Seleziona utente" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {users.map((userItem) => (
+                      <SelectItem key={userItem.id} value={userItem.id}>
+                        {userItem.username}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
         <div className="space-y-6">
           <div>
             <h6 className="font-bold mb-4">Riepilogo prenotazione</h6>
@@ -143,7 +182,7 @@ export default function ConfirmPage() {
           {error && <div className="p-4 bg-red-50 text-red-600 rounded-md">{error}</div>}
 
           <div className="flex flex-col items-end">
-            <Button variant="gradient" onClick={handleSubmitBooking} disabled={isSubmitting}>
+            <Button variant="gradient" onClick={handleSubmitBooking} disabled={isSubmitting || (isManager && !selectedUserId)}>
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

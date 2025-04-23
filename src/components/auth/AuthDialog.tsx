@@ -171,6 +171,9 @@ export function AuthDialog({ iconOnly = false, isMobile = false, onClose }: Auth
           case "USER":
             path = "/dashboard"
             break
+          case "MANAGER":
+            path = "/dashboard"
+            break
           default:
             path = "/"
             break
@@ -198,7 +201,7 @@ export function AuthDialog({ iconOnly = false, isMobile = false, onClose }: Auth
 
   return (
     <>
-      { (
+      {(
         <Dialog>
           {!user.id && <DialogTrigger asChild>
             {iconOnly ? (
@@ -217,23 +220,23 @@ export function AuthDialog({ iconOnly = false, isMobile = false, onClose }: Auth
             )}
           </DialogTrigger>}
 
-          {user.id && 
-          <Link href={user.role == "ADMIN" || user.role == "SECRETARY" ? "/admin/current" : user.role == "ENGINEER" ? "/admin/home" : "/dashboard"}>
-          {iconOnly ? (
-            <Button variant="ghost" onClick={() => setCounter(counter + 1)} size="icon" className="h-9 w-9">
-              <UserIcon />
-            </Button>
-          ) : isMobile ? (
-            <Button variant="outline" onClick={() => setCounter(counter + 1)} color="black" className="w-full">
-              <UserIcon className="mr-2" />
-              {user.id ? "Area personale" : "Accedi o registrati"}
-            </Button>
-          ) : (
-            <Button variant="outline" onClick={() => setCounter(counter + 1)} color="black">
-              <UserIcon /> {user.id ? "Area personale" : "Accedi o registrati"}
-            </Button>
-          )}
-        </Link>}
+          {user.id &&
+            <Link href={user.role == "ADMIN" || user.role == "SECRETARY" ? "/admin/current" : user.role == "ENGINEER" ? "/admin/home" : "/dashboard"}>
+              {iconOnly ? (
+                <Button variant="ghost" onClick={() => setCounter(counter + 1)} size="icon" className="h-9 w-9">
+                  <UserIcon />
+                </Button>
+              ) : isMobile ? (
+                <Button variant="outline" onClick={() => setCounter(counter + 1)} color="black" className="w-full">
+                  <UserIcon className="mr-2" />
+                  {user.id ? "Area personale" : "Accedi o registrati"}
+                </Button>
+              ) : (
+                <Button variant="outline" onClick={() => setCounter(counter + 1)} color="black">
+                  <UserIcon /> {user.id ? "Area personale" : "Accedi o registrati"}
+                </Button>
+              )}
+            </Link>}
           <DialogTitle></DialogTitle>
           <DialogContent>
             <div className="grid gap-6">

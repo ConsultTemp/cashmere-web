@@ -4,12 +4,19 @@ import { useState } from "react"
 import type { ApiError } from "@/types/auth"
 import { userApi } from "@/api/user"
 import type { RoleType } from "@/store/user-store"
+import { authApi } from "@/api/auth"
 
 export const useUser = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<ApiError | null>(null)
   const [engineers, setEngineers] = useState<any[]>([])
   const [users, setUsers] = useState<any[]>([])
+
+  interface LoginRequest {
+    username: string
+    password: string
+    managerId?: string
+  }
 
   const getEngineers = async () => {
     try {
@@ -65,6 +72,30 @@ export const useUser = () => {
       setIsLoading(true)
       setError(null)
       const response = await userApi.getAllUsers()
+
+      // Gestisci il caso in cui la risposta è null o undefined
+      if (response) {
+        setUsers(response)
+        return response
+      } else {
+        console.error("Risposta API vuota o null")
+        setUsers([])
+        return []
+      }
+    } catch (err) {
+      setError(err as ApiError)
+      setUsers([])
+      return []
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const getManagers = async (id: string) => {
+    try {
+      setIsLoading(true)
+      setError(null)
+      const response = await userApi.getManagersUsers(id)
 
       // Gestisci il caso in cui la risposta è null o undefined
       if (response) {
@@ -140,13 +171,32 @@ export const useUser = () => {
     }
   }
 
+  const register = async (credentials: LoginRequest)=> {
+    console.log(credentials)
+    try {
+      setIsLoading(true)
+      setError(null)
+      const response = await userApi.createUser(credentials)
+
+      return response
+    } catch (err) {
+      console.error("Registration error:", err)
+      setError(err as ApiError)
+      return null
+    } finally {
+      setIsLoading(false)
+    }
+  }
+  
   return {
     engineers,
     getEngineers,
     getUsers,
     updateNotes,
     updateEntity,
+    register,
     getAllUsers,
+    getManagers,
     updateUsername,
     updateRole,
     isLoading,

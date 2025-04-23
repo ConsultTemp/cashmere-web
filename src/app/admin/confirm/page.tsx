@@ -124,6 +124,8 @@ export default function Confirm() {
   const totalPages = Math.ceil(bookingsState.length / itemsPerPage)
 
   const handleView = (booking: Booking) => {
+    console.log(reports.find((r: Report) => r.userId == booking.userId || booking.phone == r.phone))
+    console.log(booking)
     setSelectedBooking(booking)
     console.log(booking.phone)
     console.log(reports)
@@ -321,7 +323,7 @@ export default function Confirm() {
                   {/* @ts-ignore */}
                   {booking.phone}
                   {/* @ts-ignore */}
-                  {reports.some((r) => r.phone == booking.phone) && <OctagonAlert className="w-4 h-4 text-red-500" />}
+                  {reports.some((r) => r.phone == booking.phone && !!r.phone) && <OctagonAlert className="w-4 h-4 text-red-500" />}
                   </div>
                 </TableCell>
 

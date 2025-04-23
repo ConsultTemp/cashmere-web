@@ -78,7 +78,9 @@ export function BookingDialog({ isOpen, onClose, onSave, booking, onDelete, canE
   const [engineers, setEngineers] = useState<any[]>([])
   const [users, setUsers] = useState<any[]>([])
   const [openCombobox, setOpenCombobox] = useState(false)
-  const { getEngineers, getUsers } = useUser()
+  const [searchQuery, setSearchQuery] = useState("")
+  const [isCreatingUser, setIsCreatingUser] = useState(false)
+  const { getEngineers, getUsers, register } = useUser()
   const { deleteBooking, updateBooking, createBooking } = useBooking()
 
   useEffect(() => {
@@ -238,7 +240,7 @@ export function BookingDialog({ isOpen, onClose, onSave, booking, onDelete, canE
       instagram: "",
       phone: "",
     })
-console.log(data)
+    console.log(data)
     onSave({
       ...data,
       //@ts-ignore
@@ -249,6 +251,51 @@ console.log(data)
       phone: "",
     })
   }
+
+  // Generate a random password
+  const generateRandomPassword = () => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+    let password = "";
+    for (let i = 0; i < 12; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return password;
+  };
+
+  // Handle user search input
+  const handleUserSearchInput = (value: string) => {
+    setSearchQuery(value);
+  };
+
+  // Create a new user with the search query as username
+  const handleCreateUser = async () => {
+    if (!searchQuery.trim()) return;
+    
+    setIsCreatingUser(true);
+    try {
+      const newUser = {
+        username: searchQuery.trim(),
+        password: generateRandomPassword()
+      };
+      
+      const response = await register(newUser);
+      
+      if (response && response.id) {
+        // Update the users list
+        setUsers([...users, response]);
+        
+        // Set this new user as the selected user
+        form.setValue("userId", response.id);
+        
+        // Close the combobox
+        setOpenCombobox(false);
+      }
+    } catch (error) {
+      console.error("Error creating user:", error);
+    } finally {
+      setIsCreatingUser(false);
+    }
+  };
 
   // Funzione per ottenere il nome dell'utente
   const getUserName = (userId: string) => {
@@ -390,9 +437,24 @@ console.log(data)
                       </PopoverTrigger>
                       <PopoverContent className="w-full p-0">
                         <Command>
-                          <CommandInput placeholder="Cerca cliente..." />
+                          <CommandInput 
+                            placeholder="Cerca cliente..." 
+                            onValueChange={handleUserSearchInput}
+                          />
                           <CommandList>
-                            <CommandEmpty>Nessun cliente trovato.</CommandEmpty>
+                            <CommandEmpty>
+                              <div className="flex flex-col items-center py-2">
+                                <p className="text-sm text-muted-foreground mb-2">Nessun cliente trovato</p>
+                                <Button 
+                                  onClick={handleCreateUser} 
+                                  disabled={isCreatingUser || !searchQuery.trim()}
+                                  className="w-full px-1 py-1"
+                                  size="sm"
+                                >
+                                  {isCreatingUser ? "Creazione..." : `Crea cliente "${searchQuery}"`}
+                                </Button>
+                              </div>
+                            </CommandEmpty>
                             <CommandGroup>
                               {users.map((user) => (
                                 <CommandItem
@@ -594,7 +656,7 @@ console.log(data)
                 <FormItem>
                   <FormLabel>Note</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="Inserisci eventuali note" rows={5}  {...field} style={{resize:"none"}} />
+                    <Textarea placeholder="Inserisci eventuali note" rows={5} {...field} style={{resize:"none"}} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -619,4 +681,3 @@ console.log(data)
     </Dialog>
   )
 }
-

@@ -656,6 +656,8 @@ export default function UserManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+
       <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
         <DialogContent className="w-[95vw] sm:max-w-md mx-auto">
           <DialogHeader>
@@ -714,6 +716,18 @@ export default function UserManagement() {
                     value="ADMIN"
                     checked={selectedRole === "ADMIN"}
                     onChange={() => setSelectedRole("ADMIN")}
+                    className="h-4 w-4"
+                  />
+                  <label htmlFor="ADMIN" className="text-sm">Admin</label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="radio"
+                    id="MANAGER"
+                    name="role"
+                    value="MANAGER"
+                    checked={selectedRole === "MANAGER"}
+                    onChange={() => setSelectedRole("MANAGER")}
                     className="h-4 w-4"
                   />
                   <label htmlFor="ADMIN" className="text-sm">Admin</label>

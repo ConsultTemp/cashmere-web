@@ -471,8 +471,8 @@ export function ViewBookingDialog({ isOpen, onClose, booking, onAccept, onReject
                   </AlertDescription>
                 </Alert>
               )}
-
-              {report && report.userId && (
+{/* @ts-ignore */}
+              {report && (report.userId || report.phone) && (
                 <Alert variant="destructive"  className="flex flex-row items-center">
                   <AlertCircle className="h-4 w-4 m-0" />
                   <AlertDescription className="text-xs flex flex-row items-center">Questo utente è stato precedentemente segnalato per la seguente ragione: {report.reason}</AlertDescription>

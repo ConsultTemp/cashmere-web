@@ -1,6 +1,12 @@
-import type { GooGleLoginDTO, LoginRequest, LoginResponse } from "../../types/auth"
+import type { GooGleLoginDTO,LoginResponse } from "../../types/auth"
 import api from "@/lib/axios"
 import axios from "axios"
+
+interface LoginRequest {
+  username: string
+  password: string
+  managerId?: string
+}
 
 export class AuthApi {
   private static instance: AuthApi

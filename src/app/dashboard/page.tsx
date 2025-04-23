@@ -9,11 +9,12 @@ import { useBooking } from "@/hooks/useBooking"
 import { BookingState } from "@/types/types"
 import type { Booking } from "@/types/booking"
 import { useUserStore } from "@/store/user-store"
-import { MessageSquare, Pencil } from "lucide-react"
+import { MessageSquare, Pencil, UserPlus } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/Popover"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/Dialog"
 import { Input } from "@/components/Input"
+import { useUser } from "@/hooks/useUser"
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -21,22 +22,54 @@ export default function DashboardPage() {
   const [filter, setFilter] = useState<BookingState | "future" | "past" | "pending">("future")
   const [sortOrder, setSortOrder] = useState<"recent" | "oldest">("recent")
   const [bookings, setBookings] = useState<Booking[]>([])
+  const [allBookings, setAllBookings] = useState<Booking[]>([])
+  const [users, setUsers] = useState<any[]>([])
+  const [selectedUserId, setSelectedUserId] = useState<string>("all")
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
-  // Aggiungi questi stati per il dialog di cambio nome utente
+  // Stati per il dialog di cambio nome utente
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [newUsername, setNewUsername] = useState("")
-  const [error, setError ] = useState(false)
-  const {updateUsername} = useUser()
-
+  const [error, setError] = useState(false)
+  
+  // Stati per il dialog di creazione nuovo utente
+  const [isCreateUserDialogOpen, setIsCreateUserDialogOpen] = useState(false)
+  const [newUserUsername, setNewUserUsername] = useState("")
+  const [createUserError, setCreateUserError] = useState(false)
+  
+  const { updateUsername, register, getManagers } = useUser()
   const { getUserBookings } = useBooking()
 
+  const isManager = user.role === "MANAGER"
+
   useEffect(() => {
-    async function fetchBookings() {
-      const data = await getUserBookings(user.id)
-      setBookings(data)
+    async function fetchData() {
+      if (isManager) {
+        // Se è un manager, prende tutte le prenotazioni e tutti gli utenti che gestisce
+        const bookingsData = await getUserBookings(user.id)
+        setAllBookings(bookingsData)
+        setBookings(bookingsData)
+        
+        const usersData = await getManagers(user.id)
+        setUsers(usersData)
+      } else {
+        // Se è un utente normale, prende solo le sue prenotazioni
+        const bookingsData = await getUserBookings(user.id)
+        setAllBookings(bookingsData)
+        setBookings(bookingsData)
+      }
     }
-    fetchBookings()
-  }, [])
+    
+    fetchData()
+  }, [user.id, isManager])
+
+  // Gestisce il filtro per utente
+  useEffect(() => {
+    if (selectedUserId === "all") {
+      setBookings(allBookings)
+    } else {
+      setBookings(allBookings.filter(booking => booking.userId === selectedUserId))
+    }
+  }, [selectedUserId, allBookings])
 
   const now = new Date()
   const filteredBookings = bookings
@@ -60,25 +93,61 @@ export default function DashboardPage() {
   }
 
   const handleLogout = () => {
-    // Esegui il logout dallo store
     clearUser()
-
-    // Reindirizza alla home page
     router.push("/")
   }
 
-  // Aggiungi questa funzione per gestire il cambio nome utente
-  const handleUsernameUpdate = async ()  => {
+  const handleUsernameUpdate = async () => {
     const data = await updateUsername(user.id, newUsername)
     console.log(data)
-    if(data && data.username){
-      setUser({...user, username: newUsername})
+    if (data && data.username) {
+      setUser({ ...user, username: newUsername })
       setError(false)
       setIsDialogOpen(false)
-    }else{
+    } else {
       setError(true)
     }
-    
+  }
+
+  const generateRandomPassword = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+    let password = ''
+    for (let i = 0; i < 8; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length))
+    }
+    return password
+  }
+
+  const handleCreateUser = async () => {
+    if (!newUserUsername) {
+      setCreateUserError(true)
+      return
+    }
+
+    const randomPassword = generateRandomPassword()
+    try {
+      const data = await register({
+        username: newUserUsername,
+        password: randomPassword,
+        managerId: user.id
+      })
+      
+      if (data) {
+        // Aggiorna la lista degli utenti dopo aver creato un nuovo utente
+        const updatedUsers = await getManagers(user.id)
+        setUsers(updatedUsers)
+        
+        setNewUserUsername("")
+        setCreateUserError(false)
+        setIsCreateUserDialogOpen(false)
+        
+      } else {
+        setCreateUserError(true)
+      }
+    } catch (error) {
+      console.error("Errore durante la creazione dell'utente:", error)
+      setCreateUserError(true)
+    }
   }
 
   return (
@@ -87,10 +156,11 @@ export default function DashboardPage() {
         <div className="container py-8 px-4 md:px-8 lg:px-16 xl:px-32 2xl:px-72">
           {/* Header */}
           <div className="flex items-center justify-between">
-            {/* Modifica qui per aggiungere il popover */}
             <Popover>
               <PopoverTrigger asChild>
-                <h1 className="text-xl font-semibold cursor-pointer hover:underline flex flex-row gap-2 items-center">{user.username} <Pencil className="w-4 h-4"/></h1>
+                <h1 className="text-xl font-semibold cursor-pointer hover:underline flex flex-row gap-2 items-center">
+                  {user.username} <Pencil className="w-4 h-4" />
+                </h1>
               </PopoverTrigger>
               <PopoverContent className="w-56">
                 <div className="space-y-2">
@@ -99,17 +169,31 @@ export default function DashboardPage() {
                     variant="outline"
                     color="black"
                     className="w-full justify-start"
-                    onClick={() => {setIsDialogOpen(true); setNewUsername(user.username)}}
+                    onClick={() => { setIsDialogOpen(true); setNewUsername(user.username) }}
                   >
                     Cambia nome utente
                   </Button>
                 </div>
               </PopoverContent>
             </Popover>
+            
+            {/* Pulsante per creare un nuovo utente - visibile solo per manager */}
+            {isManager && (
+              <Button 
+                onClick={() => setIsCreateUserDialogOpen(true)} 
+                className="flex items-center gap-2"
+                variant="outline"
+              >
+                <UserPlus className="h-4 w-4" />
+                Crea utente
+              </Button>
+            )}
           </div>
+          
           <Button onClick={handleLogout} className="my-4" variant="outline">
             Logout
           </Button>
+          
           {/* Bookings Section */}
           <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -126,6 +210,28 @@ export default function DashboardPage() {
             </div>
 
             <BookingFilters onFilterChange={setFilter} />
+            
+            {/* Nuova select per filtrare per utente - visibile solo per manager */}
+            {isManager && (
+              <div className="flex items-center">
+                <label htmlFor="userFilter" className="mr-2 text-sm font-medium">
+                  Filtra per utente:
+                </label>
+                <Select defaultValue="all" onValueChange={(value) => setSelectedUserId(value)}>
+                  <SelectTrigger className="w-60">
+                    <SelectValue placeholder="Seleziona utente" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tutti gli utenti</SelectItem>
+                    {users.map((userItem) => (
+                      <SelectItem key={userItem.id} value={userItem.id}>
+                        {userItem.username}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {filteredBookings.length > 0 &&
@@ -162,7 +268,7 @@ export default function DashboardPage() {
         />
       )}
 
-      {/* Aggiungi il dialog per il cambio nome utente */}
+      {/* Dialog per il cambio nome utente */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -192,10 +298,42 @@ export default function DashboardPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      
+      {/* Dialog per la creazione di un nuovo utente */}
+      <Dialog open={isCreateUserDialogOpen} onOpenChange={setIsCreateUserDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Crea nuovo utente</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label htmlFor="newUserUsername" className="text-sm font-medium">
+                Nome utente
+              </label>
+              <Input
+                id="newUserUsername"
+                value={newUserUsername}
+                onChange={(e) => setNewUserUsername(e.target.value)}
+                placeholder="Inserisci nome utente"
+              />
+              {createUserError && <p className="text-xs text-red-500">Si è verificato un errore durante la creazione dell'utente.</p>}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" color="black" onClick={() => setIsCreateUserDialogOpen(false)}>
+              Annulla
+            </Button>
+            <Button color="black" onClick={handleCreateUser}>
+              Crea
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
 
+// Il resto del codice rimane invariato...
 import {
   Dialog as BookingDialog,
   DialogContent as BookingDialogContent,
@@ -206,7 +344,6 @@ import {
 import { format } from "date-fns"
 import { it } from "date-fns/locale"
 import { services, studios } from "@/lib/types"
-import { useUser } from "@/hooks/useUser"
 
 interface BookingViewDialogProps {
   booking: Booking
