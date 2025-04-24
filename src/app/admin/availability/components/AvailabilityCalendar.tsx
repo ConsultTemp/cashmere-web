@@ -148,11 +148,11 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
     const getEventColor = (type: string) => {
       switch (type) {
         case "availability":
-          return { backgroundColor: "transparent", borderColor: "#22c55e", textColor: "#22c55e", borderWidth: "2px", classNames:['overlapping-event'] }
+          return { backgroundColor: "transparent", borderColor: "#22c55e", textColor: "#22c55e", borderWidth: "2px", classNames: ['overlapping-event'] }
         case "booking":
           return { backgroundColor: "#FF5B00", borderColor: "#FF5B00" }
         case "holiday":
-          return { backgroundColor: "transparent", borderColor: "#6366f1", textColor: "#6366f1", borderWidth: "2px",classNames:['overlapping-event']  }
+          return { backgroundColor: "transparent", borderColor: "#6366f1", textColor: "#6366f1", borderWidth: "2px", classNames: ['overlapping-event'] }
         default:
           return { backgroundColor: "transparent", borderColor: "#22c55e", textColor: "#22c55e", borderWidth: "2px" }
       }
@@ -558,6 +558,7 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
 
     return (
       <div className="overflow-y-scroll">
+
         <div className="">
           <div className="h-fit">
             <div className="overflow-x-auto">
@@ -584,37 +585,37 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
                     // Update the eventContent function to handle text colors for all event types
                     eventContent={(eventInfo) => (
                       <div className="h-full w-full p-1 overflow-hidden">
-                        {isEditMode && eventInfo.event.extendedProps.originalId && (
-                          <button
-                            className="right-1 top-1 rounded-full bg-white/20 p-0.5 text-white hover:bg-white/40"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              handleDeleteEvent(eventInfo.event.id)
-                            }}
-                            disabled={isLoading}
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
+                        {isEditMode && (
+                          <div className="w-full flex flex-row justify-end">
+                            <button
+                              className="right-1 top-1 rounded-full bg-gray-100 p-0.5 text-white hover:bg-white/40"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleDeleteEvent(eventInfo.event.id)
+                              }}
+                              disabled={isLoading}
+                            >
+                              <X className="h-3 w-3" color="black" />
+                            </button>
+                          </div>
                         )}
                         <div
-                          className={`text-xs font-medium ${
-                            eventInfo.event.extendedProps.type === "booking"
+                          className={`text-xs font-medium ${eventInfo.event.extendedProps.type === "booking"
                               ? "text-white"
                               : eventInfo.event.extendedProps.type === "holiday"
                                 ? "text-indigo-600"
                                 : "text-emerald-600"
-                          }`}
+                            }`}
                         >
                           {eventInfo.event.title}
                         </div>
                         <div
-                          className={`mt-1 text-xs ${
-                            eventInfo.event.extendedProps.type === "booking"
+                          className={`mt-1 text-xs ${eventInfo.event.extendedProps.type === "booking"
                               ? "text-white/90"
                               : eventInfo.event.extendedProps.type === "holiday"
                                 ? "text-indigo-600/90"
                                 : "text-emerald-600/90"
-                          }`}
+                            }`}
                         >
                           {format(eventInfo.event.start!, "HH:mm")} - {format(eventInfo.event.end!, "HH:mm")}
                         </div>
@@ -638,25 +639,25 @@ export const AvailabilityCalendar = forwardRef<any, AvailabilityCalendarProps>(
                     eventResize={
                       isEditMode
                         ? (info) => {
-                            // Update the availability duration when resized
-                            // Estrai l'ID originale dalla stringa (rimuovi il suffisso -weekOffset)
-                            const originalId = info.event.extendedProps.originalId
-                            const eventDay = info.event.extendedProps.day
+                          // Update the availability duration when resized
+                          // Estrai l'ID originale dalla stringa (rimuovi il suffisso -weekOffset)
+                          const originalId = info.event.extendedProps.originalId
+                          const eventDay = info.event.extendedProps.day
 
-                            updateAvailability(originalId, {
-                              day: eventDay,
-                              start: format(info.event.start!, "HH:mm"),
-                              end: format(info.event.end!, "HH:mm"),
-                              engineerId: selectedEngineer,
+                          updateAvailability(originalId, {
+                            day: eventDay,
+                            start: format(info.event.start!, "HH:mm"),
+                            end: format(info.event.end!, "HH:mm"),
+                            engineerId: selectedEngineer,
+                          })
+                            .then(() => {
+                              fetchAvailabilities()
                             })
-                              .then(() => {
-                                fetchAvailabilities()
-                              })
-                              .catch((error: any) => {
-                                console.error("Error updating availability:", error)
-                                info.revert()
-                              })
-                          }
+                            .catch((error: any) => {
+                              console.error("Error updating availability:", error)
+                              info.revert()
+                            })
+                        }
                         : undefined
                     }
                   />
